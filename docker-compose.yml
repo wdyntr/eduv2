@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=quiz
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+    logging:
+      driver: json-file
+      options:
+        max-size: "20k"
+        max-file: "3"
+
+  db:
+    image: mysql:8.0
+    container_name: data
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: quiz
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - laravel
+    ports:
+      - "3307:3306"
+    logging:
+      driver: json-file
+      options:
+        max-size: "20k"
+        max-file: "3"
+
+networks:
+  laravel:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
