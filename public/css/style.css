@@ -511,3 +511,99 @@
   .anim-d2 { animation-delay: 0.12s; }
   .anim-d3 { animation-delay: 0.2s; }
   .anim-d4 { animation-delay: 0.28s; }
+
+.story-text table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 14px;
+}
+
+.story-text table th,
+.story-text table td {
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.story-text table th {
+    background: rgba(255,255,255,0.08);
+    font-weight: 500;
+}
+
+.story-text figcaption {
+    font-size: 13px;
+    margin-bottom: 8px;
+    font-style: italic;
+}
+
+.story-text small {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+/* public/css/style.css — tambahkan di bagian bawah */
+
+#quiz-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    max-width: 960px;
+    margin: 0 auto;
+    gap: 24px;
+    padding: 20px;
+}
+
+.question-nav {
+    position: sticky;
+    top: 60px;
+    width: 180px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+}
+
+.question-nav-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+}
+
+.question-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.nav-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-num:hover       { border-color: var(--gold); color: var(--gold); }
+.nav-num.answered    { background: rgba(210,160,80,0.15); border-color: var(--gold); color: var(--gold); }
+.nav-num.nav-correct { background: rgba(74,158,106,0.2);  border-color: var(--success); color: var(--success); }
+.nav-num.nav-wrong   { background: rgba(192,80,58,0.15);  border-color: var(--danger);  color: var(--danger); }
+
+.screen-quiz {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Mobile — nav di atas */
+@media (max-width: 640px) {
+    #quiz-wrapper    { flex-direction: column; padding: 12px; }
+    .question-nav    { width: 100%; position: static; }
+    .question-nav-grid { grid-template-columns: repeat(8, 1fr); }
+}

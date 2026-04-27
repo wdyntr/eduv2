@@ -15,6 +15,6 @@ Route::get('/import',         [ImportController::class, 'index']);
 Route::post('/import/upload', [ImportController::class, 'import']);
 
 // routes/web.php
-Route::get('/quiz',        [QuizController::class, 'index'])->name('quiz.index');
-Route::post('/quiz/check', [QuizController::class, 'check'])->name('quiz.check');  // ← tambah name
-Route::get('/quiz/result', [QuizController::class, 'result'])->name('quiz.result');
+Route::get('/quiz',          [QuizController::class, 'index'])->name('quiz.index');
+Route::post('/quiz/submit',  [QuizController::class, 'submit'])->name('quiz.submit');
+Route::get('/quiz/result',   [QuizController::class, 'result'])->name('quiz.result');

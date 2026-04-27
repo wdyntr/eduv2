@@ -60,4 +60,41 @@ class QuizController extends Controller
             'answers'  => $answers,
         ]);
     }
+
+    public function submit(Request $request)
+    {
+        $answers = $request->input('answers'); // ['questionId' => 'A', ...]
+        $results = [];
+
+        foreach ($answers as $questionId => $answer) {
+            $question  = Question::findOrFail($questionId);
+            $isCorrect = strtoupper($answer) === $question->correct_answer;
+
+            $results[] = [
+                'question_id'    => (int) $questionId,
+                'student_answer' => strtoupper($answer),
+                'correct_answer' => $question->correct_answer,
+                'is_correct'     => $isCorrect,
+                'feedback'       => $isCorrect
+                    ? 'Jawaban kamu benar!'
+                    : 'Jawaban kurang tepat.',
+            ];
+
+            // Simpan ke session
+            $sessionAnswers = session('quiz_answers', []);
+            $sessionAnswers[$questionId] = [
+                'correct'       => $isCorrect,
+                'question_text' => $question->question_text,
+            ];
+            session(['quiz_answers' => $sessionAnswers]);
+        }
+
+        $correct = collect($results)->where('is_correct', true)->count();
+
+        return response()->json([
+            'results' => $results,
+            'correct' => $correct,
+            'total'   => count($results),
+        ]);
+    }
 }
