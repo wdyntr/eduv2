@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\QuizSession;
+use App\Models\QuizHasil;   // ← bukan QuizResult
 
 // app/Http/Controllers/Admin/AdminSessionController.php
 class AdminSessionController extends Controller

@@ -31,6 +31,21 @@ class AuthController extends Controller
         // Cek apakah user aktif sebelum login
         $user = \App\Models\User::where('username', $credentials['username'])->first();
 
+        // Debug sementara — hapus setelah masalah terselesaikan
+        if (!$user) {
+            return back()->withErrors(['username' => 'DEBUG: User tidak ditemukan di DB.']);
+        }
+
+        if (!$user->is_active) {
+            return back()->withInput($request->only('username'))
+                        ->withErrors(['username' => 'Akun Anda tidak aktif.']);
+        }
+
+        if (!Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
+            return back()->withInput($request->only('username'))
+                        ->withErrors(['username' => 'DEBUG: attempt() gagal — password salah atau hash tidak cocok.']);
+        }
+
         if ($user && !$user->is_active) {
             return back()
                 ->withInput($request->only('username'))

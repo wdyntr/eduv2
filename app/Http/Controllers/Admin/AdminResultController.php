@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\QuizSession;
+use App\Models\QuizHasil;   // ← bukan QuizResult
 
 // app/Http/Controllers/Admin/AdminResultController.php
 class AdminResultController extends Controller
@@ -19,7 +22,7 @@ class AdminResultController extends Controller
 
     public function show(QuizSession $session)
     {
-        $results = QuizResult::where('session_id', $session->id)
+        $results = QuizHasil::where('session_id', $session->id)
                              ->with('user')
                              ->orderByDesc('score')
                              ->get();
@@ -41,7 +44,7 @@ class AdminResultController extends Controller
                                 ->with('question')
                                 ->get();
 
-        $result = QuizResult::where('session_id', $session->id)
+        $result = QuizHasil::where('session_id', $session->id)
                             ->where('user_id', $user->id)
                             ->first();
 

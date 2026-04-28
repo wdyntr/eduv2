@@ -275,3 +275,37 @@
 .stat-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
 .stat-value { font-family: var(--ff-display); font-size: 32px; color: var(--gold); }
 .stat-sub   { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* ── PERBAIKAN KONTRAS TEKS di dark mode ── */
+/* Teks utama di tabel, label, konten harus lebih terang */
+.admin-table td          { color: var(--text); }        /* dari --text-muted */
+.stat-sub                { color: var(--text-muted); }
+.page-subtitle           { color: var(--text-muted); }
+.form-group label        { color: var(--text-muted); }
+.admin-user              { color: var(--text-muted); }
+
+/* Dark mode: pastikan teks di surface tidak menghilang */
+[data-theme="dark"] .admin-table tbody tr:hover > td { background: var(--surface2); }
+[data-theme="dark"] .admin-table th { background: var(--surface2); }
+
+/* ── THEME TOGGLE di topbar admin ── */
+.admin-theme-btn {
+    position: static;   /* override .theme-toggle yang fixed */
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+/* ── LIGHT MODE: sidebar & topbar ── */
+[data-theme="light"] .admin-sidebar  { background: #f0ece4; border-right-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .admin-topbar   { background: #faf8f4; border-bottom-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .admin-content  { background: #faf8f4; }
+[data-theme="light"] .admin-table-wrap { background: #fff; }
+[data-theme="light"] .admin-table th { background: #f7f4f0; }
+[data-theme="light"] .stat-card      { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+[data-theme="light"] .modal-box      { background: #fff; }
+[data-theme="light"] .admin-input,
+[data-theme="light"] .admin-select   { background: #fff; border-color: rgba(0,0,0,0.12); color: #1a1713; }
+[data-theme="light"] .nav-link       { color: #5c574f; }
+[data-theme="light"] .nav-link:hover { background: #e5e0d5; color: #1a1713; }
+[data-theme="light"] .nav-link.active { background: rgba(160,108,16,0.1); color: #a06c10; }

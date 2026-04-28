@@ -39,8 +39,8 @@ class User extends Authenticatable
     }
 
     // app/Models/User.php
-    public function getAuthIdentifierName(): string
-    {
-        return 'username'; // default Laravel pakai 'email'
-    }
+    // public function getAuthIdentifierName(): string
+    // {
+    //     return 'username'; // default Laravel pakai 'email'
+    // }
 }

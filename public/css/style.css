@@ -55,7 +55,7 @@ body {
   --gold-light: #e8c07a;
   --text: #f0ece4;
   --text-muted: #9a9285;
-  --text-dim: #5c574f;
+  --text-dim: #a6a6a6;
   --danger: #c0503a;
   --success: #4a9e6a;
   --ff-display: 'Playfair Display', Georgia, serif;
@@ -79,7 +79,7 @@ body {
   --gold-light: #b8860b;
   --text: #1a1713;
   --text-muted: #5c574f;
-  --text-dim: #9a9285;
+  --text-dim: #605c55;
   --danger: #b03020;
   --success: #2e7a4e;
 }

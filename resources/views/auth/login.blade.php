@@ -162,12 +162,6 @@
                 @enderror
             </div>
 
-            {{-- Remember me --}}
-            <div class="remember-row">
-                <input type="checkbox" id="remember" name="remember" value="1">
-                <label for="remember">Ingat saya</label>
-            </div>
-
             {{-- Submit --}}
             <button type="submit" class="btn-primary btn-login">
                 Masuk
