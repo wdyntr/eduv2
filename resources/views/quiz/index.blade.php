@@ -31,11 +31,11 @@
         <span class="drawer-section-label">Tema tampilan</span>
         <button class="theme-toggle theme-toggle-drawer" onclick="toggleTheme()"
                 title="Ganti tema" aria-label="Toggle tema">
-            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
             </svg>
-            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="5"/>
                 <line x1="12" y1="1"  x2="12" y2="3"/>
@@ -57,11 +57,11 @@
 {{-- Theme toggle FIXED — hanya tampil di desktop --}}
 <button class="theme-toggle theme-toggle-fixed" id="theme-toggle-fixed"
         onclick="toggleTheme()" title="Ganti tema" aria-label="Toggle tema">
-    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
     </svg>
-    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"/>
         <line x1="12" y1="1"  x2="12" y2="3"/>
