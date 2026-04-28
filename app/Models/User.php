@@ -1,4 +1,3 @@
-// app/Models/User.php
 <?php
 
 namespace App\Models;
@@ -37,5 +36,11 @@ class User extends Authenticatable
     public function isSiswa(): bool
     {
         return $this->role === 'siswa';
+    }
+
+    // app/Models/User.php
+    public function getAuthIdentifierName(): string
+    {
+        return 'username'; // default Laravel pakai 'email'
     }
 }

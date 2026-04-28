@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+// app/Http/Controllers/Admin/AdminSessionController.php
+class AdminSessionController extends Controller
+{
+    public function index()
+    {
+        $sessions = QuizSession::with('creator')
+                               ->latest()->paginate(15);
+
+        // Ambil daftar paket yang tersedia dari tabel questions
+        $pakets = Question::distinct()->pluck('paket')->sort();
+
+        $kelasList = User::where('role', 'siswa')
+                         ->whereNotNull('kelas')
+                         ->distinct()->pluck('kelas')->sort();
+
+        return view('admin.sessions.index', compact('sessions', 'pakets', 'kelasList'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'paket'            => 'required|string',
+            'subject'          => 'required|in:matematika,bahasa_inggris,bahasa_indonesia',
+            'kelas'            => 'nullable|string',
+            'duration_minutes' => 'required|integer|min:5|max:300',
+        ]);
+
+        $data['created_by'] = auth()->id();
+
+        QuizSession::create($data);
+        return back()->with('success', 'Sesi ujian dibuat.');
+    }
+
+    public function toggle(QuizSession $session)
+    {
+        // Nonaktifkan semua sesi lain dulu untuk kelas yang sama
+        if (!$session->is_active) {
+            QuizSession::where('kelas', $session->kelas)
+                       ->where('is_active', true)
+                       ->update(['is_active' => false, 'ended_at' => now()]);
+
+            $session->update([
+                'is_active'  => true,
+                'started_at' => now(),
+                'ended_at'   => now()->addMinutes($session->duration_minutes),
+            ]);
+        } else {
+            $session->update(['is_active' => false, 'ended_at' => now()]);
+        }
+
+        return back()->with('success', 'Status sesi diperbarui.');
+    }
+
+    public function destroy(QuizSession $session)
+    {
+        $session->delete();
+        return back()->with('success', 'Sesi dihapus.');
+    }
+}
