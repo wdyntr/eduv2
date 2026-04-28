@@ -46,11 +46,15 @@ function startQuiz() {
   document.getElementById('quiz-wrapper').style.display  = 'flex';
   document.getElementById('progress-wrap').style.display = 'flex';
 
-  // Pada mobile (≤640px): pindahkan question-nav ke dalam drawer
-  if (window.innerWidth <= 640) {
-    const nav  = document.getElementById('question-nav');
-    const slot = document.getElementById('drawer-nav-slot');
-    if (nav && slot) slot.appendChild(nav);
+  // Pindahkan nav ke drawer slot di mobile
+  // Gunakan <= 768 agar lebih toleran terhadap berbagai ukuran mobile
+  const nav  = document.getElementById('question-nav');
+  const slot = document.getElementById('drawer-nav-slot');
+
+  if (nav && slot) {
+    if (window.innerWidth <= 640) {
+      slot.appendChild(nav);
+    }
   }
 }
 
@@ -179,6 +183,8 @@ function showResult(correctCount, results) {
 
 function scrollToQuestion(questionId) {
   const el = document.getElementById('question-' + questionId);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  closeMenu(); // tutup drawer setelah navigasi
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  closeMenu();
 }
