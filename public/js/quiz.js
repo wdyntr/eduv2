@@ -150,6 +150,8 @@ async function submitQuiz() {
 }
 
 function showResult(correctCount, results) {
+  localStorage.removeItem('quiz-end-time-' + SESSION_ID);
+
   closeMenu();
   document.getElementById('quiz-wrapper').style.display = 'none';
   document.getElementById('progress-wrap').style.display = 'none';
@@ -194,10 +196,38 @@ function scrollToQuestion(questionId) {
 
 // ── TIMER ──
 let timerInterval = null;
-let timeLeft = typeof DURASI !== 'undefined' ? DURASI : 0;
+let timeLeft = 0;
 
 function startTimer() {
-  if (!timeLeft) return;
+  if (typeof DURASI === 'undefined' || !DURASI) return;
+
+  // Buat key unik per sesi ujian
+  const storageKey = 'quiz-end-time-' + SESSION_ID;
+  const now = Date.now();
+
+  // Cek apakah sudah ada end time tersimpan
+  const stored = localStorage.getItem(storageKey);
+  let endTime;
+
+  if (stored) {
+    endTime = parseInt(stored, 10);
+
+    // Jika waktu sudah habis saat reload
+    if (endTime <= now) {
+      timeLeft = 0;
+      updateTimerDisplay(0);
+      autoSubmit();
+      return;
+    }
+
+    // Hitung sisa waktu dari end time
+    timeLeft = Math.floor((endTime - now) / 1000);
+  } else {
+    // Sesi baru — simpan end time
+    endTime = now + DURASI * 1000;
+    localStorage.setItem(storageKey, endTime.toString());
+    timeLeft = DURASI;
+  }
 
   updateTimerDisplay(timeLeft);
 
@@ -205,21 +235,20 @@ function startTimer() {
     timeLeft--;
     updateTimerDisplay(timeLeft);
 
-    // Warning 5 menit terakhir
     if (timeLeft === 300) {
-      const wrap = document.getElementById('timer-wrap');
-      if (wrap) wrap.classList.add('timer-warning');
+      document.getElementById('timer-wrap')?.classList.add('timer-warning');
+      document.getElementById('timer-float')?.classList.add('timer-warning');
     }
 
-    // Warning 1 menit terakhir
     if (timeLeft === 60) {
-      const wrap = document.getElementById('timer-wrap');
-      if (wrap) wrap.classList.add('timer-danger');
+      document.getElementById('timer-wrap')?.classList.add('timer-danger');
+      document.getElementById('timer-float')?.classList.add('timer-danger');
     }
 
-    // Waktu habis → auto submit
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
+      // Hapus dari storage karena sudah selesai
+      localStorage.removeItem(storageKey);
       autoSubmit();
     }
   }, 1000);
