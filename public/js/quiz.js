@@ -200,7 +200,19 @@ async function autoSubmit() {
     const btn = document.getElementById('btn-finish');
     if (btn) btn.textContent = 'Waktu habis...';
 
+    // Jika selected kosong (misal reload tepat saat waktu habis),
+    // coba ambil dari localStorage sebelum menyerah
     if (Object.keys(selected).length === 0) {
+        const saved = loadAnswers();
+        if (saved && Object.keys(saved).length > 0) {
+            selected = saved;
+        }
+    }
+
+    // Jika masih kosong sama sekali — tidak ada yang bisa disubmit
+    if (Object.keys(selected).length === 0) {
+        clearAnswers();
+        localStorage.removeItem('quiz-end-time-' + SESSION_ID);
         window.location.href = QUIZ_INDEX_URL;
         return;
     }
@@ -208,13 +220,18 @@ async function autoSubmit() {
     const response = await fetch(SUBMIT_URL, {
         method : 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-        body   : JSON.stringify({ answers: selected, session_id: SESSION_ID }) // ← tambah session_id
+        body   : JSON.stringify({ answers: selected, session_id: SESSION_ID })
     });
 
     if (response.ok) {
         clearAnswers();
         localStorage.removeItem('quiz-end-time-' + SESSION_ID);
         clearInterval(timerInterval);
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+    } else {
+        // Jika sudah submit sebelumnya (double submit), langsung ke result
+        clearAnswers();
+        localStorage.removeItem('quiz-end-time-' + SESSION_ID);
         window.location.href = RESULT_URL + '?session=' + SESSION_ID;
     }
 }
@@ -289,9 +306,9 @@ function renderMath() {
     });
 }
 
-// ── INIT — semua dipanggil di sini, setelah semua deklarasi ──
-startTimer();
-restoreAnswers();
+// ── INIT — urutan ini penting!
+restoreAnswers(); // ← DULU restore jawaban dari localStorage
+startTimer();     // ← BARU mulai timer (supaya autoSubmit punya data)
 
 if (typeof renderMathInElement !== 'undefined') {
     renderMath();
