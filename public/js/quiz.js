@@ -68,6 +68,8 @@ function selectOption(btn, questionId, answer) {
 
   const isNew = !selected[questionId];
   selected[questionId] = answer;
+    saveAnswers(); // ← tambahkan ini
+
 
   if (isNew) {
     answered++;
@@ -151,6 +153,8 @@ async function submitQuiz() {
 
 function showResult(correctCount, results) {
   localStorage.removeItem('quiz-end-time-' + SESSION_ID);
+    clearAnswers(); // ← tambahkan ini
+
 
   closeMenu();
   document.getElementById('quiz-wrapper').style.display = 'none';
@@ -317,3 +321,68 @@ async function autoSubmit() {
   setTimeout(() => showResult(correctCount, data.results), 800);
 }
 startTimer();
+
+// ── ANSWER STORAGE ──
+const ANSWER_KEY = 'quiz-answers-' + SESSION_ID;
+
+function saveAnswers() {
+  localStorage.setItem(ANSWER_KEY, JSON.stringify(selected));
+}
+
+function loadAnswers() {
+  const stored = localStorage.getItem(ANSWER_KEY);
+  return stored ? JSON.parse(stored) : {};
+}
+
+function clearAnswers() {
+  localStorage.removeItem(ANSWER_KEY);
+}
+
+function restoreAnswers() {
+  const saved = loadAnswers();
+  if (!saved || Object.keys(saved).length === 0) return;
+
+  Object.entries(saved).forEach(([questionId, answer]) => {
+    const container = document.getElementById('opts-' + questionId);
+    if (!container) return;
+
+    // Tandai tombol yang dipilih
+    container.querySelectorAll('.option-btn').forEach(btn => {
+      const optKey = btn.querySelector('.option-key').textContent.trim();
+      if (optKey === answer) btn.classList.add('selected');
+    });
+
+    // Restore state
+    selected[questionId] = answer;
+    answered++;
+
+    // Update nav button
+    const navBtn = document.getElementById('nav-' + questionId);
+    if (navBtn) navBtn.classList.add('answered');
+  });
+
+  // Update progress bar
+  const pct = (answered / TOTAL) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = answered + ' / ' + TOTAL;
+
+  // Update badge hamburger
+  const remaining = TOTAL - answered;
+  const badge = document.getElementById('hamburger-badge');
+  if (badge) {
+    if (remaining > 0) {
+      badge.textContent = remaining;
+      badge.classList.add('show');
+    } else {
+      badge.classList.remove('show');
+    }
+  }
+
+  // Aktifkan tombol submit jika semua sudah dijawab
+  if (answered >= TOTAL) {
+    const finish = document.getElementById('btn-finish');
+    finish.style.opacity = '1';
+    finish.style.pointerEvents = 'auto';
+  }
+}
+restoreAnswers(); // ← tambahkan ini
