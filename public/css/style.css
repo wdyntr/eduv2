@@ -1895,3 +1895,22 @@ body.login-page {
     animation: timerPulse 1s ease infinite;
   }
 }
+
+/* ── KATEX — sesuaikan warna dengan tema ── */
+.katex {
+    font-size: 1em !important;
+    color: var(--text);
+}
+
+.katex-display {
+    margin: 12px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Pastikan tidak overflow di mobile */
+@media (max-width: 640px) {
+    .katex-display {
+        font-size: 0.9em;
+    }
+}

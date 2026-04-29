@@ -1,360 +1,300 @@
 // public/js/quiz.js
 
 (function () {
-  const saved = localStorage.getItem('quiz-theme');
-  const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  document.documentElement.dataset.theme = saved ?? preferred;
+    const saved     = localStorage.getItem('quiz-theme');
+    const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.dataset.theme = saved ?? preferred;
 
-  if (window.innerWidth <= 640) {
-    const nav = document.getElementById('question-nav');
-    const slot = document.getElementById('drawer-nav-slot');
-    if (nav && slot) slot.appendChild(nav);
+    if (window.innerWidth <= 640) {
+        const nav  = document.getElementById('question-nav');
+        const slot = document.getElementById('drawer-nav-slot');
+        if (nav && slot) slot.appendChild(nav);
 
-    const badge = document.getElementById('hamburger-badge');
-    if (badge && typeof TOTAL !== 'undefined') {
-      badge.textContent = TOTAL;
-      badge.classList.add('show');
+        const badge = document.getElementById('hamburger-badge');
+        if (badge && typeof TOTAL !== 'undefined') {
+            badge.textContent = TOTAL;
+            badge.classList.add('show');
+        }
     }
-  }
 })();
 
 // ── THEME TOGGLE ──
 function toggleTheme() {
-  const html = document.documentElement;
-  const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
-  html.dataset.theme = next;
-  localStorage.setItem('quiz-theme', next);
+    const html = document.documentElement;
+    const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+    html.dataset.theme = next;
+    localStorage.setItem('quiz-theme', next);
 }
 
-// Terapkan preferensi tersimpan saat halaman dimuat
-(function () {
-  const saved = localStorage.getItem('quiz-theme');
-  const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  document.documentElement.dataset.theme = saved ?? preferred;
-})();
-
-
-// ── MENU (HAMBURGER DRAWER) ──
+// ── MENU ──
 function openMenu() {
-  const drawer = document.getElementById('menu-drawer');
-  const overlay = document.getElementById('menu-overlay');
-  drawer.classList.add('open');
-  drawer.setAttribute('aria-hidden', 'false');
-  overlay.classList.add('show');
-  document.body.style.overflow = 'hidden'; // cegah scroll background
+    const drawer  = document.getElementById('menu-drawer');
+    const overlay = document.getElementById('menu-overlay');
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeMenu() {
-  const drawer = document.getElementById('menu-drawer');
-  const overlay = document.getElementById('menu-overlay');
-  drawer.classList.remove('open');
-  drawer.setAttribute('aria-hidden', 'true');
-  overlay.classList.remove('show');
-  document.body.style.overflow = '';
+    const drawer  = document.getElementById('menu-drawer');
+    const overlay = document.getElementById('menu-overlay');
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
 }
 
-
 // ── STATE ──
-let answered = 0;
-let selected = {};
+let answered  = 0;
+let selected  = {};
 let submitted = false;
 
 function selectOption(btn, questionId, answer) {
-  if (submitted) return;
+    if (submitted) return;
 
-  const container = document.getElementById('opts-' + questionId);
-  container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
+    const container = document.getElementById('opts-' + questionId);
+    container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
 
-  const isNew = !selected[questionId];
-  selected[questionId] = answer;
-    saveAnswers(); // ← tambahkan ini
+    const isNew = !selected[questionId];
+    selected[questionId] = answer;
+    saveAnswers();
 
+    if (isNew) {
+        answered++;
+        const pct = (answered / TOTAL) * 100;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = answered + ' / ' + TOTAL;
 
-  if (isNew) {
-    answered++;
-    const pct = (answered / TOTAL) * 100;
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-text').textContent = answered + ' / ' + TOTAL;
-
-    // Update badge hamburger: tampilkan sisa soal belum dijawab
-    const remaining = TOTAL - answered;
-    const badge = document.getElementById('hamburger-badge');
-    if (badge) {
-      if (remaining > 0) {
-        badge.textContent = remaining;
-        badge.classList.add('show');
-      } else {
-        badge.classList.remove('show');
-      }
+        const remaining = TOTAL - answered;
+        const badge = document.getElementById('hamburger-badge');
+        if (badge) {
+            if (remaining > 0) {
+                badge.textContent = remaining;
+                badge.classList.add('show');
+            } else {
+                badge.classList.remove('show');
+            }
+        }
     }
-  }
 
-  const navBtn = document.getElementById('nav-' + questionId);
-  if (navBtn) navBtn.classList.add('answered');
+    const navBtn = document.getElementById('nav-' + questionId);
+    if (navBtn) navBtn.classList.add('answered');
 
-  if (answered >= TOTAL) {
-    const finish = document.getElementById('btn-finish');
-    finish.style.opacity = '1';
-    finish.style.pointerEvents = 'auto';
+    if (answered >= TOTAL) {
+        const finish = document.getElementById('btn-finish');
+        finish.style.opacity     = '1';
+        finish.style.pointerEvents = 'auto';
 
-    // Sembunyikan badge saat semua soal selesai
-    const badge = document.getElementById('hamburger-badge');
-    if (badge) badge.classList.remove('show');
-  }
+        const badge = document.getElementById('hamburger-badge');
+        if (badge) badge.classList.remove('show');
+    }
 }
 
 async function submitQuiz() {
-  if (submitted) return;
-  if (Object.keys(selected).length < TOTAL) {
-    alert('Jawab semua soal terlebih dahulu!');
-    return;
-  }
-
-  submitted = true;
-  const btn = document.getElementById('btn-finish');
-  btn.textContent = 'Memproses...';
-  btn.style.opacity = '0.6';
-
-  const response = await fetch(SUBMIT_URL, {
-    method : 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-    body   : JSON.stringify({ answers: selected })
-  });
-
-  if (!response.ok) {
-    const err = await response.json();
-    alert(err.error ?? 'Terjadi kesalahan, coba lagi.');
-    submitted = false;
-    btn.textContent = 'Kumpulkan Jawaban';
-    btn.style.opacity = '1';
-    return;
-  }
-
-  clearAnswers();
-  localStorage.removeItem('quiz-end-time-' + SESSION_ID);
-  clearInterval(timerInterval);
-
-  // ← Redirect ke halaman result, bukan inline showResult()
-  window.location.href = RESULT_URL + '?session=' + SESSION_ID;
-}
-
-function showResult(correctCount, results) {
-  localStorage.removeItem('quiz-end-time-' + SESSION_ID);
-    clearAnswers(); // ← tambahkan ini
-
-
-  closeMenu();
-  document.getElementById('quiz-wrapper').style.display = 'none';
-  document.getElementById('progress-wrap').style.display = 'none';
-  document.getElementById('screen-result').style.display = 'flex';
-
-  document.getElementById('score-num').textContent = correctCount;
-
-  const titles = ['Coba Lagi!', 'Terus Berlatih!', 'Hampir!', 'Bagus!', 'Sempurna!'];
-  const descs = [
-    'Jangan menyerah, coba pelajari lagi materinya.',
-    'Kamu sudah cukup paham, tingkatkan lagi!',
-    'Sedikit lagi sempurna!',
-    'Kerja bagus, terus pertahankan!',
-    'Luar biasa! Semua jawaban benar.'
-  ];
-  const idx = Math.min(Math.round((correctCount / TOTAL) * 4), 4);
-  document.getElementById('result-title').textContent = titles[idx];
-  document.getElementById('result-desc').textContent = descs[idx];
-
-  const list = document.getElementById('breakdown-list');
-  list.innerHTML = '';
-  results.forEach((r, i) => {
-    const div = document.createElement('div');
-    div.className = 'breakdown-item';
-    div.innerHTML = `
-      <span class="q-text">Soal ${i + 1} — Jawaban: <strong>${r.student_answer}</strong>, Benar: <strong>${r.correct_answer}</strong></span>
-      <span class="q-status ${r.is_correct ? 'ok' : 'no'}">${r.is_correct ? 'Benar' : 'Salah'}</span>
-    `;
-    list.appendChild(div);
-  });
-  clearInterval(timerInterval); // ← hentikan timer
-
-}
-
-function scrollToQuestion(questionId) {
-  const el = document.getElementById('question-' + questionId);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  closeMenu();
-}
-
-// ── TIMER ──
-let timerInterval = null;
-let timeLeft = 0;
-
-function startTimer() {
-  if (typeof DURASI === 'undefined' || !DURASI) return;
-
-  // Buat key unik per sesi ujian
-  const storageKey = 'quiz-end-time-' + SESSION_ID;
-  const now = Date.now();
-
-  // Cek apakah sudah ada end time tersimpan
-  const stored = localStorage.getItem(storageKey);
-  let endTime;
-
-  if (stored) {
-    endTime = parseInt(stored, 10);
-
-    // Jika waktu sudah habis saat reload
-    if (endTime <= now) {
-      timeLeft = 0;
-      updateTimerDisplay(0);
-      autoSubmit();
-      return;
+    if (submitted) return;
+    if (Object.keys(selected).length < TOTAL) {
+        alert('Jawab semua soal terlebih dahulu!');
+        return;
     }
 
-    // Hitung sisa waktu dari end time
-    timeLeft = Math.floor((endTime - now) / 1000);
-  } else {
-    // Sesi baru — simpan end time
-    endTime = now + DURASI * 1000;
-    localStorage.setItem(storageKey, endTime.toString());
-    timeLeft = DURASI;
-  }
+    submitted = true;
+    const btn = document.getElementById('btn-finish');
+    btn.textContent  = 'Memproses...';
+    btn.style.opacity = '0.6';
 
-  updateTimerDisplay(timeLeft);
+    const response = await fetch(SUBMIT_URL, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        body   : JSON.stringify({ answers: selected, session_id: SESSION_ID }) // ← tambah session_id
+    });
 
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay(timeLeft);
-
-    if (timeLeft === 300) {
-      document.getElementById('timer-wrap')?.classList.add('timer-warning');
-      document.getElementById('timer-float')?.classList.add('timer-warning');
+    if (!response.ok) {
+        const err = await response.json();
+        alert(err.error ?? 'Terjadi kesalahan, coba lagi.');
+        submitted        = false;
+        btn.textContent  = 'Kumpulkan Jawaban';
+        btn.style.opacity = '1';
+        return;
     }
 
-    if (timeLeft === 60) {
-      document.getElementById('timer-wrap')?.classList.add('timer-danger');
-      document.getElementById('timer-float')?.classList.add('timer-danger');
-    }
-
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      // Hapus dari storage karena sudah selesai
-      localStorage.removeItem(storageKey);
-      autoSubmit();
-    }
-  }, 1000);
-}
-
-function updateTimerDisplay(seconds) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = (seconds % 60).toString().padStart(2, '0');
-  const time = m + ':' + s;
-
-  const el = document.getElementById('timer-text');
-  if (el) el.textContent = time;
-
-  const elFloat = document.getElementById('timer-text-float');
-  if (elFloat) elFloat.textContent = time;
-}
-
-if (timeLeft === 300) {
-  document.getElementById('timer-wrap')?.classList.add('timer-warning');
-  document.getElementById('timer-float')?.classList.add('timer-warning');
-}
-if (timeLeft === 60) {
-  document.getElementById('timer-wrap')?.classList.add('timer-danger');
-  document.getElementById('timer-float')?.classList.add('timer-danger');
-}
-
-async function autoSubmit() {
-  if (submitted) return;
-  submitted = true;
-
-  const btn = document.getElementById('btn-finish');
-  if (btn) btn.textContent = 'Waktu habis...';
-
-  if (Object.keys(selected).length === 0) {
-    window.location.href = QUIZ_INDEX_URL;
-    return;
-  }
-
-  const response = await fetch(SUBMIT_URL, {
-    method : 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-    body   : JSON.stringify({ answers: selected })
-  });
-
-  if (response.ok) {
     clearAnswers();
     localStorage.removeItem('quiz-end-time-' + SESSION_ID);
     clearInterval(timerInterval);
     window.location.href = RESULT_URL + '?session=' + SESSION_ID;
-  }
 }
-startTimer();
+
+function scrollToQuestion(questionId) {
+    const el = document.getElementById('question-' + questionId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    closeMenu();
+}
+
+// ── TIMER ──
+let timerInterval = null;
+let timeLeft      = 0;
+
+function startTimer() {
+    if (typeof DURASI === 'undefined' || !DURASI) return;
+
+    const storageKey = 'quiz-end-time-' + SESSION_ID;
+    const now        = Date.now();
+    const stored     = localStorage.getItem(storageKey);
+    let endTime;
+
+    if (stored) {
+        endTime = parseInt(stored, 10);
+
+        if (endTime <= now) {
+            timeLeft = 0;
+            updateTimerDisplay(0);
+            autoSubmit();
+            return;
+        }
+
+        timeLeft = Math.floor((endTime - now) / 1000);
+    } else {
+        endTime  = now + DURASI * 1000;
+        localStorage.setItem(storageKey, endTime.toString());
+        timeLeft = DURASI;
+    }
+
+    updateTimerDisplay(timeLeft);
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay(timeLeft);
+
+        if (timeLeft === 300) {
+            document.getElementById('timer-wrap')?.classList.add('timer-warning');
+            document.getElementById('timer-float')?.classList.add('timer-warning');
+        }
+        if (timeLeft === 60) {
+            document.getElementById('timer-wrap')?.classList.add('timer-danger');
+            document.getElementById('timer-float')?.classList.add('timer-danger');
+        }
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            localStorage.removeItem(storageKey);
+            autoSubmit();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay(seconds) {
+    const m    = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s    = (seconds % 60).toString().padStart(2, '0');
+    const time = m + ':' + s;
+
+    const el      = document.getElementById('timer-text');
+    const elFloat = document.getElementById('timer-text-float');
+    if (el)      el.textContent      = time;
+    if (elFloat) elFloat.textContent = time;
+}
+
+async function autoSubmit() {
+    if (submitted) return;
+    submitted = true;
+
+    const btn = document.getElementById('btn-finish');
+    if (btn) btn.textContent = 'Waktu habis...';
+
+    if (Object.keys(selected).length === 0) {
+        window.location.href = QUIZ_INDEX_URL;
+        return;
+    }
+
+    const response = await fetch(SUBMIT_URL, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        body   : JSON.stringify({ answers: selected, session_id: SESSION_ID }) // ← tambah session_id
+    });
+
+    if (response.ok) {
+        clearAnswers();
+        localStorage.removeItem('quiz-end-time-' + SESSION_ID);
+        clearInterval(timerInterval);
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+    }
+}
 
 // ── ANSWER STORAGE ──
 const ANSWER_KEY = 'quiz-answers-' + SESSION_ID;
 
 function saveAnswers() {
-  localStorage.setItem(ANSWER_KEY, JSON.stringify(selected));
+    localStorage.setItem(ANSWER_KEY, JSON.stringify(selected));
 }
 
 function loadAnswers() {
-  const stored = localStorage.getItem(ANSWER_KEY);
-  return stored ? JSON.parse(stored) : {};
+    const stored = localStorage.getItem(ANSWER_KEY);
+    return stored ? JSON.parse(stored) : {};
 }
 
 function clearAnswers() {
-  localStorage.removeItem(ANSWER_KEY);
+    localStorage.removeItem(ANSWER_KEY);
 }
 
 function restoreAnswers() {
-  const saved = loadAnswers();
-  if (!saved || Object.keys(saved).length === 0) return;
+    const saved = loadAnswers();
+    if (!saved || Object.keys(saved).length === 0) return;
 
-  Object.entries(saved).forEach(([questionId, answer]) => {
-    const container = document.getElementById('opts-' + questionId);
-    if (!container) return;
+    Object.entries(saved).forEach(([questionId, answer]) => {
+        const container = document.getElementById('opts-' + questionId);
+        if (!container) return;
 
-    // Tandai tombol yang dipilih
-    container.querySelectorAll('.option-btn').forEach(btn => {
-      const optKey = btn.querySelector('.option-key').textContent.trim();
-      if (optKey === answer) btn.classList.add('selected');
+        container.querySelectorAll('.option-btn').forEach(btn => {
+            const optKey = btn.querySelector('.option-key').textContent.trim();
+            if (optKey === answer) btn.classList.add('selected');
+        });
+
+        selected[questionId] = answer;
+        answered++;
+
+        const navBtn = document.getElementById('nav-' + questionId);
+        if (navBtn) navBtn.classList.add('answered');
     });
 
-    // Restore state
-    selected[questionId] = answer;
-    answered++;
+    const pct = (answered / TOTAL) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = answered + ' / ' + TOTAL;
 
-    // Update nav button
-    const navBtn = document.getElementById('nav-' + questionId);
-    if (navBtn) navBtn.classList.add('answered');
-  });
-
-  // Update progress bar
-  const pct = (answered / TOTAL) * 100;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-text').textContent = answered + ' / ' + TOTAL;
-
-  // Update badge hamburger
-  const remaining = TOTAL - answered;
-  const badge = document.getElementById('hamburger-badge');
-  if (badge) {
-    if (remaining > 0) {
-      badge.textContent = remaining;
-      badge.classList.add('show');
-    } else {
-      badge.classList.remove('show');
+    const remaining = TOTAL - answered;
+    const badge     = document.getElementById('hamburger-badge');
+    if (badge) {
+        if (remaining > 0) {
+            badge.textContent = remaining;
+            badge.classList.add('show');
+        } else {
+            badge.classList.remove('show');
+        }
     }
-  }
 
-  // Aktifkan tombol submit jika semua sudah dijawab
-  if (answered >= TOTAL) {
-    const finish = document.getElementById('btn-finish');
-    finish.style.opacity = '1';
-    finish.style.pointerEvents = 'auto';
-  }
+    if (answered >= TOTAL) {
+        const finish           = document.getElementById('btn-finish');
+        finish.style.opacity   = '1';
+        finish.style.pointerEvents = 'auto';
+    }
 }
-restoreAnswers(); // ← tambahkan ini
+
+// ── KATEX RENDER ──
+function renderMath() {
+    renderMathInElement(document.body, {
+        delimiters: [
+            { left: '$$', right: '$$', display: true  },
+            { left: '$',  right: '$',  display: false },
+        ],
+        throwOnError: false,
+        output: 'html',
+    });
+}
+
+// ── INIT — semua dipanggil di sini, setelah semua deklarasi ──
+startTimer();
+restoreAnswers();
+
+if (typeof renderMathInElement !== 'undefined') {
+    renderMath();
+} else {
+    document.addEventListener('DOMContentLoaded', renderMath);
+}

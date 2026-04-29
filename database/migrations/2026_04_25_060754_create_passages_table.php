@@ -14,7 +14,7 @@ return new class extends Migration
        Schema::create('passages', function (Blueprint $table) {
             $table->id();
             $table->enum('subject', ['matematika', 'bahasa_inggris', 'bahasa_indonesia']);
-            $table->longText('content');        // teks asli plain
+            $table->longText('content')->nullable();        // teks asli plain
             $table->timestamps();
         });
     }

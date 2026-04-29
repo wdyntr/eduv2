@@ -19,7 +19,7 @@ return new class extends Migration
                 ->nullOnDelete();             // soal bisa tanpa teks bacaan
             $table->string('paket');                      // ✅ pindah ke sini
             $table->longText('passage_highlighted')->nullable(); // versi teks + <em>
-            $table->text('question_text');
+            $table->text('question_text')->nullable();
             $table->string('option_a');
             $table->string('option_b');
             $table->string('option_c');

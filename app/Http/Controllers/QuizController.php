@@ -12,41 +12,41 @@ use Illuminate\Support\Facades\Auth;
 class QuizController extends Controller
 {
     // ── Dashboard siswa (route: quiz.index = GET /quiz) ──
+
     public function dashboard()
     {
         $user = Auth::user();
 
-        $activeSession = QuizSession::where('is_active', true)
+        $activeSessions = QuizSession::where('is_active', true)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
             })
-            ->first();
+            ->get();
 
-        // ← tambahkan ini
-        $sudahSubmit = false;
-        if ($activeSession) {
-            $sudahSubmit = QuizHasil::where('session_id', $activeSession->id)
-                                    ->where('user_id', $user->id)
-                                    ->exists();
-        }
+        // Cek sesi mana saja yang sudah disubmit
+        $submittedIds = QuizHasil::where('user_id', $user->id)
+            ->whereIn('session_id', $activeSessions->pluck('id'))
+            ->pluck('session_id')
+            ->toArray();
 
-        return view('siswa.dashboard', compact('activeSession', 'user', 'sudahSubmit'));
+        return view('siswa.dashboard', compact('activeSessions', 'user', 'submittedIds'));
     }
-    // ── Halaman soal (route: quiz.start = GET /quiz/mulai) ──
-    public function index()
-    {
-        $user = Auth::user();
 
-        $activeSession = QuizSession::where('is_active', true)
+    // ── Halaman soal (route: quiz.start = GET /quiz/mulai) ──
+    public function index(Request $request)
+    {
+        $user      = Auth::user();
+        $sessionId = $request->query('session');
+
+        $query = QuizSession::where('is_active', true)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
-            })
-            ->first();
+            });
 
-        if (!$activeSession) {
-            return redirect()->route('quiz.index')
-                            ->with('error', 'Tidak ada sesi ujian yang aktif.');
-        }
+        // Jika ada session_id spesifik, gunakan itu
+        $activeSession = $sessionId
+            ? $query->where('id', $sessionId)->firstOrFail()
+            : $query->firstOrFail();
 
         $sudahSubmit = QuizHasil::where('session_id', $activeSession->id)
                                 ->where('user_id', $user->id)
@@ -62,7 +62,6 @@ class QuizController extends Controller
             ->orderBy('order')
             ->get();
 
-        $groups         = $questions->groupBy('passage_id');
         $totalQuestions = $questions->count();
         $totalPoints    = $questions->sum('points');
 
@@ -72,8 +71,7 @@ class QuizController extends Controller
         }
 
         return view('quiz.index', compact(
-            'questions',        // ← tambahkan ini
-            'groups',
+            'questions',
             'totalQuestions',
             'totalPoints',
             'activeSession',
@@ -83,12 +81,14 @@ class QuizController extends Controller
     // ── Submit jawaban ──
     public function submit(Request $request)
     {
-        $user = Auth::user();
+        $user      = Auth::user();
+        $sessionId = $request->input('session_id'); // ← ambil dari request
 
         $activeSession = QuizSession::where('is_active', true)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
             })
+            ->where('id', $sessionId) // ← filter by session_id
             ->first();
 
         if (!$activeSession) {

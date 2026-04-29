@@ -4,20 +4,23 @@
     @php $qNum = 0; @endphp
 
     @foreach($questions as $question)
-        @php $qNum++; @endphp
+        @php
+            $qNum++;
+            $passageContent = $question->passage_highlighted
+                ?? ($question->passage ? $question->passage->content : null);
+            $isNewPassage   = $loop->first
+                || $question->passage_id !== $questions[$loop->index - 1]->passage_id;
 
-        {{-- Teks bacaan --}}
-        @if($loop->first || $question->passage_id !== $questions[$loop->index - 1]->passage_id)
+            // Anggap kosong jika null, string kosong, atau literal "nan"
+            $passageText    = trim(strip_tags($passageContent ?? ''));
+            $hasPassage     = !empty($passageText) && strtolower($passageText) !== 'nan';
+        @endphp
+
+        {{-- Teks bacaan — hanya tampil jika konten tidak kosong --}}
+        @if($isNewPassage && $hasPassage)
         <div class="story-block anim">
             <div class="story-text">
-                {!! $question->passage_highlighted
-                    ?? ($question->passage ? $question->passage->content : '') !!}
-            </div>
-        </div>
-        @elseif($question->passage_highlighted)
-        <div class="story-block anim">
-            <div class="story-text">
-                {!! $question->passage_highlighted !!}
+                {!! $passageContent !!}
             </div>
         </div>
         @endif
