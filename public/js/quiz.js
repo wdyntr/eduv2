@@ -112,43 +112,31 @@ async function submitQuiz() {
   }
 
   submitted = true;
-  document.getElementById('btn-finish').textContent = 'Memproses...';
+  const btn = document.getElementById('btn-finish');
+  btn.textContent = 'Memproses...';
+  btn.style.opacity = '0.6';
 
   const response = await fetch(SUBMIT_URL, {
-    method: 'POST',
+    method : 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-    body: JSON.stringify({ answers: selected })
+    body   : JSON.stringify({ answers: selected })
   });
 
-  const data = await response.json();
-  let correctCount = 0;
+  if (!response.ok) {
+    const err = await response.json();
+    alert(err.error ?? 'Terjadi kesalahan, coba lagi.');
+    submitted = false;
+    btn.textContent = 'Kumpulkan Jawaban';
+    btn.style.opacity = '1';
+    return;
+  }
 
-  data.results.forEach(r => {
-    const container = document.getElementById('opts-' + r.question_id);
-    if (!container) return;
+  clearAnswers();
+  localStorage.removeItem('quiz-end-time-' + SESSION_ID);
+  clearInterval(timerInterval);
 
-    container.querySelectorAll('.option-btn').forEach(b => {
-      b.disabled = true;
-      const optKey = b.querySelector('.option-key').textContent.trim();
-      if (optKey === r.correct_answer) b.classList.add('correct');
-      if (optKey === r.student_answer && !r.is_correct) b.classList.add('wrong');
-    });
-
-    const fb = document.getElementById('fb-' + r.question_id);
-    fb.classList.add('show', r.is_correct ? 'correct' : 'wrong');
-    fb.querySelector('.feedback-title').textContent = r.is_correct ? 'Benar!' : 'Belum tepat';
-    fb.querySelector('.feedback-text').textContent = r.feedback;
-
-    const navBtn = document.getElementById('nav-' + r.question_id);
-    if (navBtn) {
-      navBtn.classList.remove('answered');
-      navBtn.classList.add(r.is_correct ? 'nav-correct' : 'nav-wrong');
-    }
-
-    if (r.is_correct) correctCount++;
-  });
-
-  setTimeout(() => showResult(correctCount, data.results), 1200);
+  // ← Redirect ke halaman result, bukan inline showResult()
+  window.location.href = RESULT_URL + '?session=' + SESSION_ID;
 }
 
 function showResult(correctCount, results) {
@@ -281,44 +269,28 @@ if (timeLeft === 60) {
 
 async function autoSubmit() {
   if (submitted) return;
-
-  // Isi jawaban kosong untuk soal yang belum dijawab tidak perlu
-  // Langsung submit apa yang sudah dipilih
   submitted = true;
 
-  const finishBtn = document.getElementById('btn-finish');
-  if (finishBtn) finishBtn.textContent = 'Waktu habis...';
+  const btn = document.getElementById('btn-finish');
+  if (btn) btn.textContent = 'Waktu habis...';
 
   if (Object.keys(selected).length === 0) {
-    // Tidak ada jawaban sama sekali — redirect ke dashboard
-    window.location.href = '{{ route("quiz.index") }}';
+    window.location.href = QUIZ_INDEX_URL;
     return;
   }
 
   const response = await fetch(SUBMIT_URL, {
-    method: 'POST',
+    method : 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-    body: JSON.stringify({ answers: selected })
+    body   : JSON.stringify({ answers: selected })
   });
 
-  const data = await response.json();
-  let correctCount = 0;
-
-  data.results.forEach(r => {
-    const container = document.getElementById('opts-' + r.question_id);
-    if (!container) return;
-
-    container.querySelectorAll('.option-btn').forEach(b => {
-      b.disabled = true;
-      const optKey = b.querySelector('.option-key').textContent.trim();
-      if (optKey === r.correct_answer) b.classList.add('correct');
-      if (optKey === r.student_answer && !r.is_correct) b.classList.add('wrong');
-    });
-
-    if (r.is_correct) correctCount++;
-  });
-
-  setTimeout(() => showResult(correctCount, data.results), 800);
+  if (response.ok) {
+    clearAnswers();
+    localStorage.removeItem('quiz-end-time-' + SESSION_ID);
+    clearInterval(timerInterval);
+    window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+  }
 }
 startTimer();
 

@@ -30,4 +30,10 @@ class QuizSession extends Model
     {
         return $this->hasMany(QuizHasil::class, 'session_id');
     }
+
+    // app/Models/QuizSession.php
+    public function answers()
+    {
+        return $this->hasMany(SiswaAnswer::class, 'session_id');
+    }
 }

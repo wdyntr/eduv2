@@ -93,17 +93,31 @@
         display: flex; align-items: center; justify-content: space-between;
         flex-wrap: wrap; gap: 12px;
     ">
-        <p style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:380px;">
-            Pastikan koneksi internet Anda stabil sebelum memulai.
-            Jawab semua soal sebelum waktu habis.
-        </p>
-        <a href="{{ route('quiz.start') }}" class="btn-primary">
-            Mulai Ujian
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
-                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </a>
+        @if($sudahSubmit)
+            <p style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:380px;">
+                Kamu sudah mengumpulkan jawaban untuk ujian ini.
+            </p>
+            <a href="{{ route('quiz.result', ['session' => $activeSession->id]) }}"
+            class="btn-primary">
+                Lihat Hasil
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+        @else
+            <p style="font-size:13px;color:var(--text-muted);line-height:1.6;max-width:380px;">
+                Pastikan koneksi internet Anda stabil sebelum memulai.
+                Jawab semua soal sebelum waktu habis.
+            </p>
+            <a href="{{ route('quiz.start') }}" class="btn-primary">
+                Mulai Ujian
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+        @endif
     </div>
 </div>
 

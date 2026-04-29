@@ -22,9 +22,16 @@ class QuizController extends Controller
             })
             ->first();
 
-        return view('siswa.dashboard', compact('activeSession', 'user'));
-    }
+        // ← tambahkan ini
+        $sudahSubmit = false;
+        if ($activeSession) {
+            $sudahSubmit = QuizHasil::where('session_id', $activeSession->id)
+                                    ->where('user_id', $user->id)
+                                    ->exists();
+        }
 
+        return view('siswa.dashboard', compact('activeSession', 'user', 'sudahSubmit'));
+    }
     // ── Halaman soal (route: quiz.start = GET /quiz/mulai) ──
     public function index()
     {
