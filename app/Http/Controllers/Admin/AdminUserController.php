@@ -75,8 +75,18 @@ class AdminUserController extends Controller
 
     public function destroy(User $user)
     {
+        // Cegah admin menghapus dirinya sendiri
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
+        }
+
+        // Hapus data terkait dulu (urutan penting: detail dulu, lalu rekap)
+        \App\Models\SiswaAnswer::where('user_id', $user->id)->delete();
+        \App\Models\QuizHasil::where('user_id', $user->id)->delete();
+
         $user->delete();
-        return back()->with('success', 'User dihapus.');
+
+        return back()->with('success', 'User dan seluruh data ujiannya berhasil dihapus.');
     }
 
     public function toggleActive(User $user)
