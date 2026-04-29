@@ -64,6 +64,7 @@
     const TOTAL      = {{ $totalQuestions }};
     const SUBMIT_URL = '{{ route("quiz.submit") }}';
     const CSRF       = document.querySelector('meta[name="csrf-token"]').content;
+    const DURASI     = {{ $activeSession->durasi * 60 }}; // ← konversi menit ke detik
 </script>
 <script src="{{ asset('js/quiz.js') }}"></script>
 </body>

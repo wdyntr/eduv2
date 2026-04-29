@@ -1804,3 +1804,94 @@ body.login-page {
     min-height: auto;
   }
 }
+
+/* ── TIMER ── */
+.timer-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color 0.3s, border-color 0.3s, background 0.3s;
+}
+
+.timer-wrap svg {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+/* 5 menit terakhir — kuning */
+.timer-wrap.timer-warning {
+  color: var(--gold);
+  border-color: var(--border-accent);
+  background: rgba(210, 160, 80, 0.08);
+}
+
+/* 1 menit terakhir — merah, berkedip */
+.timer-wrap.timer-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: rgba(192, 80, 58, 0.08);
+  animation: timerPulse 1s ease infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* Sembunyikan timer di mobile kecil jika tidak cukup ruang */
+@media (max-width: 380px) {
+  .timer-wrap { display: none; }
+}
+
+/* ── TIMER FLOAT (mobile only) ── */
+.timer-float {
+  display: none; /* hidden by default (desktop) */
+}
+
+@media (max-width: 640px) {
+  /* Sembunyikan timer di progress bar */
+  .timer-wrap {
+    display: none;
+  }
+
+  /* Tampilkan floating timer */
+  .timer-float {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: fixed;
+    bottom: 10px; /* tepat di atas progress bar */
+    right: 14px;
+    z-index: 99;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+
+  .timer-float.timer-warning {
+    color: var(--gold);
+    border-color: var(--border-accent);
+    background: rgba(210, 160, 80, 0.1);
+  }
+
+  .timer-float.timer-danger {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(192, 80, 58, 0.1);
+    animation: timerPulse 1s ease infinite;
+  }
+}

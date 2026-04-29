@@ -1,4 +1,3 @@
-{{-- Hapus style="display:none;" karena langsung tampil --}}
 <div class="progress-wrap" id="progress-wrap">
 
     <button class="hamburger-btn" id="hamburger-btn"
@@ -17,6 +16,26 @@
     </div>
 
     <span class="progress-text" id="progress-text">0 / {{ $totalQuestions }}</span>
+
+    {{-- Timer --}}
+    <div class="timer-wrap" id="timer-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span id="timer-text">{{ $activeSession->durasi }}:00</span>
+    </div>
+
+    {{-- Timer floating khusus mobile --}}
+    <div class="timer-float" id="timer-float">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span id="timer-text-float">--:--</span>
+    </div>
 
     <button class="theme-toggle theme-toggle-bar" id="theme-toggle-bar"
             onclick="toggleTheme()" title="Ganti tema" aria-label="Toggle tema">
