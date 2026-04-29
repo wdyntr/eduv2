@@ -21,7 +21,7 @@
         </div>
         <div>
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Durasi</div>
-            <div style="font-weight:500;margin-top:4px;">{{ $session->duration_minutes }} menit</div>
+            <div style="font-weight:500;margin-top:4px;">{{ $session->durasi }} menit</div>        
         </div>
         <div>
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Peserta Submit</div>

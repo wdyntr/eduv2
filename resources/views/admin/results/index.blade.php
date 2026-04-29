@@ -26,14 +26,12 @@
                 <td><strong>{{ $session->paket }}</strong></td>
                 <td>{{ str_replace('_', ' ', $session->subject) }}</td>
                 <td>{{ $session->kelas ?? 'Semua' }}</td>
-                <td>{{ $session->duration_minutes }} menit</td>
+                <td>{{ $session->durasi }} menit</td>
                 <td style="font-size:13px;color:var(--text-muted);">
                     {{ $session->started_at?->format('d/m/Y') ?? '-' }}
                 </td>
                 <td>
-                    <span style="color:var(--gold);font-weight:500;">
-                        {{ $session->results_count }}
-                    </span>
+                    <span style="color:var(--gold);font-weight:500;">{{ $session->hasil_count }}</span>
                     <span style="color:var(--text-dim);font-size:12px;"> siswa</span>
                 </td>
                 <td>

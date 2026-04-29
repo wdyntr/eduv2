@@ -6,14 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\QuizSession;
-use App\Models\QuizHasil;   // ← bukan QuizResult
+use App\Models\QuizHasil;
+use App\Models\SiswaAnswer; // ← ini yang kurang
 
-// app/Http/Controllers/Admin/AdminResultController.php
 class AdminResultController extends Controller
 {
     public function index()
     {
-        $sessions = QuizSession::withCount('results')
+        $sessions = QuizSession::withCount('results')  // ← sesuai nama relasi di model
                                ->with('creator')
                                ->latest()->paginate(15);
 
@@ -27,7 +27,6 @@ class AdminResultController extends Controller
                              ->orderByDesc('score')
                              ->get();
 
-        // Siswa yang belum submit
         $participated = $results->pluck('user_id');
         $notSubmitted = User::where('role', 'siswa')
                             ->when($session->kelas, fn($q) => $q->where('kelas', $session->kelas))
@@ -39,10 +38,11 @@ class AdminResultController extends Controller
 
     public function detail(QuizSession $session, User $user)
     {
-        $answers = StudentAnswer::where('session_id', $session->id)
-                                ->where('user_id', $user->id)
-                                ->with('question')
-                                ->get();
+        $answers = SiswaAnswer::where('session_id', $session->id)  // ← SiswaAnswer, bukan StudentAnswer
+                              ->where('user_id', $user->id)
+                              ->with('question')
+                              ->orderBy('question_id')
+                              ->get();
 
         $result = QuizHasil::where('session_id', $session->id)
                             ->where('user_id', $user->id)
