@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Quiz — Paket {{ $paket }}</title>
+    <title>Ujian — {{ $activeSession->paket }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
@@ -49,12 +49,11 @@
     <div id="drawer-nav-slot"></div>
 </aside>
 
-{{-- ← HAPUS theme-toggle-fixed, tidak dipakai lagi --}}
-
-@include('quiz.partials._start')
+{{-- ← Tidak ada _start, langsung progress bar --}}
 @include('quiz.partials._progress')
 
-<div id="quiz-wrapper" style="display:none;">
+{{-- Quiz wrapper langsung tampil (bukan display:none) --}}
+<div id="quiz-wrapper">
     @include('quiz.partials._question-nav')
     @include('quiz.partials._questions')
 </div>

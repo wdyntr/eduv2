@@ -1,7 +1,6 @@
-{{-- resources/views/quiz/partials/_progress.blade.php --}}
-<div class="progress-wrap" id="progress-wrap" style="display:none;">
+{{-- Hapus style="display:none;" karena langsung tampil --}}
+<div class="progress-wrap" id="progress-wrap">
 
-    {{-- Hamburger — hanya muncul di mobile --}}
     <button class="hamburger-btn" id="hamburger-btn"
             onclick="openMenu()" aria-label="Buka navigasi soal">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
@@ -19,7 +18,6 @@
 
     <span class="progress-text" id="progress-text">0 / {{ $totalQuestions }}</span>
 
-    {{-- Toggle di kanan progress bar — hanya desktop --}}
     <button class="theme-toggle theme-toggle-bar" id="theme-toggle-bar"
             onclick="toggleTheme()" title="Ganti tema" aria-label="Toggle tema">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"

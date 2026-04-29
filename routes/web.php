@@ -18,9 +18,10 @@ Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 Route::get('/import',         [ImportController::class, 'index']);
 Route::post('/import/upload', [ImportController::class, 'import']);
 
-// ── QUIZ (siswa yang sudah login) ─────────────
+// routes/web.php
 Route::middleware(['auth', 'role:siswa'])->group(function () {
-    Route::get('/quiz',         [QuizController::class, 'index'])->name('quiz.index');
+    Route::get('/quiz',         [QuizController::class, 'dashboard'])->name('quiz.index');
+    Route::get('/quiz/mulai',   [QuizController::class, 'index'])->name('quiz.start');
     Route::post('/quiz/submit', [QuizController::class, 'submit'])->name('quiz.submit');
     Route::get('/quiz/result',  [QuizController::class, 'result'])->name('quiz.result');
 });

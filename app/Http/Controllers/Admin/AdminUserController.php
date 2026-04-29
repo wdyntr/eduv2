@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\QuizSession;
 use App\Models\QuizHasil;   // ← bukan QuizResult
+use Illuminate\Support\Facades\Hash;
+
 
 // app/Http/Controllers/Admin/AdminUserController.php
 class AdminUserController extends Controller
@@ -32,6 +34,7 @@ class AdminUserController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request);
         $data = $request->validate([
             'name'      => 'required|string|max:255',
             'username'  => 'required|string|unique:users|max:255',
@@ -41,6 +44,7 @@ class AdminUserController extends Controller
             'no_induk'  => 'nullable|unique:users|max:255',
             'is_active' => 'boolean',
         ]);
+        // dd($data);
 
         $data['password'] = Hash::make($data['password']);
         User::create($data);

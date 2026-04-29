@@ -30,7 +30,7 @@
                 <td><strong>{{ $session->paket }}</strong></td>
                 <td>{{ str_replace('_', ' ', $session->subject) }}</td>
                 <td>{{ $session->kelas ?? 'Semua' }}</td>
-                <td>{{ $session->duration_minutes }} menit</td>
+                <td>{{ $session->durasi }} menit</td>
                 <td>{{ $session->started_at?->format('d/m/Y H:i') ?? '-' }}</td>
                 <td>{{ $session->ended_at?->format('d/m/Y H:i') ?? '-' }}</td>
                 <td>
@@ -107,8 +107,7 @@
                 </div>
                 <div class="form-group">
                     <label>Durasi (menit) *</label>
-                    <input type="number" name="duration_minutes" value="90"
-                           min="5" max="300" class="admin-input" required>
+                    <input type="number" name="durasi" value="90" min="5" max="300" class="admin-input" required>
                 </div>
             </div>
             <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">

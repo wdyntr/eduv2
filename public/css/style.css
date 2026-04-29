@@ -350,7 +350,7 @@ body {
 ══════════════════════════════════════ */
 /* ── Progress bar: sticky di desktop ── */
 .progress-wrap {
-  position: sticky;
+  position: fixed;          /* ← fixed, bukan sticky */
   top: 0;
   z-index: 100;
   /* ← naikkan z-index */
@@ -560,27 +560,30 @@ body {
   align-items: flex-start;
   width: 100%;
   max-width: 980px;
-  margin: 0 auto;
+  margin: 52px auto 0;
   gap: 24px;
   padding: 20px var(--page-px);
+  min-height: calc(100vh - 52px);
 }
+
+
 
 
 /* ── QUESTION NAV (sidebar) ── */
 .question-nav {
   display: block;
-  position: sticky;
-  top: 54px;
-  /* ← sesuai tinggi progress bar */
+  position: fixed;          /* ← ganti sticky → fixed */
+  top: 68px;                /* ← tepat di bawah progress bar */
+  left: calc((100vw - 980px) / 2 + 20px); /* ← rata kiri sesuai max-width wrapper */
   width: 180px;
-  flex-shrink: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px;
-  max-height: calc(100vh - 74px);
+  max-height: calc(100vh - 88px);
   overflow-y: auto;
   overscroll-behavior: contain;
+  z-index: 50;
 }
 
 .question-nav-title {
@@ -645,7 +648,9 @@ body {
 .screen-quiz {
   flex: 1;
   min-width: 0;
+  margin-left: 204px; /* ← 180px nav + 24px gap */
 }
+
 
 
 /* ══════════════════════════════════════
@@ -761,8 +766,7 @@ body {
 ══════════════════════════════════════ */
 .question-block {
   margin-bottom: 28px;
-  /* offset sticky progress bar saat scroll-to */
-  scroll-margin-top: 60px;
+  scroll-margin-top: 68px;
 }
 
 .question-num {
@@ -1165,11 +1169,15 @@ body {
 
   .question-nav {
     width: 148px;
-    padding: 12px;
+    left: calc((100vw - 740px) / 2 + 16px);
   }
 
   .question-nav-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .screen-quiz {
+    margin-left: 164px; /* 148px + 16px gap */
   }
 
   .question-text {
@@ -1196,7 +1204,7 @@ body {
   .progress-wrap {
     position: fixed;
     /* ← fixed, bukan sticky */
-    top: auto;
+    top: 0;
     /* ← override top:0 */
     left: 0;
     right: 0;
@@ -1385,6 +1393,15 @@ body {
     padding-bottom: 100px;
   }
 
+  .screen-quiz {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    margin-left: 0 !important;  /* ← ganti 164px → 0 */
+  }
+
 }
 
 /* ══════════════════════════════════════
@@ -1504,12 +1521,12 @@ body {
 }
 
 /* ── LOGIN PAGE SPECIFIC ── */
-body {
+body.login-page {
   justify-content: center;
   min-height: 100vh;
   padding: 0;
   position: relative;
-  overflow: hidden;
+  overflow: hidden;  /* ← sekarang hanya berlaku di halaman login */
 }
 
 /* Background dekoratif */

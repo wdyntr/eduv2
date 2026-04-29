@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\QuizSession;
+use App\Models\Question;
 use App\Models\QuizHasil;   // ← bukan QuizResult
 
 // app/Http/Controllers/Admin/AdminSessionController.php
@@ -28,11 +29,12 @@ class AdminSessionController extends Controller
 
     public function store(Request $request)
     {
+        // AdminSessionController@store — ganti duration_minutes → durasi
         $data = $request->validate([
-            'paket'            => 'required|string',
-            'subject'          => 'required|in:matematika,bahasa_inggris,bahasa_indonesia',
-            'kelas'            => 'nullable|string',
-            'duration_minutes' => 'required|integer|min:5|max:300',
+            'paket'   => 'required|string',
+            'subject' => 'required|in:matematika,bahasa_inggris,bahasa_indonesia',
+            'kelas'   => 'nullable|string',
+            'durasi'  => 'required|integer|min:5|max:300',  // ← sesuai kolom DB
         ]);
 
         $data['created_by'] = auth()->id();

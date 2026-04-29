@@ -1,5 +1,26 @@
 // public/js/quiz.js
 
+// Ganti IIFE init di paling atas quiz.js
+(function () {
+    const saved     = localStorage.getItem('quiz-theme');
+    const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.dataset.theme = saved ?? preferred;
+
+    // Mobile: pindahkan nav ke dalam drawer
+    if (window.innerWidth <= 640) {
+        const nav  = document.getElementById('question-nav');
+        const slot = document.getElementById('drawer-nav-slot');
+        if (nav && slot) slot.appendChild(nav);
+
+        // Set badge awal
+        const badge = document.getElementById('hamburger-badge');
+        if (badge && typeof TOTAL !== 'undefined') {
+            badge.textContent = TOTAL;
+            badge.classList.add('show');
+        }
+    }
+})();
+
 // ── THEME TOGGLE ──
 function toggleTheme() {
   const html = document.documentElement;
@@ -40,23 +61,6 @@ function closeMenu() {
 let answered  = 0;
 let selected  = {};
 let submitted = false;
-
-function startQuiz() {
-  document.getElementById('screen-start').style.display  = 'none';
-  document.getElementById('quiz-wrapper').style.display  = 'flex';
-  document.getElementById('progress-wrap').style.display = 'flex';
-
-  // Pindahkan nav ke drawer slot di mobile
-  // Gunakan <= 768 agar lebih toleran terhadap berbagai ukuran mobile
-  const nav  = document.getElementById('question-nav');
-  const slot = document.getElementById('drawer-nav-slot');
-
-  if (nav && slot) {
-    if (window.innerWidth <= 640) {
-      slot.appendChild(nav);
-    }
-  }
-}
 
 function selectOption(btn, questionId, answer) {
   if (submitted) return;
