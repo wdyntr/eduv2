@@ -309,3 +309,225 @@
 [data-theme="light"] .nav-link       { color: #5c574f; }
 [data-theme="light"] .nav-link:hover { background: #e5e0d5; color: #1a1713; }
 [data-theme="light"] .nav-link.active { background: rgba(160,108,16,0.1); color: #a06c10; }
+
+/* ══════════════════════════════════════
+   ADMIN RESPONSIVE
+══════════════════════════════════════ */
+
+/* ── Hamburger button (hidden di desktop) ── */
+.admin-hamburger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s, color 0.2s;
+}
+.admin-hamburger:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+/* ── Sidebar overlay (mobile) ── */
+.admin-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 49;
+    backdrop-filter: blur(2px);
+}
+.admin-sidebar-overlay.show {
+    display: block;
+}
+
+
+/* ══════════════════════════════════════
+   TABLET (≤1024px)
+══════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .admin-sidebar {
+        width: 200px;
+    }
+    .admin-main {
+        margin-left: 200px;
+    }
+    .admin-content {
+        padding: 20px 24px;
+    }
+    .admin-topbar {
+        padding: 16px 24px;
+    }
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+
+/* ══════════════════════════════════════
+   MOBILE (≤768px)
+   Sidebar jadi drawer dari kiri
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+    /* Tampilkan hamburger */
+    .admin-hamburger {
+        display: flex;
+    }
+
+    /* Sidebar jadi fixed drawer, tersembunyi di kiri */
+    .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 50;
+        width: 240px;
+        box-shadow: none;
+    }
+    .admin-sidebar.open {
+        transform: translateX(0);
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Main tidak pakai margin kiri */
+    .admin-main {
+        margin-left: 0;
+    }
+
+    /* Topbar */
+    .admin-topbar {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+    .admin-page-title {
+        font-size: 18px;
+        flex: 1;
+    }
+    .admin-user {
+        display: none; /* sembunyikan nama di mobile kecil */
+    }
+
+    /* Content */
+    .admin-content {
+        padding: 16px;
+    }
+
+    /* Alert */
+    .alert {
+        margin: 12px 16px 0;
+    }
+
+    /* Stats grid: 2 kolom di tablet */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    /* Dashboard 2 kolom → 1 kolom */
+    div[style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Form grid: 1 kolom */
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Filter row: wrap */
+    .filter-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .filter-row .admin-input,
+    .filter-row .admin-select {
+        width: 100%;
+    }
+    .filter-row .btn-primary,
+    .filter-row .btn-ghost {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Page header */
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .page-header .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Modal */
+    .modal-box {
+        padding: 20px 16px;
+        margin: 0 12px;
+        max-width: calc(100vw - 24px);
+    }
+
+    /* Table: hide less important columns */
+    .admin-table th:nth-child(4),
+    .admin-table td:nth-child(4) {
+        display: none; /* sembunyikan kolom Durasi di tabel sesi */
+    }
+
+    /* Actions: stack vertikal */
+    .td-actions {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* Pagination */
+    .btn-icon {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}
+
+
+/* ══════════════════════════════════════
+   SMALL PHONE (≤480px)
+══════════════════════════════════════ */
+@media (max-width: 480px) {
+
+    /* Stats: 1 kolom */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .stat-card {
+        padding: 16px;
+    }
+    .stat-value {
+        font-size: 26px;
+    }
+
+    /* Table: lebih agresif hide kolom */
+    .admin-table th:nth-child(5),
+    .admin-table td:nth-child(5),
+    .admin-table th:nth-child(6),
+    .admin-table td:nth-child(6) {
+        display: none;
+    }
+
+    /* Topbar */
+    .admin-page-title {
+        font-size: 16px;
+    }
+
+    /* Admin content */
+    .admin-content {
+        padding: 12px;
+    }
+
+    /* Breakdown grid */
+    div[style*="grid-template-columns:repeat(auto-fit"] {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}

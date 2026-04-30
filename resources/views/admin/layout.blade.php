@@ -57,6 +57,16 @@
 
 <main class="admin-main">
     <div class="admin-topbar">
+        {{-- ← Tambahkan hamburger button --}}
+        <button class="admin-hamburger" id="admin-hamburger" onclick="toggleSidebar()" aria-label="Buka menu">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <line x1="2" y1="5"  x2="18" y2="5"/>
+                <line x1="2" y1="10" x2="18" y2="10"/>
+                <line x1="2" y1="15" x2="18" y2="15"/>
+            </svg>
+        </button>
+
         <h1 class="admin-page-title">@yield('title')</h1>
         {{-- ↓ Theme toggle di sini --}}
         <div style="display:flex; align-items:center; gap:12px;">
@@ -79,6 +89,9 @@
             </button>
         </div>
     </div>
+
+    {{-- ← Tambahkan overlay untuk sidebar mobile --}}
+    <div class="admin-sidebar-overlay" id="admin-sidebar-overlay" onclick="toggleSidebar()"></div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
