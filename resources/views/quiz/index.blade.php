@@ -61,10 +61,10 @@
 <script>
     const TOTAL          = {{ $totalQuestions }};
     const SUBMIT_URL     = '{{ route("quiz.submit") }}';
-    const RESULT_URL     = '{{ route("quiz.result") }}';   // ← tambah
-    const QUIZ_INDEX_URL = '{{ route("quiz.index") }}';    // ← tambah
+    const RESULT_URL     = '{{ route("quiz.result") }}';
+    const QUIZ_INDEX_URL = '{{ route("quiz.index") }}';
     const CSRF           = document.querySelector('meta[name="csrf-token"]').content;
-    const DURASI         = {{ $activeSession->durasi * 60 }};
+    const DURASI         = {{ $sisaDetik }};   // ← sisa waktu dari server, bukan durasi penuh
     const SESSION_ID     = '{{ $activeSession->id }}';
 </script>
 <script src="{{ asset('js/quiz.js') }}"></script>

@@ -24,7 +24,7 @@
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
         </svg>
-        <span id="timer-text">{{ $activeSession->durasi }}:00</span>
+        <span id="timer-text">--:--</span>
     </div>
 
     {{-- Timer floating khusus mobile --}}

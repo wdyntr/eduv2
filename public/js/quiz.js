@@ -138,28 +138,7 @@ let timeLeft      = 0;
 function startTimer() {
     if (typeof DURASI === 'undefined' || !DURASI) return;
 
-    const storageKey = 'quiz-end-time-' + SESSION_ID;
-    const now        = Date.now();
-    const stored     = localStorage.getItem(storageKey);
-    let endTime;
-
-    if (stored) {
-        endTime = parseInt(stored, 10);
-
-        if (endTime <= now) {
-            timeLeft = 0;
-            updateTimerDisplay(0);
-            autoSubmit();
-            return;
-        }
-
-        timeLeft = Math.floor((endTime - now) / 1000);
-    } else {
-        endTime  = now + DURASI * 1000;
-        localStorage.setItem(storageKey, endTime.toString());
-        timeLeft = DURASI;
-    }
-
+    timeLeft = DURASI; // ← langsung dari server, sudah akurat
     updateTimerDisplay(timeLeft);
 
     timerInterval = setInterval(() => {
@@ -176,7 +155,6 @@ function startTimer() {
         }
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            localStorage.removeItem(storageKey);
             autoSubmit();
         }
     }, 1000);
