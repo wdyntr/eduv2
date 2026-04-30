@@ -8,14 +8,19 @@
             $qNum++;
             $passageContent = $question->passage_highlighted
                 ?? ($question->passage ? $question->passage->content : null);
+
+            // Passage ditampilkan ulang jika:
+            // 1. Soal pertama, ATAU
+            // 2. passage_id berbeda dari soal sebelumnya, ATAU
+            // 3. passage_highlighted berbeda dari soal sebelumnya
+            $prevQuestion   = $loop->first ? null : $questions[$loop->index - 1];
             $isNewPassage   = $loop->first
-                || $question->passage_id !== $questions[$loop->index - 1]->passage_id;
+                || $question->passage_id !== $prevQuestion->passage_id
+                || $question->passage_highlighted !== $prevQuestion->passage_highlighted;
 
-            // Anggap kosong jika null, string kosong, atau literal "nan"
-            $passageText    = trim(strip_tags($passageContent ?? ''));
-            $hasPassage     = !empty($passageText) && strtolower($passageText) !== 'nan';
+            $passageText = trim(strip_tags($passageContent ?? ''));
+            $hasPassage  = !empty($passageText) && strtolower($passageText) !== 'nan';
         @endphp
-
         {{-- Teks bacaan — hanya tampil jika konten tidak kosong --}}
         @if($isNewPassage && $hasPassage)
         <div class="story-block anim">
