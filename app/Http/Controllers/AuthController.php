@@ -33,7 +33,7 @@ class AuthController extends Controller
 
         // Debug sementara — hapus setelah masalah terselesaikan
         if (!$user) {
-            return back()->withErrors(['username' => 'DEBUG: User tidak ditemukan di DB.']);
+            return back()->withErrors(['username' => 'User tidak ditemukan di DB.']);
         }
 
         if (!$user->is_active) {
@@ -43,7 +43,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
             return back()->withInput($request->only('username'))
-                        ->withErrors(['username' => 'DEBUG: attempt() gagal — password salah atau hash tidak cocok.']);
+                        ->withErrors(['username' => 'Password salah atau hash tidak cocok.']);
         }
 
         if ($user && !$user->is_active) {
