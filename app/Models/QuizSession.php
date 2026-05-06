@@ -36,4 +36,10 @@ class QuizSession extends Model
     {
         return $this->hasMany(SiswaAnswer::class, 'session_id');
     }
+
+    // app/Models/QuizSession.php
+    public function starts()
+    {
+        return $this->hasMany(SiswaQuizStart::class, 'session_id');
+    }
 }

@@ -63,9 +63,16 @@ class AdminSessionController extends Controller
         return back()->with('success', 'Status sesi diperbarui.');
     }
 
-    public function destroy(QuizSession $session)
+   public function destroy(QuizSession $session)
     {
+        // Hapus data terkait sebelum menghapus sesi
+        $session->results()->delete();   // quiz_hasil
+        $session->answers()->delete();   // siswa_answers
+
+        // siswa_quiz_starts (tambahkan relasi jika belum ada)
+        $session->starts()->delete();
+
         $session->delete();
         return back()->with('success', 'Sesi dihapus.');
-    }
+   }
 }
