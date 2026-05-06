@@ -41,11 +41,11 @@
         {{-- Theme toggle --}}
         <button class="theme-toggle" onclick="toggleTheme()" title="Ganti tema"
                 style="width:34px;height:34px;">
-            <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                 <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
             </svg>
-            <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                 <circle cx="12" cy="12" r="5"/>
                 <line x1="12" y1="1"  x2="12" y2="3"/>
