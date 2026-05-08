@@ -220,6 +220,21 @@ class QuizController extends Controller
             ->latest()
             ->firstOrFail();
 
-        return view('quiz.result', compact('hasil'));
+        // Ambil jawaban siswa beserta soalnya
+        $answers = SiswaAnswer::where('session_id', $hasil->session_id)
+            ->where('user_id', $user->id)
+            ->with('question.passage')
+            ->orderBy('question_id')
+            ->get()
+            ->keyBy('question_id'); // key by question_id untuk lookup mudah
+
+        // Ambil semua soal dari sesi ini
+        $questions = Question::with('passage')
+            ->where('paket', $hasil->session->paket)
+            ->whereHas('passage', fn($q) => $q->where('subject', $hasil->session->subject))
+            ->orderBy('order')
+            ->get();
+
+        return view('quiz.result', compact('hasil', 'answers', 'questions'));
     }
 }
