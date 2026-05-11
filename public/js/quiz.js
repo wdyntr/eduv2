@@ -1,5 +1,4 @@
 // public/js/quiz.js
-
 (function () {
     const saved     = localStorage.getItem('quiz-theme');
     const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
@@ -50,6 +49,7 @@ let answered  = 0;
 let selected  = {};
 let submitted = false;
 
+// ── PILIH JAWABAN ──
 function selectOption(btn, questionId, answer) {
     if (submitted) return;
 
@@ -59,7 +59,7 @@ function selectOption(btn, questionId, answer) {
 
     const isNew = !selected[questionId];
     selected[questionId] = answer;
-    saveAnswers();
+    saveAnswers(); // simpan ke localStorage
 
     if (isNew) {
         answered++;
@@ -92,6 +92,32 @@ function selectOption(btn, questionId, answer) {
     }
 }
 
+// ── PERIODIC SYNC — kirim ke server setiap 60 detik ──
+let syncInterval = null;
+
+async function syncAnswersToServer() {
+    if (submitted || Object.keys(selected).length === 0) return;
+
+    try {
+        await fetch(SAVE_ANSWERS_URL, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body   : JSON.stringify({
+                session_id: SESSION_ID,
+                answers:    selected,
+            })
+        });
+    } catch (e) {
+        // Gagal sync — tidak masalah, coba lagi 60 detik berikutnya
+        console.warn('Sync jawaban gagal, akan dicoba lagi.');
+    }
+}
+
+function startSync() {
+    syncInterval = setInterval(syncAnswersToServer, 60000); // setiap 60 detik
+}
+
+// ── SUBMIT MANUAL ──
 async function submitQuiz() {
     if (submitted) return;
     if (Object.keys(selected).length < TOTAL) {
@@ -100,29 +126,85 @@ async function submitQuiz() {
     }
 
     submitted = true;
+    clearInterval(syncInterval); // stop periodic sync
+
     const btn = document.getElementById('btn-finish');
-    btn.textContent  = 'Memproses...';
+    btn.textContent   = 'Memproses...';
     btn.style.opacity = '0.6';
 
-    const response = await fetch(SUBMIT_URL, {
-        method : 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-        body   : JSON.stringify({ answers: selected, session_id: SESSION_ID }) // ← tambah session_id
-    });
+    // Sync sekali lagi sebelum submit final
+    await syncAnswersToServer();
 
-    if (!response.ok) {
-        const err = await response.json();
-        alert(err.error ?? 'Terjadi kesalahan, coba lagi.');
-        submitted        = false;
-        btn.textContent  = 'Kumpulkan Jawaban';
-        btn.style.opacity = '1';
+    try {
+        const response = await fetch(SUBMIT_URL, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body   : JSON.stringify({ answers: selected, session_id: SESSION_ID })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok && !data.already) {
+            alert(data.error ?? 'Terjadi kesalahan, coba lagi.');
+            submitted         = false;
+            btn.textContent   = 'Kumpulkan Jawaban';
+            btn.style.opacity = '1';
+            startSync(); // hidupkan lagi sync
+            return;
+        }
+
+        clearAnswers();
+        clearInterval(timerInterval);
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+
+    } catch (e) {
+        clearAnswers();
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+    }
+}
+
+// ── AUTO SUBMIT (waktu habis) ──
+async function autoSubmit() {
+    if (submitted) return;
+    submitted = true;
+    clearInterval(syncInterval);
+
+    const btn = document.getElementById('btn-finish');
+    if (btn) btn.textContent = 'Waktu habis...';
+
+    // Ambil dari localStorage jika selected kosong
+    if (Object.keys(selected).length === 0) {
+        const saved = loadAnswers();
+        if (saved && Object.keys(saved).length > 0) selected = saved;
+    }
+
+    // Sync dulu ke server
+    await syncAnswersToServer();
+
+    if (Object.keys(selected).length === 0) {
+        // Tidak ada jawaban — scheduler yang handle
+        clearAnswers();
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
         return;
     }
 
-    clearAnswers();
-    localStorage.removeItem('quiz-end-time-' + SESSION_ID);
-    clearInterval(timerInterval);
-    window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+    try {
+        const response = await fetch(SUBMIT_URL, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body   : JSON.stringify({ answers: selected, session_id: SESSION_ID })
+        });
+
+        // Apapun hasilnya → ke result
+        clearAnswers();
+        clearInterval(timerInterval);
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+
+    } catch (e) {
+        // Network error → ke result, scheduler yang handle
+        clearAnswers();
+        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+    }
 }
 
 function scrollToQuestion(questionId) {
@@ -133,87 +215,55 @@ function scrollToQuestion(questionId) {
 
 // ── TIMER ──
 let timerInterval = null;
-let timeLeft      = 0;
+
+// Simpan deadline sebagai timestamp absolut
+const DEADLINE_TS = Date.now() + (DURASI * 1000);
 
 function startTimer() {
     if (typeof DURASI === 'undefined' || !DURASI) return;
 
-    timeLeft = DURASI; // ← langsung dari server, sudah akurat
-    updateTimerDisplay(timeLeft);
+    updateTimerFromDeadline(); // tampilkan langsung sebelum interval pertama
 
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimerDisplay(timeLeft);
+    timerInterval = setInterval(updateTimerFromDeadline, 1000);
+}
 
-        if (timeLeft === 300) {
-            document.getElementById('timer-wrap')?.classList.add('timer-warning');
-            document.getElementById('timer-float')?.classList.add('timer-warning');
-        }
-        if (timeLeft === 60) {
-            document.getElementById('timer-wrap')?.classList.add('timer-danger');
-            document.getElementById('timer-float')?.classList.add('timer-danger');
-        }
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            autoSubmit();
-        }
-    }, 1000);
+function updateTimerFromDeadline() {
+    // Hitung sisa waktu dari waktu sekarang vs deadline
+    // Ini akurat meski tab tidak aktif / setInterval terlambat
+    const remaining = Math.max(0, Math.floor((DEADLINE_TS - Date.now()) / 1000));
+
+    updateTimerDisplay(remaining);
+
+    // Warning state
+    if (remaining <= 300 && remaining > 60) {
+        document.getElementById('timer-wrap')?.classList.add('timer-warning');
+        document.getElementById('timer-float')?.classList.add('timer-warning');
+        document.getElementById('timer-wrap')?.classList.remove('timer-danger');
+        document.getElementById('timer-float')?.classList.remove('timer-danger');
+    }
+    if (remaining <= 60) {
+        document.getElementById('timer-wrap')?.classList.remove('timer-warning');
+        document.getElementById('timer-float')?.classList.remove('timer-warning');
+        document.getElementById('timer-wrap')?.classList.add('timer-danger');
+        document.getElementById('timer-float')?.classList.add('timer-danger');
+    }
+    if (remaining <= 0) {
+        clearInterval(timerInterval);
+        autoSubmit();
+    }
 }
 
 function updateTimerDisplay(seconds) {
-    const m    = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const h    = Math.floor(seconds / 3600);
+    const m    = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
     const s    = (seconds % 60).toString().padStart(2, '0');
-    const time = m + ':' + s;
+    const time = h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
 
     const el      = document.getElementById('timer-text');
     const elFloat = document.getElementById('timer-text-float');
     if (el)      el.textContent      = time;
     if (elFloat) elFloat.textContent = time;
 }
-
-async function autoSubmit() {
-    if (submitted) return;
-    submitted = true;
-
-    const btn = document.getElementById('btn-finish');
-    if (btn) btn.textContent = 'Waktu habis...';
-
-    // Jika selected kosong (misal reload tepat saat waktu habis),
-    // coba ambil dari localStorage sebelum menyerah
-    if (Object.keys(selected).length === 0) {
-        const saved = loadAnswers();
-        if (saved && Object.keys(saved).length > 0) {
-            selected = saved;
-        }
-    }
-
-    // Jika masih kosong sama sekali — tidak ada yang bisa disubmit
-    if (Object.keys(selected).length === 0) {
-        clearAnswers();
-        localStorage.removeItem('quiz-end-time-' + SESSION_ID);
-        window.location.href = QUIZ_INDEX_URL;
-        return;
-    }
-
-    const response = await fetch(SUBMIT_URL, {
-        method : 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-        body   : JSON.stringify({ answers: selected, session_id: SESSION_ID })
-    });
-
-    if (response.ok) {
-        clearAnswers();
-        localStorage.removeItem('quiz-end-time-' + SESSION_ID);
-        clearInterval(timerInterval);
-        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
-    } else {
-        // Jika sudah submit sebelumnya (double submit), langsung ke result
-        clearAnswers();
-        localStorage.removeItem('quiz-end-time-' + SESSION_ID);
-        window.location.href = RESULT_URL + '?session=' + SESSION_ID;
-    }
-}
-
 // ── ANSWER STORAGE ──
 const ANSWER_KEY = 'quiz-answers-' + SESSION_ID;
 
@@ -266,8 +316,8 @@ function restoreAnswers() {
     }
 
     if (answered >= TOTAL) {
-        const finish           = document.getElementById('btn-finish');
-        finish.style.opacity   = '1';
+        const finish = document.getElementById('btn-finish');
+        finish.style.opacity     = '1';
         finish.style.pointerEvents = 'auto';
     }
 }
@@ -284,9 +334,10 @@ function renderMath() {
     });
 }
 
-// ── INIT — urutan ini penting!
-restoreAnswers(); // ← DULU restore jawaban dari localStorage
-startTimer();     // ← BARU mulai timer (supaya autoSubmit punya data)
+// ── INIT ──
+restoreAnswers();
+startTimer();
+startSync(); // ← mulai periodic sync
 
 if (typeof renderMathInElement !== 'undefined') {
     renderMath();

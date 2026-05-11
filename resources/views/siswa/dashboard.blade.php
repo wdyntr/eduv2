@@ -88,13 +88,16 @@
         grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
         gap:0;
     ">
+        {{-- GANTI kolom Mata Pelajaran ──────────────────────── --}}
         <div style="padding:16px 20px;border-right:1px solid var(--border);">
             <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;
                         letter-spacing:1px;margin-bottom:4px;">Mata Pelajaran</div>
-            <div style="font-weight:500;font-size:14px;text-transform:capitalize;">
-                {{ str_replace('_', ' ', $session->subject) }}
+            <div style="font-weight:500;font-size:13px;line-height:1.5;">
+                {{ $sessionSubjects[$session->id] ?? 'Semua Mapel' }}
             </div>
         </div>
+        {{-- ─────────────────────────────────────────────────── --}}
+
         <div style="padding:16px 20px;border-right:1px solid var(--border);">
             <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;
                         letter-spacing:1px;margin-bottom:4px;">Durasi</div>

@@ -15,9 +15,8 @@
         <thead>
             <tr>
                 <th>Paket</th>
-                <th>Mapel</th>
+                <th>Mata Pelajaran</th>
                 <th>Kelas</th>
-                <th>Durasi</th>
                 <th>Mulai</th>
                 <th>Selesai</th>
                 <th>Status</th>
@@ -28,9 +27,11 @@
             @forelse($sessions as $session)
             <tr>
                 <td><strong>{{ $session->paket }}</strong></td>
-                <td>{{ str_replace('_', ' ', $session->subject) }}</td>
+                <td style="font-size:12px;color:var(--text-muted);">
+                    {{-- Ambil subject unik dari soal paket ini --}}
+                    {{ $session->subjectLabel() }}
+                </td>
                 <td>{{ $session->kelas ?? 'Semua' }}</td>
-                <td>{{ $session->durasi }} menit</td>
                 <td>{{ $session->started_at?->format('d/m/Y H:i') ?? '-' }}</td>
                 <td>{{ $session->ended_at?->format('d/m/Y H:i') ?? '-' }}</td>
                 <td>
@@ -63,7 +64,13 @@
                 </td>
             </tr>
             @empty
-            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">Belum ada sesi.</td></tr>
+
+            {{-- di baris empty, ganti colspan 8 → 7 --}}
+            <tr>
+                <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">
+                    Belum ada sesi.
+                </td>
+            </tr>
             @endforelse
         </tbody>
     </table>
@@ -71,7 +78,9 @@
 
 {{ $sessions->links('admin.partials.pagination') }}
 
-<div class="modal-overlay" id="modal-add-session" onclick="closeModalOutside(event,'modal-add-session')">
+{{-- Modal buat sesi --}}
+<div class="modal-overlay" id="modal-add-session"
+     onclick="closeModalOutside(event,'modal-add-session')">
     <div class="modal-box">
         <div class="modal-header">
             <h3>Buat Sesi Ujian</h3>
@@ -80,22 +89,43 @@
         <form method="POST" action="{{ route('admin.sessions.store') }}">
             @csrf
             <div class="form-grid">
-                <div class="form-group">
+                <div class="form-group" style="grid-column:1/-1;">
                     <label>Paket Soal *</label>
-                    <select name="paket" class="admin-select" required>
+                    <select name="paket" id="paket-select" class="admin-select" required
+                            onchange="updateSubjectPreview(this)">
+                        <option value="">— Pilih Paket —</option>
                         @foreach($pakets as $p)
-                            <option value="{{ $p }}">{{ $p }}</option>
+                            <option value="{{ $p['paket'] }}"
+                                    data-subjects="{{ $p['subjects']->implode(', ') }}"
+                                    data-total="{{ $p['total'] }}">
+                                {{ $p['paket'] }}
+                            </option>
                         @endforeach
                     </select>
+
+                    <div id="paket-preview" style="
+                        display:none;
+                        margin-top:10px;
+                        padding:10px 14px;
+                        background:var(--surface-2,rgba(255,255,255,.04));
+                        border:1px solid var(--border);
+                        border-radius:8px;
+                        font-size:13px;
+                        line-height:1.7;
+                    ">
+                        <div style="color:var(--text-dim);font-size:11px;letter-spacing:1px;
+                                    text-transform:uppercase;margin-bottom:4px;">Info Paket</div>
+                        <div>
+                            <span style="color:var(--text-muted);">Mata Pelajaran:</span>
+                            <strong id="preview-subjects" style="margin-left:6px;"></strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">Total Soal:</span>
+                            <strong id="preview-total" style="margin-left:6px;color:var(--gold);"></strong>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Mata Pelajaran *</label>
-                    <select name="subject" class="admin-select" required>
-                        <option value="matematika">Matematika</option>
-                        <option value="bahasa_inggris">Bahasa Inggris</option>
-                        <option value="bahasa_indonesia">Bahasa Indonesia</option>
-                    </select>
-                </div>
+
                 <div class="form-group">
                     <label>Kelas <small>(kosongkan = semua kelas)</small></label>
                     <select name="kelas" class="admin-select">
@@ -105,16 +135,59 @@
                         @endforeach
                     </select>
                 </div>
+
+                {{-- Informasi durasi (read-only) --}}
                 <div class="form-group">
-                    <label>Durasi (menit) *</label>
-                    <input type="number" name="durasi" value="90" min="5" max="300" class="admin-input" required>
+                    <label>Durasi</label>
+                    <div style="
+                        padding:10px 14px;
+                        background:var(--surface-2,rgba(255,255,255,.04));
+                        border:1px solid var(--border);
+                        border-radius:8px;
+                        font-size:14px;
+                        color:var(--gold);
+                        font-weight:500;
+                    ">
+                        ⏱ 3 jam (180 menit)
+                    </div>
                 </div>
+
             </div>
+
             <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
-                <button type="button" class="btn-ghost" onclick="closeModal('modal-add-session')">Batal</button>
+                <button type="button" class="btn-ghost"
+                        onclick="closeModal('modal-add-session')">Batal</button>
                 <button type="submit" class="btn-primary">Buat Sesi</button>
             </div>
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function updateSubjectPreview(select) {
+    const preview  = document.getElementById('paket-preview');
+    const subjects = document.getElementById('preview-subjects');
+    const total    = document.getElementById('preview-total');
+    const opt      = select.options[select.selectedIndex];
+
+    if (!select.value) {
+        preview.style.display = 'none';
+        return;
+    }
+
+    // Format label mata pelajaran
+    const rawSubjects = opt.dataset.subjects || '-';
+    const formatted   = rawSubjects
+        .split(',')
+        .map(s => s.trim().replace(/_/g, ' ')
+                    .replace(/\b\w/g, c => c.toUpperCase()))
+        .join(', ');
+
+    subjects.textContent = formatted || '-';
+    total.textContent    = (opt.dataset.total || '0') + ' soal';
+    preview.style.display = 'block';
+}
+</script>
 @endsection

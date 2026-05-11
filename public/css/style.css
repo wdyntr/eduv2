@@ -575,7 +575,7 @@ body {
   position: fixed;          /* ← ganti sticky → fixed */
   top: 68px;                /* ← tepat di bawah progress bar */
   left: calc((100vw - 980px) / 2 + 20px); /* ← rata kiri sesuai max-width wrapper */
-  width: 180px;
+  width: 220px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -596,7 +596,7 @@ body {
 
 .question-nav-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
 }
 
@@ -648,7 +648,7 @@ body {
 .screen-quiz {
   flex: 1;
   min-width: 0;
-  margin-left: 204px; /* ← 180px nav + 24px gap */
+  margin-left: 244px; /* ← 180px nav + 24px gap */
 }
 
 
@@ -1168,16 +1168,16 @@ body {
   }
 
   .question-nav {
-    width: 148px;
+    width: 185px;
     left: calc((100vw - 740px) / 2 + 16px);
   }
 
   .question-nav-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .screen-quiz {
-    margin-left: 164px; /* 148px + 16px gap */
+    margin-left: 201px; /* 148px + 16px gap */
   }
 
   .question-text {

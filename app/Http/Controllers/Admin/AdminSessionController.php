@@ -7,37 +7,64 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\QuizSession;
 use App\Models\Question;
-use App\Models\QuizHasil;   // ← bukan QuizResult
+use App\Models\QuizHasil;
 
-// app/Http/Controllers/Admin/AdminSessionController.php
 class AdminSessionController extends Controller
 {
     public function index()
     {
         $sessions = QuizSession::with('creator')
-                               ->latest()->paginate(15);
+                               ->latest()
+                               ->paginate(15);
 
-        // Ambil daftar paket yang tersedia dari tabel questions
-        $pakets = Question::distinct()->pluck('paket')->sort();
+        // Ambil daftar paket beserta mata pelajaran yang ada di tiap paket
+        $pakets = Question::with('passage')
+            ->select('paket', 'passage_id')
+            ->get()
+            ->groupBy('paket')
+            ->map(function ($questions, $paket) {
+                // Kumpulkan subject unik dari passage; soal tanpa passage dilewati
+                $subjects = $questions
+                    ->filter(fn($q) => $q->passage)
+                    ->pluck('passage.subject')
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                return [
+                    'paket'    => $paket,
+                    'subjects' => $subjects,
+                    'total'    => $questions->count(),
+                ];
+            })
+            ->sortKeys()
+            ->values();
 
         $kelasList = User::where('role', 'siswa')
                          ->whereNotNull('kelas')
-                         ->distinct()->pluck('kelas')->sort();
+                         ->distinct()
+                         ->pluck('kelas')
+                         ->sort()
+                         ->values();
 
         return view('admin.sessions.index', compact('sessions', 'pakets', 'kelasList'));
     }
 
     public function store(Request $request)
     {
-        // AdminSessionController@store — ganti duration_minutes → durasi
         $data = $request->validate([
-            'paket'   => 'required|string',
-            'subject' => 'required|in:matematika,bahasa_inggris,bahasa_indonesia',
-            'kelas'   => 'nullable|string',
-            'durasi'  => 'required|integer|min:5|max:300',  // ← sesuai kolom DB
+            'paket' => 'required|string',
+            'kelas' => 'nullable|string',
+            // 'durasi' ← hapus dari sini
         ]);
 
+        $exists = Question::where('paket', $data['paket'])->exists();
+        if (!$exists) {
+            return back()->withErrors(['paket' => 'Paket tidak ditemukan.']);
+        }
+
         $data['created_by'] = auth()->id();
+        $data['durasi']     = 180; // ← hardcode 3 jam
 
         QuizSession::create($data);
         return back()->with('success', 'Sesi ujian dibuat.');
@@ -45,8 +72,8 @@ class AdminSessionController extends Controller
 
     public function toggle(QuizSession $session)
     {
-        // Nonaktifkan semua sesi lain dulu untuk kelas yang sama
         if (!$session->is_active) {
+            // Nonaktifkan sesi lain yang sedang aktif untuk kelas yang sama
             QuizSession::where('kelas', $session->kelas)
                        ->where('is_active', true)
                        ->update(['is_active' => false, 'ended_at' => now()]);
@@ -54,7 +81,7 @@ class AdminSessionController extends Controller
             $session->update([
                 'is_active'  => true,
                 'started_at' => now(),
-                'ended_at'   => now()->addMinutes($session->duration_minutes),
+                'ended_at'   => now()->addMinutes($session->durasi), // ← durasi, bukan duration_minutes
             ]);
         } else {
             $session->update(['is_active' => false, 'ended_at' => now()]);
@@ -63,16 +90,13 @@ class AdminSessionController extends Controller
         return back()->with('success', 'Status sesi diperbarui.');
     }
 
-   public function destroy(QuizSession $session)
+    public function destroy(QuizSession $session)
     {
-        // Hapus data terkait sebelum menghapus sesi
-        $session->results()->delete();   // quiz_hasil
-        $session->answers()->delete();   // siswa_answers
-
-        // siswa_quiz_starts (tambahkan relasi jika belum ada)
+        $session->results()->delete();
+        $session->answers()->delete();
         $session->starts()->delete();
-
         $session->delete();
+
         return back()->with('success', 'Sesi dihapus.');
-   }
+    }
 }

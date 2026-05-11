@@ -24,6 +24,8 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     Route::get('/quiz/mulai',   [QuizController::class, 'index'])->name('quiz.start');
     Route::post('/quiz/submit', [QuizController::class, 'submit'])->name('quiz.submit');
     Route::get('/quiz/result',  [QuizController::class, 'result'])->name('quiz.result');
+    Route::post('/quiz/save-answers', [QuizController::class, 'saveAnswersBulk'])->name('quiz.save-answers'); // ← tambah ini
+
 });
 
 // ── ADMIN ─────────────────────────────────────

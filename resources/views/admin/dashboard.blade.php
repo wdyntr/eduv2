@@ -36,7 +36,7 @@
                 <thead>
                     <tr>
                         <th>Paket</th>
-                        <th>Mapel</th>
+                        <th>Kelas</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -45,7 +45,7 @@
                     <tr>
                         <td><strong>{{ $s->paket }}</strong></td>
                         <td style="font-size:12px;color:var(--text-muted);">
-                            {{ str_replace('_', ' ', $s->subject) }}
+                            {{ $s->kelas ?? 'Semua' }}
                         </td>
                         <td>
                             <span class="badge {{ $s->is_active ? 'badge-success' : 'badge-muted' }}">

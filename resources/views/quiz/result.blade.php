@@ -248,15 +248,80 @@
             <p class="result-desc">{{ $descs[$idx] }}</p>
         </div>
 
+        {{-- Breakdown Per Mata Pelajaran --}}
+        <div class="result-breakdown" style="margin-bottom:32px;">
+            <p class="breakdown-title">Nilai Per Mata Pelajaran</p>
+
+            @foreach($subjectBreakdown as $mapel)
+            @php
+                $pctMapel = $mapel['total'] > 0
+                    ? round(($mapel['correct'] / $mapel['total']) * 100)
+                    : 0;
+                $barColor = $pctMapel >= 75
+                    ? 'var(--success)'
+                    : ($pctMapel >= 50 ? 'var(--gold)' : '#e05555');
+            @endphp
+            <div style="padding:14px 0;border-bottom:1px solid var(--border);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:14px;font-weight:500;color:var(--text);">
+                        {{ $mapel['label'] }}
+                    </span>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:12px;color:var(--text-muted);">
+                            {{ $mapel['correct'] }} / {{ $mapel['total'] }} benar
+                        </span>
+                        <span style="
+                            font-size:15px;
+                            font-weight:600;
+                            color:{{ $barColor }};
+                            min-width:44px;
+                            text-align:right;
+                        ">
+                            {{ $pctMapel }}%
+                        </span>
+                    </div>
+                </div>
+                {{-- Progress bar --}}
+                <div style="
+                    height:6px;
+                    border-radius:100px;
+                    background:var(--surface2, rgba(255,255,255,0.07));
+                    overflow:hidden;
+                ">
+                    <div style="
+                        height:100%;
+                        border-radius:100px;
+                        width:{{ $pctMapel }}%;
+                        background:{{ $barColor }};
+                        transition:width .4s ease;
+                    "></div>
+                </div>
+                <div style="margin-top:6px;font-size:12px;color:var(--text-dim);">
+                    Poin diperoleh: <strong style="color:var(--gold);">{{ $mapel['points'] }}</strong>
+                </div>
+            </div>
+            @endforeach
+
+            {{-- Total keseluruhan --}}
+            <div style="
+                display:flex;justify-content:space-between;align-items:center;
+                padding-top:14px;
+            ">
+                <span style="font-size:13px;color:var(--text-muted);">Total Keseluruhan</span>
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <span style="font-size:13px;color:var(--text-muted);">
+                        {{ $hasil->correct_count }} / {{ $hasil->total_questions }} benar
+                    </span>
+                    <span style="font-size:18px;font-weight:700;color:var(--gold);">
+                        {{ $hasil->score }} poin
+                    </span>
+                </div>
+            </div>
+        </div>
+
         {{-- Ringkasan Ujian --}}
         <div class="result-breakdown" style="margin-bottom:32px;">
             <p class="breakdown-title">Ringkasan Ujian</p>
-            <div class="breakdown-item">
-                <span class="q-text">Mata Pelajaran</span>
-                <span class="q-status" style="color:var(--gold);">
-                    {{ ucfirst(str_replace('_', ' ', $hasil->session->subject ?? '-')) }}
-                </span>
-            </div>
             <div class="breakdown-item">
                 <span class="q-text">Paket Soal</span>
                 <span class="q-status" style="color:var(--gold);">{{ $hasil->session->paket ?? '-' }}</span>
@@ -279,7 +344,7 @@
             </div>
             <div class="breakdown-item">
                 <span class="q-text">Dikumpulkan</span>
-                <span class="q-status" style="color:var(--text-muted); font-size:12px;">
+                <span class="q-status" style="color:var(--text-muted);font-size:12px;">
                     {{ $hasil->submitted_at?->format('d M Y, H:i') ?? '-' }}
                 </span>
             </div>
@@ -355,7 +420,7 @@
                             @endphp
                             <div class="{{ $classes }}">
                                 <span class="opt-key">{{ $opt }}</span>
-                                <span class="opt-label">{{ $question->$col }}</span>
+                                <span class="opt-label">{!! $question->$col !!}</span>
                                 <span class="opt-tag">
                                     @if($isPilihan && $isBenar)
                                         ✓ Jawaban Anda &amp; Kunci

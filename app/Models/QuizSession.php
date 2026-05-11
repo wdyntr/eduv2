@@ -1,16 +1,13 @@
 <?php
-// app/Models/QuizSession.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class QuizSession extends Model
 {
-    protected $table = 'quiz_sessions';
-
     protected $fillable = [
-        'paket', 'subject', 'kelas',
-        'durasi',           // ← sesuai nama kolom di DB
+        'paket', 'kelas', 'durasi',
         'started_at', 'ended_at',
         'created_by', 'is_active',
     ];
@@ -21,6 +18,7 @@ class QuizSession extends Model
         'is_active'  => 'boolean',
     ];
 
+    // ── Relasi ──────────────────────────────────────────────
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -31,15 +29,46 @@ class QuizSession extends Model
         return $this->hasMany(QuizHasil::class, 'session_id');
     }
 
-    // app/Models/QuizSession.php
     public function answers()
     {
         return $this->hasMany(SiswaAnswer::class, 'session_id');
     }
 
-    // app/Models/QuizSession.php
     public function starts()
     {
         return $this->hasMany(SiswaQuizStart::class, 'session_id');
+    }
+
+    // ── Helper ──────────────────────────────────────────────
+
+    /**
+     * Label mata pelajaran yang ada dalam paket ini.
+     * Dipakai di tabel sesi agar tidak ada kolom subject lagi.
+     */
+    public function subjectLabel(): string
+    {
+        $subjects = Question::with('passage')
+            ->where('paket', $this->paket)
+            ->get()
+            ->filter(fn($q) => $q->passage)
+            ->pluck('passage.subject')
+            ->unique()
+            ->map(fn($s) => str_replace('_', ' ', ucwords($s, '_')))
+            ->sort()
+            ->values();
+
+        return $subjects->isNotEmpty()
+            ? $subjects->implode(', ')
+            : 'Semua Mapel';
+    }
+
+    /**
+     * Soal-soal yang termasuk dalam sesi ini (semua mapel, filter paket saja).
+     */
+    public function questions()
+    {
+        return Question::where('paket', $this->paket)
+                       ->orderBy('order')
+                       ->get();
     }
 }

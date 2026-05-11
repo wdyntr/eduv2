@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Question;
@@ -11,6 +12,15 @@ use Illuminate\Support\Facades\Auth;
 
 class QuizController extends Controller
 {
+    private const SUBJECT_ORDER = [
+        'bahasa_indonesia' => 1,
+        'bahasa_inggris'   => 2,
+        'matematika'       => 3,
+    ];
+
+    // ══════════════════════════════════════
+    //  DASHBOARD SISWA
+    // ══════════════════════════════════════
     public function dashboard()
     {
         $user = Auth::user();
@@ -26,9 +36,26 @@ class QuizController extends Controller
             ->pluck('session_id')
             ->toArray();
 
-        return view('siswa.dashboard', compact('activeSessions', 'user', 'submittedIds'));
+        $sessionSubjects = $activeSessions->mapWithKeys(function ($session) {
+            $subjects = \App\Models\Question::with('passage')
+                ->where('paket', $session->paket)
+                ->get()
+                ->filter(fn($q) => $q->passage)
+                ->pluck('passage.subject')
+                ->unique()
+                ->map(fn($s) => str_replace('_', ' ', ucwords($s, '_')))
+                ->sort()
+                ->values();
+
+            return [$session->id => $subjects->implode(', ') ?: 'Semua Mapel'];
+        });
+
+        return view('siswa.dashboard', compact('activeSessions', 'user', 'submittedIds', 'sessionSubjects'));
     }
 
+    // ══════════════════════════════════════
+    //  HALAMAN QUIZ
+    // ══════════════════════════════════════
     public function index(Request $request)
     {
         $user      = Auth::user();
@@ -43,7 +70,14 @@ class QuizController extends Controller
             ? $query->where('id', $sessionId)->firstOrFail()
             : $query->firstOrFail();
 
-        // Cek sudah submit
+        // ── Auto-close jika ended_at sudah lewat ──
+        if ($activeSession->ended_at && now()->gt($activeSession->ended_at)) {
+            $activeSession->update(['is_active' => false]);
+            return redirect()->route('quiz.dashboard')
+                ->with('error', 'Sesi ujian telah berakhir.');
+        }
+
+        // ── Cek sudah submit ──
         $sudahSubmit = QuizHasil::where('session_id', $activeSession->id)
             ->where('user_id', $user->id)
             ->exists();
@@ -61,28 +95,25 @@ class QuizController extends Controller
             ]
         );
 
-        // ── Cek apakah waktu sudah habis ──
+        // ── Cek apakah waktu siswa sudah habis ──
         if (now()->gt($start->deadline_at)) {
-            // Force submit jawaban yang sudah ada
             $this->forceSubmit($user, $activeSession);
             return redirect()->route('quiz.result', ['session' => $activeSession->id]);
         }
 
         $questions      = Question::with('passage')
             ->where('paket', $activeSession->paket)
-            ->whereHas('passage', fn($q) => $q->where('subject', $activeSession->subject))
-            ->orderBy('order')
+            ->orderedBySubject()
             ->get();
 
         $totalQuestions = $questions->count();
         $totalPoints    = $questions->sum('points');
 
         if ($totalQuestions === 0) {
-            return redirect()->route('quiz.index')
+            return redirect()->route('quiz.dashboard')
                 ->with('error', 'Soal untuk sesi ini belum tersedia.');
         }
 
-        // Sisa waktu dalam detik
         $sisaDetik = max(0, (int) now()->diffInSeconds($start->deadline_at));
 
         return view('quiz.index', compact(
@@ -90,78 +121,145 @@ class QuizController extends Controller
             'totalQuestions',
             'totalPoints',
             'activeSession',
-            'sisaDetik',   // ← kirim sisa waktu ke blade
+            'sisaDetik',
         ));
     }
 
+    // ══════════════════════════════════════
+    //  SAVE ANSWERS BULK (periodic sync)
+    // ══════════════════════════════════════
+    public function saveAnswersBulk(Request $request)
+    {
+        $user      = Auth::user();
+        $sessionId = $request->input('session_id');
+        $answers   = $request->input('answers', []);
+
+        if (empty($answers)) {
+            return response()->json(['ok' => true, 'saved' => 0]);
+        }
+
+        $session = QuizSession::where('id', $sessionId)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
+            })->first();
+
+        if (!$session) {
+            return response()->json(['ok' => false, 'error' => 'Sesi tidak ditemukan.']);
+        }
+
+        // Cek deadline siswa
+        $start = SiswaQuizStart::where('user_id', $user->id)
+            ->where('session_id', $session->id)
+            ->first();
+
+        if (!$start) {
+            return response()->json(['ok' => false, 'error' => 'Data start tidak ditemukan.']);
+        }
+
+        // Toleransi 30 detik setelah deadline
+        if (now()->gt($start->deadline_at->addSeconds(30))) {
+            return response()->json(['ok' => false, 'error' => 'Waktu telah habis.']);
+        }
+
+        // Sudah submit? Tidak perlu sync lagi
+        if (QuizHasil::where('session_id', $session->id)->where('user_id', $user->id)->exists()) {
+            return response()->json(['ok' => true, 'already_submitted' => true]);
+        }
+
+        $saved = 0;
+        foreach ($answers as $questionId => $answer) {
+            $question = Question::find($questionId);
+            if (!$question) continue;
+
+            $answer = strtoupper($answer);
+            if (!in_array($answer, ['A', 'B', 'C', 'D', 'E'])) continue;
+
+            SiswaAnswer::updateOrCreate(
+                [
+                    'session_id'  => $session->id,
+                    'user_id'     => $user->id,
+                    'question_id' => $questionId,
+                ],
+                [
+                    'answer'      => $answer,
+                    'is_correct'  => $answer === $question->correct_answer,
+                    'answered_at' => now(),
+                ]
+            );
+            $saved++;
+        }
+
+        return response()->json(['ok' => true, 'saved' => $saved]);
+    }
+
+    // ══════════════════════════════════════
+    //  SUBMIT FINAL
+    // ══════════════════════════════════════
     public function submit(Request $request)
     {
         $user      = Auth::user();
         $sessionId = $request->input('session_id');
 
-        $activeSession = QuizSession::where('is_active', true)
+        $activeSession = QuizSession::where('id', $sessionId)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
-            })
-            ->where('id', $sessionId)
-            ->first();
+            })->first();
 
         if (!$activeSession) {
             return response()->json(['error' => 'Sesi tidak ditemukan.'], 422);
         }
 
-        // Cegah double submit
-        if (QuizHasil::where('session_id', $activeSession->id)->where('user_id', $user->id)->exists()) {
-            return response()->json(['error' => 'Anda sudah mengumpulkan jawaban.'], 422);
+        // Double submit — kembalikan ok agar JS redirect ke result
+        if (QuizHasil::where('session_id', $activeSession->id)
+                      ->where('user_id', $user->id)->exists()) {
+            return response()->json(['already' => true]);
         }
 
-        // ── Validasi waktu dari server ──
         $start = SiswaQuizStart::where('user_id', $user->id)
             ->where('session_id', $activeSession->id)
             ->first();
 
         if (!$start) {
-            return response()->json(['error' => 'Sesi tidak ditemukan.'], 422);
-        }
-
-        // Toleransi 10 detik untuk keterlambatan jaringan
-        if (now()->gt($start->deadline_at->addSeconds(10))) {
-            // Waktu sudah habis → tetap proses jawaban yang masuk
-            // tapi tidak perlu return error, lanjutkan proses
+            return response()->json(['error' => 'Data sesi tidak ditemukan.'], 422);
         }
 
         $answers      = $request->input('answers', []);
-        $results      = [];
         $correctCount = 0;
         $earnedPoints = 0;
+        $results      = [];
         $now          = now();
 
         foreach ($answers as $questionId => $answer) {
-            $question  = Question::find($questionId);
+            $question = Question::find($questionId);
             if (!$question) continue;
 
-            $isCorrect = strtoupper($answer) === $question->correct_answer;
+            $answer    = strtoupper($answer);
+            $isCorrect = $answer === $question->correct_answer;
 
             if ($isCorrect) {
                 $correctCount++;
                 $earnedPoints += $question->points;
             }
 
-            SiswaAnswer::create([
-                'session_id'  => $activeSession->id,
-                'user_id'     => $user->id,
-                'question_id' => $questionId,
-                'answer'      => strtoupper($answer),
-                'is_correct'  => $isCorrect,
-                'answered_at' => $now,
-            ]);
+            // updateOrCreate — aman jika sudah tersync via saveAnswersBulk
+            SiswaAnswer::updateOrCreate(
+                [
+                    'session_id'  => $activeSession->id,
+                    'user_id'     => $user->id,
+                    'question_id' => $questionId,
+                ],
+                [
+                    'answer'      => $answer,
+                    'is_correct'  => $isCorrect,
+                    'answered_at' => $now,
+                ]
+            );
 
             $results[] = [
                 'question_id'    => (int) $questionId,
-                'student_answer' => strtoupper($answer),
+                'student_answer' => $answer,
                 'correct_answer' => $question->correct_answer,
                 'is_correct'     => $isCorrect,
-                'feedback'       => $isCorrect ? 'Jawaban kamu benar!' : 'Jawaban kurang tepat.',
             ];
         }
 
@@ -182,15 +280,16 @@ class QuizController extends Controller
         ]);
     }
 
-    // ── Force submit dari server (waktu habis) ──
+    // ══════════════════════════════════════
+    //  FORCE SUBMIT (dari server)
+    // ══════════════════════════════════════
     private function forceSubmit($user, $activeSession)
     {
-        // Cek sudah submit
-        if (QuizHasil::where('session_id', $activeSession->id)->where('user_id', $user->id)->exists()) {
+        if (QuizHasil::where('session_id', $activeSession->id)
+                      ->where('user_id', $user->id)->exists()) {
             return;
         }
 
-        // Ambil jawaban yang sudah ada di siswa_answers (jika ada)
         $existingAnswers = SiswaAnswer::where('session_id', $activeSession->id)
             ->where('user_id', $user->id)
             ->get();
@@ -209,6 +308,9 @@ class QuizController extends Controller
         ]);
     }
 
+    // ══════════════════════════════════════
+    //  HASIL
+    // ══════════════════════════════════════
     public function result(Request $request)
     {
         $user      = Auth::user();
@@ -220,21 +322,33 @@ class QuizController extends Controller
             ->latest()
             ->firstOrFail();
 
-        // Ambil jawaban siswa beserta soalnya
         $answers = SiswaAnswer::where('session_id', $hasil->session_id)
             ->where('user_id', $user->id)
             ->with('question.passage')
             ->orderBy('question_id')
             ->get()
-            ->keyBy('question_id'); // key by question_id untuk lookup mudah
+            ->keyBy('question_id');
 
-        // Ambil semua soal dari sesi ini
         $questions = Question::with('passage')
             ->where('paket', $hasil->session->paket)
-            ->whereHas('passage', fn($q) => $q->where('subject', $hasil->session->subject))
-            ->orderBy('order')
+            ->orderedBySubject()
             ->get();
 
-        return view('quiz.result', compact('hasil', 'answers', 'questions'));
+        $subjectOrder = ['bahasa_indonesia', 'bahasa_inggris', 'matematika'];
+
+        $subjectBreakdown = $answers
+            ->groupBy(fn($a) => $a->question->passage?->subject ?? 'lainnya')
+            ->map(fn($group, $subject) => [
+                'label'   => ucwords(str_replace('_', ' ', $subject)),
+                'correct' => $group->where('is_correct', true)->count(),
+                'total'   => $group->count(),
+                'points'  => $group->where('is_correct', true)
+                                   ->sum(fn($a) => $a->question->points ?? 1),
+            ])
+            ->sortBy(fn($v, $k) => array_search($k, $subjectOrder))
+            ->values();
+
+        return view('quiz.result', compact('hasil', 'answers', 'questions', 'subjectBreakdown'));
     }
 }
+

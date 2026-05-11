@@ -59,14 +59,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 
 <script>
-    const TOTAL          = {{ $totalQuestions }};
-    const SUBMIT_URL     = '{{ route("quiz.submit") }}';
-    const RESULT_URL     = '{{ route("quiz.result") }}';
-    const QUIZ_INDEX_URL = '{{ route("quiz.index") }}';
-    const CSRF           = document.querySelector('meta[name="csrf-token"]').content;
-    const DURASI         = {{ $sisaDetik }};   // ← sisa waktu dari server, bukan durasi penuh
-    const SESSION_ID     = '{{ $activeSession->id }}';
-</script>
-<script src="{{ asset('js/quiz.js') }}"></script>
+    const TOTAL              = {{ $totalQuestions }};
+    const SUBMIT_URL         = '{{ route("quiz.submit") }}';
+    const SAVE_ANSWERS_URL   = '{{ route("quiz.save-answers") }}'; {{-- ← tambah ini --}}
+    const RESULT_URL         = '{{ route("quiz.result") }}';
+    const QUIZ_INDEX_URL     = '{{ route("quiz.index") }}';
+    const CSRF               = document.querySelector('meta[name="csrf-token"]').content;
+    const DURASI             = {{ $sisaDetik }};
+    const SESSION_ID         = '{{ $activeSession->id }}';
+</script><script src="{{ asset('js/quiz.js') }}"></script>
 </body>
 </html>

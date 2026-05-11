@@ -44,7 +44,7 @@
                             data-q="{{ $question->id }}"
                             data-opt="{{ $opt }}">
                         <span class="option-key">{{ $opt }}</span>
-                        <span class="option-label">{{ $question->$col }}</span>
+                        <span class="option-label">{!! $question->$col !!}</span>
                     </button>
                     @endif
                 @endforeach
