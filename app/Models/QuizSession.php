@@ -12,10 +12,12 @@ class QuizSession extends Model
         'created_by', 'is_active',
     ];
 
+    // app/Models/QuizSession.php
     protected $casts = [
+        'durasi'     => 'integer',
+        'is_active'  => 'boolean',
         'started_at' => 'datetime',
         'ended_at'   => 'datetime',
-        'is_active'  => 'boolean',
     ];
 
     // ── Relasi ──────────────────────────────────────────────
