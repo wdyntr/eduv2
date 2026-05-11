@@ -265,7 +265,7 @@ function updateTimerDisplay(seconds) {
     if (elFloat) elFloat.textContent = time;
 }
 // ── ANSWER STORAGE ──
-const ANSWER_KEY = 'quiz-answers-' + SESSION_ID;
+const ANSWER_KEY = 'quiz-answers-' + USER_ID + '-' + SESSION_ID;
 
 function saveAnswers() {
     localStorage.setItem(ANSWER_KEY, JSON.stringify(selected));

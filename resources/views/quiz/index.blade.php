@@ -67,6 +67,7 @@
     const CSRF               = document.querySelector('meta[name="csrf-token"]').content;
     const DURASI             = {{ $sisaDetik }};
     const SESSION_ID         = '{{ $activeSession->id }}';
+    const USER_ID          = '{{ auth()->id() }}'; // ← tambah ini
 </script><script src="{{ asset('js/quiz.js') }}"></script>
 </body>
 </html>
