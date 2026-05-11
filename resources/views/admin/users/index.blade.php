@@ -3,6 +3,7 @@
 @section('title', 'Kelola User')
 
 @section('content')
+
 <div class="page-header">
     <div>
         <h2 class="page-subtitle">Daftar semua pengguna sistem</h2>
@@ -138,6 +139,17 @@
             <h3>Tambah User</h3>
             <button onclick="closeModal('modal-add-user')" class="drawer-close">✕</button>
         </div>
+                {{-- ✅ Pindahkan error ke sini, hapus yang di luar --}}
+        @if($errors->any())
+            <div class="alert alert-error" style="margin-bottom:16px;">
+                <ul style="margin:0; padding-left:16px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('admin.users.store') }}">
             @csrf
             <div class="form-grid">
@@ -177,4 +189,12 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    @if($errors->any())
+        document.addEventListener('DOMContentLoaded', () => openModal('modal-add-user'));
+    @endif
+</script>
 @endsection

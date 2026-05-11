@@ -40,13 +40,14 @@ class AdminUserController extends Controller
             'username'  => 'required|string|unique:users|max:255',
             'password'  => 'required|string|min:6',
             'role'      => 'required|in:admin,siswa',
-            'kelas'     => 'nullable|required_if:role,siswa|string|max:255',
-            'no_induk'  => 'nullable|unique:users|max:255',
-            'is_active' => 'boolean',
+            'kelas'    => 'required_if:role,siswa|nullable|string|max:255',
+            'no_induk' => 'required_if:role,siswa|nullable|unique:users|max:255',
         ]);
         // dd($data);
 
         $data['password'] = Hash::make($data['password']);
+        $data['is_active'] = true; // ✅ default aktif saat dibuat
+
         User::create($data);
 
         return back()->with('success', 'User berhasil ditambahkan.');
@@ -59,7 +60,7 @@ class AdminUserController extends Controller
             'username' => "required|string|unique:users,username,{$user->id}|max:255",
             'password' => 'nullable|string|min:6',
             'role'     => 'required|in:admin,siswa',
-            'kelas'    => 'nullable|string|max:255',
+            'kelas'    => 'required_if:role,siswa|nullable|string|max:255',
             'no_induk' => "nullable|unique:users,no_induk,{$user->id}|max:255",
         ]);
 
