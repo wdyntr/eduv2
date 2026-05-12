@@ -25,6 +25,49 @@ class QuizController extends Controller
     {
         $user = Auth::user();
 
+        // ── Fallback: auto-submit jika ada deadline personal yang sudah habis
+        //    tapi quiz_hasil belum ada (misal siswa logout sebelum waktu habis) ──
+        $expiredStarts = SiswaQuizStart::where('user_id', $user->id)
+            ->where('deadline_at', '<=', now())
+            ->get();
+
+        if ($expiredStarts->isNotEmpty()) {
+            $sessionIds    = $expiredStarts->pluck('session_id');
+            $sudahSubmitIds = QuizHasil::where('user_id', $user->id)
+                ->whereIn('session_id', $sessionIds)
+                ->pluck('session_id')
+                ->toArray();
+
+            // Pre-load semua questions sekali saja
+            $sessions = QuizSession::whereIn('id', $sessionIds)->get()->keyBy('id');
+
+            foreach ($expiredStarts as $start) {
+                if (in_array($start->session_id, $sudahSubmitIds)) continue;
+
+                $existingAnswers = SiswaAnswer::where('session_id', $start->session_id)
+                    ->where('user_id', $user->id)
+                    ->get();
+
+                $questionIds = $existingAnswers->pluck('question_id');
+                $pointsMap   = Question::whereIn('id', $questionIds)->pluck('points', 'id');
+
+                $correctCount = $existingAnswers->where('is_correct', true)->count();
+                $earnedPoints = $existingAnswers
+                    ->where('is_correct', true)
+                    ->sum(fn($a) => $pointsMap[$a->question_id] ?? 1);
+
+                QuizHasil::create([
+                    'session_id'      => $start->session_id,
+                    'user_id'         => $user->id,
+                    'score'           => $earnedPoints,
+                    'total_questions' => $existingAnswers->count(),
+                    'correct_count'   => $correctCount,
+                    'submitted_at'    => $start->deadline_at,
+                ]);
+            }
+        }
+
+        // ── Ambil sesi aktif ──
         $activeSessions = QuizSession::where('is_active', true)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
@@ -73,7 +116,7 @@ class QuizController extends Controller
         // ── Auto-close jika ended_at sudah lewat ──
         if ($activeSession->ended_at && now()->gt($activeSession->ended_at)) {
             $activeSession->update(['is_active' => false]);
-            return redirect()->route('quiz.dashboard')
+            return redirect()->route('quiz.index')
                 ->with('error', 'Sesi ujian telah berakhir.');
         }
 
@@ -91,13 +134,13 @@ class QuizController extends Controller
             ['user_id' => $user->id, 'session_id' => $activeSession->id],
             [
                 'started_at'  => now(),
-                'deadline_at' => now()->addMinutes($activeSession->durasi),
+                'deadline_at' => $activeSession->ended_at, // ← ikut deadline sesi
             ]
         );
 
         // ── Cek apakah waktu siswa sudah habis ──
         if (now()->gt($start->deadline_at)) {
-            $this->forceSubmit($user, $activeSession);
+            $this->forceSubmit($user, $activeSession, $start->deadline_at);
             return redirect()->route('quiz.result', ['session' => $activeSession->id]);
         }
 
@@ -114,7 +157,7 @@ class QuizController extends Controller
                 ->with('error', 'Soal untuk sesi ini belum tersedia.');
         }
 
-        $sisaDetik = max(0, (int) now()->diffInSeconds($start->deadline_at));
+        $sisaDetik = max(0, (int) now()->diffInSeconds($activeSession->ended_at));
 
         return view('quiz.index', compact(
             'questions',
@@ -133,6 +176,11 @@ class QuizController extends Controller
         $user      = Auth::user();
         $sessionId = $request->input('session_id');
         $answers   = $request->input('answers', []);
+
+        // Jika dikirim sebagai string JSON (dari sendBeacon FormData)
+        if (is_string($answers)) {
+            $answers = json_decode($answers, true) ?? [];
+        }
 
         if (empty($answers)) {
             return response()->json(['ok' => true, 'saved' => 0]);
@@ -157,7 +205,7 @@ class QuizController extends Controller
         }
 
         // Toleransi 30 detik setelah deadline
-        if (now()->gt($start->deadline_at->addSeconds(30))) {
+        if (now()->gt($session->ended_at->addSeconds(30))) {
             return response()->json(['ok' => false, 'error' => 'Waktu telah habis.']);
         }
 
@@ -241,7 +289,6 @@ class QuizController extends Controller
                 $earnedPoints += $question->points;
             }
 
-            // updateOrCreate — aman jika sudah tersync via saveAnswersBulk
             SiswaAnswer::updateOrCreate(
                 [
                     'session_id'  => $activeSession->id,
@@ -283,7 +330,7 @@ class QuizController extends Controller
     // ══════════════════════════════════════
     //  FORCE SUBMIT (dari server)
     // ══════════════════════════════════════
-    private function forceSubmit($user, $activeSession)
+    private function forceSubmit($user, $activeSession, $submittedAt = null): void
     {
         if (QuizHasil::where('session_id', $activeSession->id)
                       ->where('user_id', $user->id)->exists()) {
@@ -304,7 +351,7 @@ class QuizController extends Controller
             'score'           => $earnedPoints,
             'total_questions' => $existingAnswers->count(),
             'correct_count'   => $correctCount,
-            'submitted_at'    => now(),
+            'submitted_at'    => $submittedAt ?? now(),
         ]);
     }
 
@@ -351,4 +398,3 @@ class QuizController extends Controller
         return view('quiz.result', compact('hasil', 'answers', 'questions', 'subjectBreakdown'));
     }
 }
-

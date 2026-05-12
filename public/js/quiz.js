@@ -49,6 +49,8 @@ let answered  = 0;
 let selected  = {};
 let submitted = false;
 
+let syncDebounce = null;
+
 // ── PILIH JAWABAN ──
 function selectOption(btn, questionId, answer) {
     if (submitted) return;
@@ -90,6 +92,9 @@ function selectOption(btn, questionId, answer) {
         const badge = document.getElementById('hamburger-badge');
         if (badge) badge.classList.remove('show');
     }
+
+    clearTimeout(syncDebounce);
+    syncDebounce = setTimeout(syncAnswersToServer, 3000);
 }
 
 // ── PERIODIC SYNC — kirim ke server setiap 60 detik ──
@@ -114,8 +119,21 @@ async function syncAnswersToServer() {
 }
 
 function startSync() {
-    syncInterval = setInterval(syncAnswersToServer, 60000); // setiap 60 detik
+    syncInterval = setInterval(syncAnswersToServer, 30000); // setiap 60 detik
 }
+
+// Tambahkan setelah fungsi startSync()
+window.addEventListener('beforeunload', () => {
+    if (submitted || Object.keys(selected).length === 0) return;
+
+    // ✅ Gunakan FormData agar _token terbaca Laravel
+    const fd = new FormData();
+    fd.append('_token', CSRF);
+    fd.append('session_id', SESSION_ID);
+    fd.append('answers', JSON.stringify(selected));
+
+    navigator.sendBeacon(SAVE_ANSWERS_URL, fd);
+});
 
 // ── SUBMIT MANUAL ──
 async function submitQuiz() {
