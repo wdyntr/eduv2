@@ -24,7 +24,7 @@
             @forelse($sessions as $session)
             <tr>
                 <td><strong>{{ $session->paket }}</strong></td>
-                <td>{{ str_replace('_', ' ', $session->subject) }}</td>
+                <td style="font-size:12px;">{{ $session->subject_label ?? '-' }}</td>
                 <td>{{ $session->kelas ?? 'Semua' }}</td>
                 <td>{{ $session->durasi }} menit</td>
                 <td style="font-size:13px;color:var(--text-muted);">

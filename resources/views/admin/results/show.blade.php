@@ -11,9 +11,10 @@
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Paket</div>
             <div style="font-weight:500;margin-top:4px;">{{ $session->paket }}</div>
         </div>
+        {{-- Ganti baris Mapel --}}
         <div>
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Mapel</div>
-            <div style="font-weight:500;margin-top:4px;">{{ str_replace('_',' ',$session->subject) }}</div>
+            <div style="font-weight:500;margin-top:4px;">{{ $subjectLabel }}</div>
         </div>
         <div>
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Kelas</div>
@@ -21,7 +22,7 @@
         </div>
         <div>
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Durasi</div>
-            <div style="font-weight:500;margin-top:4px;">{{ $session->durasi }} menit</div>        
+            <div style="font-weight:500;margin-top:4px;">{{ $session->durasi }} menit</div>
         </div>
         <div>
             <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Peserta Submit</div>
@@ -53,7 +54,7 @@
                 <td class="td-name">{{ $result->user->name }}</td>
                 <td>{{ $result->user->kelas ?? '-' }}</td>
                 <td style="color:var(--success);font-weight:500;">{{ $result->correct_count }}</td>
-                <td style="color:var(--text-muted);">{{ $result->total_questions }}</td>
+                <td style="color:var(--text-muted);">{{ $totalQuestions }}</td>
                 <td>
                     <span style="
                         color: {{ $result->score >= 75 ? 'var(--success)' : ($result->score >= 50 ? 'var(--gold)' : 'var(--danger)') }};
@@ -79,6 +80,51 @@
         </tbody>
     </table>
 </div>
+
+{{-- Rekap per Mata Pelajaran --}}
+@if($results->count() > 0)
+<div class="breakdown-title" style="margin:24px 0 12px;">Rata-rata per Mata Pelajaran</div>
+<div class="admin-table-wrap" style="margin-bottom:28px;">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Mata Pelajaran</th>
+                <th>Rata-rata Benar</th>
+                <th>Rata-rata Skor</th>
+                <th>Peserta</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $userIds   = $results->pluck('user_id');
+                $allAnswers = \App\Models\SiswaAnswer::where('session_id', $session->id)
+                    ->whereIn('user_id', $userIds)
+                    ->with('question.passage')
+                    ->get();
+
+                $bySubject = $allAnswers
+                    ->filter(fn($a) => $a->question?->passage)
+                    ->groupBy(fn($a) => $a->question->passage->subject);
+            @endphp
+
+            @foreach($bySubject as $subject => $answers)
+            @php
+                $totalSiswa  = $answers->pluck('user_id')->unique()->count();
+                $avgBenar    = $answers->where('is_correct', true)->count() / max($totalSiswa, 1);
+                $avgSkor     = $answers->where('is_correct', true)
+                                       ->sum(fn($a) => $a->question->points ?? 1) / max($totalSiswa, 1);
+            @endphp
+            <tr>
+                <td>{{ ucwords(str_replace('_', ' ', $subject)) }}</td>
+                <td style="color:var(--success);">{{ number_format($avgBenar, 1) }} soal</td>
+                <td style="color:var(--gold);font-weight:500;">{{ number_format($avgSkor, 1) }}</td>
+                <td style="color:var(--text-muted);">{{ $totalSiswa }} siswa</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
 
 {{-- Siswa yang belum submit --}}
 @if($notSubmitted->count() > 0)

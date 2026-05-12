@@ -35,8 +35,23 @@
 </div>
 
 {{-- Detail jawaban --}}
-<div class="breakdown-title" style="margin-bottom:12px;">Jawaban per Soal</div>
-<div class="admin-table-wrap">
+@php
+    $grouped = $questions->groupBy(fn($q) => $q->passage?->subject ?? 'lainnya');
+@endphp
+
+@foreach($grouped as $subject => $groupQuestions)
+@php
+    $benar = $groupQuestions->filter(fn($q) =>
+        isset($answers[$q->id]) && $answers[$q->id]->is_correct
+    )->count();
+@endphp
+<div class="breakdown-title" style="margin:20px 0 10px;">
+    {{ ucwords(str_replace('_', ' ', $subject)) }}
+    <span style="color:var(--text-muted);font-weight:400;font-size:12px;">
+        ({{ $benar }}/{{ $groupQuestions->count() }} benar)
+    </span>
+</div>
+<div class="admin-table-wrap" style="margin-bottom:20px;">
     <table class="admin-table">
         <thead>
             <tr>
@@ -48,42 +63,61 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($answers as $i => $ans)
+            @foreach($groupQuestions as $i => $question)
+            @php $ans = $answers[$question->id] ?? null; @endphp
             <tr>
                 <td style="color:var(--text-dim);font-size:13px;">{{ $i + 1 }}</td>
-                <td style="font-size:13px;max-width:320px;line-height:1.5;">
-                    {{ Str::limit($ans->question->question_text, 80) }}
+                <td style="font-size:13px;max-width:320px;line-height:1.6;" class="katex-cell">
+                    {!! $question->question_text !!}
                 </td>
                 <td>
-                    <span class="badge {{ $ans->is_correct ? 'badge-success' : 'badge-danger' }}">
-                        {{ $ans->answer }}
-                    </span>
+                    @if($ans)
+                        <span class="badge {{ $ans->is_correct ? 'badge-success' : 'badge-danger' }}">
+                            {{ $ans->answer }}
+                        </span>
+                    @else
+                        <span class="badge badge-muted">—</span>
+                    @endif
                 </td>
                 <td>
-                    <span class="badge badge-muted">
-                        {{ $ans->question->correct_answer }}
-                    </span>
+                    <span class="badge badge-muted">{{ $question->correct_answer }}</span>
                 </td>
                 <td>
-                    @if($ans->is_correct)
+                    @if(!$ans)
+                        <span style="color:var(--text-dim);font-size:13px;">— Tidak dijawab</span>
+                    @elseif($ans->is_correct)
                         <span style="color:var(--success);font-size:13px;">✓ Benar</span>
                     @else
                         <span style="color:var(--danger);font-size:13px;">✗ Salah</span>
                     @endif
                 </td>
             </tr>
-            @empty
-            <tr>
-                <td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted);">
-                    Tidak ada data jawaban.
-                </td>
-            </tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
 </div>
+@endforeach {{-- ← hapus duplikat @endforeach yang sebelumnya ada --}}
 
 <div style="margin-top:20px;">
     <a href="{{ route('admin.results.show', $session) }}" class="btn-ghost">← Kembali</a>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    renderMathInElement(document.body, {
+        delimiters: [
+            { left: '$$', right: '$$', display: true  },
+            { left: '$',  right: '$',  display: false },
+        ],
+        throwOnError: false,
+        output: 'html',
+    });
+});
+</script>
+<style>
+.katex-cell .katex        { font-size: 0.92em !important; }
+.katex-cell .katex-display { margin: 6px 0; overflow-x: auto; }
+</style>
 @endsection
