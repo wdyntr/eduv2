@@ -113,12 +113,6 @@ class QuizController extends Controller
             ? $query->where('id', $sessionId)->firstOrFail()
             : $query->firstOrFail();
 
-        // ── Auto-close jika ended_at sudah lewat ──
-        if ($activeSession->ended_at && now()->gt($activeSession->ended_at)) {
-            $activeSession->update(['is_active' => false]);
-            return redirect()->route('quiz.index')
-                ->with('error', 'Sesi ujian telah berakhir.');
-        }
 
         // ── Cek sudah submit ──
         $sudahSubmit = QuizHasil::where('session_id', $activeSession->id)
@@ -134,7 +128,7 @@ class QuizController extends Controller
             ['user_id' => $user->id, 'session_id' => $activeSession->id],
             [
                 'started_at'  => now(),
-                'deadline_at' => $activeSession->ended_at, // ← ikut deadline sesi
+                'deadline_at' => now()->addMinutes($activeSession->durasi), // ← per siswa
             ]
         );
 
@@ -157,7 +151,7 @@ class QuizController extends Controller
                 ->with('error', 'Soal untuk sesi ini belum tersedia.');
         }
 
-        $sisaDetik = max(0, (int) now()->diffInSeconds($activeSession->ended_at));
+        $sisaDetik = max(0, (int) now()->diffInSeconds($start->deadline_at));
 
         return view('quiz.index', compact(
             'questions',
@@ -204,8 +198,8 @@ class QuizController extends Controller
             return response()->json(['ok' => false, 'error' => 'Data start tidak ditemukan.']);
         }
 
-        // Toleransi 30 detik setelah deadline
-        if (now()->gt($session->ended_at->addSeconds(30))) {
+        // ← kembalikan ke $start->deadline_at (bukan $session->ended_at)
+        if (now()->gt($start->deadline_at->addSeconds(30))) {
             return response()->json(['ok' => false, 'error' => 'Waktu telah habis.']);
         }
 
@@ -367,7 +361,32 @@ class QuizController extends Controller
             ->when($sessionId, fn($q) => $q->where('session_id', $sessionId))
             ->with('session')
             ->latest()
-            ->firstOrFail();
+            ->first();
+        // Jika belum ada hasil, coba force submit dulu
+        if (!$hasil) {
+            $session = QuizSession::find($sessionId);
+            if ($session) {
+                $start = SiswaQuizStart::where('user_id', $user->id)
+                    ->where('session_id', $sessionId)
+                    ->first();
+
+                if ($start) {
+                    $this->forceSubmit($user, $session, now());
+
+                    // Ambil lagi setelah force submit
+                    $hasil = QuizHasil::where('user_id', $user->id)
+                        ->where('session_id', $sessionId)
+                        ->with('session')
+                        ->first();
+                }
+            }
+
+            // Jika masih tidak ada → kembali ke dashboard
+            if (!$hasil) {
+                return redirect()->route('quiz.index')
+                    ->with('error', 'Data hasil tidak ditemukan.');
+            }
+        }
 
         $answers = SiswaAnswer::where('session_id', $hasil->session_id)
             ->where('user_id', $user->id)

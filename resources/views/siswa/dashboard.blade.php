@@ -174,4 +174,16 @@
     </div>
 </div>
 
+{{-- Di siswa/dashboard.blade.php, sebelum @endsection --}}
+@if($activeSessions->isNotEmpty() && count($submittedIds) < $activeSessions->count())
+<script>
+// Cek setiap 30 detik apakah ada hasil baru
+setInterval(() => {
+    fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(() => window.location.reload())
+        .catch(() => {});
+}, 30000);
+</script>
+@endif
+
 @endsection

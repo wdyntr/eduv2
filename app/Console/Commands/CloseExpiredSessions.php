@@ -16,23 +16,7 @@ class CloseExpiredSessions extends Command
 
     public function handle()
     {
-        // ── 1. Tutup sesi yang sudah expired secara global ──
-        $expired = QuizSession::where('is_active', true)
-            ->whereNotNull('ended_at')
-            ->where('ended_at', '<=', now())
-            ->get();
-
-        foreach ($expired as $session) {
-            $this->info("Memproses sesi id={$session->id} paket={$session->paket}...");
-            $this->autoSubmitForSession($session->id);
-            $session->update(['is_active' => false]);
-            $this->info("  Sesi id={$session->id} ditutup.");
-        }
-
-        // ── 2. Handle deadline personal siswa yang sudah habis
-        //       meski sesi globalnya masih aktif ──
-        $expiredStarts = SiswaQuizStart::where('deadline_at', '<=', now())
-            ->get();
+        $expiredStarts = SiswaQuizStart::where('deadline_at', '<=', now())->get();
 
         $handled = 0;
         foreach ($expiredStarts as $start) {
@@ -43,24 +27,12 @@ class CloseExpiredSessions extends Command
             if ($sudahSubmit) continue;
 
             $this->autoSubmitUser($start->session_id, $start->user_id, $start->deadline_at);
-            $this->info("  ✓ Personal deadline: user_id={$start->user_id} session_id={$start->session_id} di-submit.");
+            $this->info("✓ user_id={$start->user_id} session_id={$start->session_id} di-submit.");
             $handled++;
         }
 
-        if ($expired->isEmpty() && $handled === 0) {
-            $this->info('Tidak ada sesi atau deadline siswa yang perlu diproses.');
-        }
-    }
-
-    // ── Submit semua siswa dalam satu sesi ──
-    private function autoSubmitForSession(int $sessionId): void
-    {
-        $starts = SiswaQuizStart::where('session_id', $sessionId)
-            ->get();
-
-        foreach ($starts as $start) {
-            $this->autoSubmitUser($sessionId, $start->user_id, $start->deadline_at);
-            $this->info("  ✓ User id={$start->user_id} auto-submitted.");
+        if ($handled === 0) {
+            $this->info('Tidak ada deadline siswa yang perlu diproses.');
         }
     }
 

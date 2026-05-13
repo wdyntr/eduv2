@@ -64,7 +64,7 @@ class AdminSessionController extends Controller
         }
 
         $data['created_by'] = auth()->id();
-        $data['durasi']     = 180; // ← hardcode 3 jam
+        $data['durasi']     = 240; // ← hardcode 4 jam
 
         QuizSession::create($data);
         return back()->with('success', 'Sesi ujian dibuat.');
@@ -73,17 +73,18 @@ class AdminSessionController extends Controller
     public function toggle(QuizSession $session)
     {
         if (!$session->is_active) {
-            // Nonaktifkan sesi lain yang sedang aktif untuk kelas yang sama
+            // Nonaktifkan sesi lain yang aktif untuk kelas yang sama
             QuizSession::where('kelas', $session->kelas)
-                       ->where('is_active', true)
-                       ->update(['is_active' => false, 'ended_at' => now()]);
+                    ->where('is_active', true)
+                    ->update(['is_active' => false, 'ended_at' => now()]);
 
             $session->update([
                 'is_active'  => true,
                 'started_at' => now(),
-                'ended_at'   => now()->addMinutes($session->durasi), // ← durasi, bukan duration_minutes
+                'ended_at'   => null, // ← tidak ada batas waktu global sesi
             ]);
         } else {
+            // Admin nonaktifkan manual → catat waktu selesai
             $session->update(['is_active' => false, 'ended_at' => now()]);
         }
 

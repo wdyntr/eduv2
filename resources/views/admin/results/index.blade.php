@@ -31,7 +31,7 @@
                     {{ $session->started_at?->format('d/m/Y') ?? '-' }}
                 </td>
                 <td>
-                    <span style="color:var(--gold);font-weight:500;">{{ $session->hasil_count }}</span>
+                    <span style="color:var(--gold);font-weight:500;">{{ $session->results_count }}</span>
                     <span style="color:var(--text-dim);font-size:12px;"> siswa</span>
                 </td>
                 <td>

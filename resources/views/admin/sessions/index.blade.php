@@ -18,7 +18,7 @@
                 <th>Mata Pelajaran</th>
                 <th>Kelas</th>
                 <th>Mulai</th>
-                <th>Selesai</th>
+                <th>Dinonaktifkan</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -33,7 +33,14 @@
                 </td>
                 <td>{{ $session->kelas ?? 'Semua' }}</td>
                 <td>{{ $session->started_at?->format('d/m/Y H:i') ?? '-' }}</td>
-                <td>{{ $session->ended_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                {{-- Ganti isi kolom ended_at --}}
+                <td>
+                    @if($session->is_active)
+                        <span style="font-size:12px;color:var(--text-muted);">Masih aktif</span>
+                    @else
+                        {{ $session->ended_at?->format('d/m/Y H:i') ?? '-' }}
+                    @endif
+                </td>
                 <td>
                     <span class="badge {{ $session->is_active ? 'badge-success' : 'badge-muted' }}">
                         {{ $session->is_active ? 'Aktif' : 'Nonaktif' }}
@@ -148,7 +155,7 @@
                         color:var(--gold);
                         font-weight:500;
                     ">
-                        ⏱ 3 jam (180 menit)
+                        ⏱ 4 jam (240 menit)
                     </div>
                 </div>
 
