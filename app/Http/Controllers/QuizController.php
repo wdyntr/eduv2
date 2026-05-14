@@ -56,11 +56,16 @@ class QuizController extends Controller
                     ->where('is_correct', true)
                     ->sum(fn($a) => $pointsMap[$a->question_id] ?? 1);
 
+                $sessionModel = $sessions[$start->session_id] ?? null;
+                $totalInPaket = $sessionModel
+                    ? Question::where('paket', $sessionModel->paket)->count()
+                    : $existingAnswers->count();
+
                 QuizHasil::create([
                     'session_id'      => $start->session_id,
                     'user_id'         => $user->id,
                     'score'           => $earnedPoints,
-                    'total_questions' => $existingAnswers->count(),
+                    'total_questions' => $totalInPaket,
                     'correct_count'   => $correctCount,
                     'submitted_at'    => $start->deadline_at,
                 ]);
@@ -304,11 +309,13 @@ class QuizController extends Controller
             ];
         }
 
+        $totalInPaket = Question::where('paket', $activeSession->paket)->count();
+
         QuizHasil::create([
             'session_id'      => $activeSession->id,
             'user_id'         => $user->id,
             'score'           => $earnedPoints,
-            'total_questions' => count($answers),
+            'total_questions' => $totalInPaket,
             'correct_count'   => $correctCount,
             'submitted_at'    => $now,
         ]);
@@ -327,7 +334,7 @@ class QuizController extends Controller
     private function forceSubmit($user, $activeSession, $submittedAt = null): void
     {
         if (QuizHasil::where('session_id', $activeSession->id)
-                      ->where('user_id', $user->id)->exists()) {
+                    ->where('user_id', $user->id)->exists()) {
             return;
         }
 
@@ -339,11 +346,13 @@ class QuizController extends Controller
         $earnedPoints = $existingAnswers->where('is_correct', true)
             ->sum(fn($a) => Question::find($a->question_id)?->points ?? 0);
 
+        $totalInPaket = Question::where('paket', $activeSession->paket)->count(); // ← tambah
+
         QuizHasil::create([
             'session_id'      => $activeSession->id,
             'user_id'         => $user->id,
             'score'           => $earnedPoints,
-            'total_questions' => $existingAnswers->count(),
+            'total_questions' => $totalInPaket, // ← ganti
             'correct_count'   => $correctCount,
             'submitted_at'    => $submittedAt ?? now(),
         ]);
