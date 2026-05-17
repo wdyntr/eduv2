@@ -73,18 +73,13 @@ class AdminSessionController extends Controller
     public function toggle(QuizSession $session)
     {
         if (!$session->is_active) {
-            // Nonaktifkan sesi lain yang aktif untuk kelas yang sama
-            QuizSession::where('kelas', $session->kelas)
-                    ->where('is_active', true)
-                    ->update(['is_active' => false, 'ended_at' => now()]);
-
+            // ← HAPUS blok nonaktifkan sesi lain
             $session->update([
                 'is_active'  => true,
                 'started_at' => now(),
-                'ended_at'   => null, // ← tidak ada batas waktu global sesi
+                'ended_at'   => null,
             ]);
         } else {
-            // Admin nonaktifkan manual → catat waktu selesai
             $session->update(['is_active' => false, 'ended_at' => now()]);
         }
 

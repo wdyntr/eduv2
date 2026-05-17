@@ -19,7 +19,6 @@ class AdminUserController extends Controller
             ->when($request->search, fn($q, $s) =>
                 $q->where('name', 'like', "%$s%")
                   ->orWhere('username', 'like', "%$s%")
-                  ->orWhere('no_induk', 'like', "%$s%")
             )
             ->when($request->role, fn($q, $r) => $q->where('role', $r))
             ->when($request->kelas, fn($q, $k) => $q->where('kelas', $k))
@@ -41,7 +40,6 @@ class AdminUserController extends Controller
             'password'  => 'required|string|min:6',
             'role'      => 'required|in:admin,siswa',
             'kelas'    => 'required_if:role,siswa|nullable|string|max:255',
-            'no_induk' => 'required_if:role,siswa|nullable|unique:users|max:255',
         ]);
         // dd($data);
 
@@ -61,7 +59,6 @@ class AdminUserController extends Controller
             'password' => 'nullable|string|min:6',
             'role'     => 'required|in:admin,siswa',
             'kelas'    => 'required_if:role,siswa|nullable|string|max:255',
-            'no_induk' => "nullable|unique:users,no_induk,{$user->id}|max:255",
         ]);
 
         if (empty($data['password'])) {

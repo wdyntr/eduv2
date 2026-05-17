@@ -210,12 +210,7 @@
             <div style="font-weight:500;">{{ auth()->user()->kelas }}</div>
         </div>
         @endif
-        @if(auth()->user()->no_induk)
-        <div>
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">No. Induk</div>
-            <div style="font-weight:500;font-family:monospace;">{{ auth()->user()->no_induk }}</div>
-        </div>
-        @endif
+
     </div>
 </div>
 

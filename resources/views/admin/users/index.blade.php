@@ -16,7 +16,7 @@
 {{-- Filter --}}
 <form method="GET" class="filter-row">
     <input type="text" name="search" value="{{ request('search') }}"
-           placeholder="Cari nama, username, no. induk..." class="admin-input">
+           placeholder="Cari nama, username ..." class="admin-input">
     <select name="role" class="admin-select">
         <option value="">Semua Role</option>
         <option value="siswa" {{ request('role') === 'siswa' ? 'selected' : '' }}>Siswa</option>
@@ -39,7 +39,6 @@
             <tr>
                 <th>Nama</th>
                 <th>Username</th>
-                <th>No. Induk</th>
                 <th>Kelas</th>
                 <th>Role</th>
                 <th>Status</th>
@@ -51,7 +50,6 @@
             <tr>
                 <td class="td-name">{{ $user->name }}</td>
                 <td class="td-mono">{{ $user->username }}</td>
-                <td class="td-mono">{{ $user->no_induk ?? '-' }}</td>
                 <td>{{ $user->kelas ?? '-' }}</td>
                 <td>
                     <span class="badge {{ $user->role === 'admin' ? 'badge-gold' : 'badge-muted' }}">
@@ -84,7 +82,7 @@
 
             {{-- Edit row (inline) --}}
             <tr class="edit-row" id="edit-row-{{ $user->id }}" style="display:none;">
-                <td colspan="7">
+                <td colspan="6"> {{-- ← dari 7 → 6 karena kolom berkurang --}}
                     <form method="POST" action="{{ route('admin.users.update', $user) }}" class="inline-form">
                         @csrf @method('PUT')
                         <div class="form-grid">
@@ -111,10 +109,7 @@
                                 <label>Kelas</label>
                                 <input type="text" name="kelas" value="{{ $user->kelas }}" class="admin-input">
                             </div>
-                            <div class="form-group">
-                                <label>No. Induk</label>
-                                <input type="text" name="no_induk" value="{{ $user->no_induk }}" class="admin-input">
-                            </div>
+                            {{-- No. Induk ← HAPUS --}}
                         </div>
                         <div style="display:flex;gap:10px;margin-top:12px;">
                             <button type="submit" class="btn-primary">Simpan</button>
@@ -124,7 +119,7 @@
                 </td>
             </tr>
             @empty
-            <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">Tidak ada data.</td></tr>
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:40px;">Tidak ada data.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -176,10 +171,6 @@
                 <div class="form-group siswa-only">
                     <label>Kelas</label>
                     <input type="text" name="kelas" class="admin-input" placeholder="contoh: XII IPA 1">
-                </div>
-                <div class="form-group siswa-only">
-                    <label>No. Induk</label>
-                    <input type="text" name="no_induk" class="admin-input">
                 </div>
             </div>
             <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">

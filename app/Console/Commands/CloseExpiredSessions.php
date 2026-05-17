@@ -47,6 +47,12 @@ class CloseExpiredSessions extends Command
             ->where('user_id', $userId)
             ->get();
 
+        // ── Ambil total soal dari paket, bukan dari jawaban yang ada ──
+        $session      = \App\Models\QuizSession::find($sessionId);
+        $totalInPaket = $session
+            ? Question::where('paket', $session->paket)->count()
+            : $existingAnswers->count(); // fallback jika session tidak ditemukan
+
         $correctCount = $existingAnswers->where('is_correct', true)->count();
         $earnedPoints = $existingAnswers
             ->where('is_correct', true)
@@ -56,7 +62,7 @@ class CloseExpiredSessions extends Command
             'session_id'      => $sessionId,
             'user_id'         => $userId,
             'score'           => $earnedPoints,
-            'total_questions' => $existingAnswers->count(),
+            'total_questions' => $totalInPaket, // ← total soal paket, bukan jawaban
             'correct_count'   => $correctCount,
             'submitted_at'    => $submittedAt,
         ]);

@@ -25,7 +25,7 @@ class QuizController extends Controller
     {
         $user = Auth::user();
 
-        // ── Fallback force-submit jika ada deadline yang lewat ──
+        // ── Fallback force-submit ──
         $expiredStarts = SiswaQuizStart::where('user_id', $user->id)
             ->where('deadline_at', '<=', now())
             ->get();
@@ -43,8 +43,7 @@ class QuizController extends Controller
                 if (in_array($start->session_id, $sudahSubmitIds)) continue;
 
                 $existingAnswers = SiswaAnswer::where('session_id', $start->session_id)
-                    ->where('user_id', $user->id)
-                    ->get();
+                    ->where('user_id', $user->id)->get();
 
                 $questionIds  = $existingAnswers->pluck('question_id');
                 $pointsMap    = Question::whereIn('id', $questionIds)->pluck('points', 'id');
@@ -68,36 +67,47 @@ class QuizController extends Controller
             }
         }
 
-        // ── Sesi aktif (untuk ujian yang sedang berjalan) ──
+        // ── ID sesi yang sudah disubmit (deklarasi duluan) ──
+        $submittedSessionIds = QuizHasil::where('user_id', $user->id)
+            ->pluck('session_id')
+            ->toArray();
+
+        // ── Sesi aktif yang belum disubmit siswa ──
         $activeSessions = QuizSession::where('is_active', true)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
             })
-            ->get();
+            ->orderBy('started_at')
+            ->get()
+            ->filter(fn($session) => !in_array($session->id, $submittedSessionIds))
+            ->values();
 
-        // ── Sesi yang sudah disubmit siswa (meski sesi sudah nonaktif) ──
-        $submittedResults = QuizHasil::where('user_id', $user->id)
-            ->with('session')
-            ->latest('submitted_at')
-            ->get();
-
-        $submittedSessionIds = $submittedResults->pluck('session_id')->toArray();
-
-        // Ambil sesi nonaktif yang sudah disubmit siswa (untuk tampil di dashboard)
+        // ── Sesi nonaktif yang sudah disubmit siswa ──
         $completedSessions = QuizSession::where('is_active', false)
+            ->whereIn('id', $submittedSessionIds)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
+            })
+            ->orderByDesc('ended_at')
+            ->get();
+
+        // ── Sesi aktif yang sudah disubmit (tetap tampil sebagai selesai) ──
+        $activeSubmitted = QuizSession::where('is_active', true)
             ->whereIn('id', $submittedSessionIds)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
             })
             ->get();
 
-        // Gabung: sesi aktif + sesi selesai milik siswa (deduplikasi)
-        $allSessions = $activeSessions->merge($completedSessions)->unique('id');
+        // Gabung completed: nonaktif + aktif tapi sudah submit
+        $completedSessions = $completedSessions->merge($activeSubmitted)
+            ->sortByDesc('started_at')
+            ->values();
 
-        // ID sesi yang sudah disubmit
         $submittedIds = $submittedSessionIds;
 
-        // Subject label per sesi
+        $allSessions = $activeSessions->merge($completedSessions)->unique('id');
+
         $sessionSubjects = $allSessions->mapWithKeys(function ($session) {
             $subjects = \App\Models\Question::with('passage')
                 ->where('paket', $session->paket)
@@ -113,9 +123,9 @@ class QuizController extends Controller
         });
 
         return view('siswa.dashboard', compact(
-            'activeSessions',    // sesi yang sedang aktif
-            'completedSessions', // sesi yang sudah selesai dikerjakan siswa
-            'allSessions',       // gabungan keduanya
+            'activeSessions',
+            'completedSessions',
+            'allSessions',
             'user',
             'submittedIds',
             'sessionSubjects',
@@ -135,10 +145,14 @@ class QuizController extends Controller
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
             });
 
-        $activeSession = $sessionId
-            ? $query->where('id', $sessionId)->firstOrFail()
-            : $query->firstOrFail();
-
+        if ($sessionId) {
+            $activeSession = $query->where('id', $sessionId)->firstOrFail();
+        } else {
+            // Jika tidak ada sessionId → arahkan ke dashboard
+            // karena sekarang bisa ada beberapa sesi aktif
+            return redirect()->route('quiz.index')
+                ->with('error', 'Pilih sesi ujian terlebih dahulu.');
+        }
 
         // ── Cek sudah submit ──
         $sudahSubmit = QuizHasil::where('session_id', $activeSession->id)
