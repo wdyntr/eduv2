@@ -431,6 +431,65 @@
                 grid-template-columns: repeat(5, 1fr);
             }
         }
+
+        /* ── SUBJECT DIVIDER (result) ── */
+        .result-subject-divider {
+            margin: 28px 0 16px;
+        }
+
+        .result-subject-divider-inner {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-lg);
+            padding: 14px 20px;
+            margin-bottom: 14px;
+        }
+
+        .result-subject-divider-icon {
+            font-size: 22px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(210,160,80,0.1);
+            border: 1px solid var(--border-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .result-subject-divider-label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 3px;
+        }
+
+        .result-subject-divider-name {
+            font-family: var(--ff-display);
+            font-size: 18px;
+            color: var(--gold);
+            font-weight: 400;
+        }
+
+        .result-subject-divider-line {
+            height: 1px;
+            background: linear-gradient(to right, var(--border-accent), transparent);
+        }
+
+        .result-subject-divider:first-of-type {
+            margin-top: 0;
+        }
+
+        @media (max-width: 640px) {
+            .result-subject-divider-name  { font-size: 16px; }
+            .result-subject-divider-icon  { width: 36px; height: 36px; font-size: 18px; }
+            .result-subject-divider-inner { padding: 10px 14px; gap: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -661,7 +720,22 @@
             {{-- Review Jawaban --}}
             <p class="breakdown-title" style="margin-bottom:16px;">Review Jawaban</p>
 
-            @php $qNum = 0; @endphp
+            @php
+                $qNum              = 0;
+                $currentSubjectRev = null;
+
+                $subjectLabelsRev = [
+                    'bahasa_indonesia' => 'Bahasa Indonesia',
+                    'bahasa_inggris'   => 'Bahasa Inggris',
+                    'matematika'       => 'Matematika',
+                ];
+
+                $subjectIconsRev = [
+                    'bahasa_indonesia' => '📝',
+                    'bahasa_inggris'   => '🌐',
+                    'matematika'       => '🔢',
+                ];
+            @endphp
 
             @foreach($questions as $question)
                 @php
@@ -683,8 +757,32 @@
                     $jawabanBenar = $question->correct_answer;
                     $isCorrect    = $siswaAnswer?->is_correct ?? false;
                     $tidakDijawab = is_null($pilihanSiswa);
+
+                    // ── Deteksi pergantian subject ──
+                    $thisSubjectRev  = $question->passage?->subject ?? null;
+                    $isNewSubjectRev = $thisSubjectRev !== $currentSubjectRev;
+                    $currentSubjectRev = $thisSubjectRev;
                 @endphp
 
+                {{-- ── HEADER MATA PELAJARAN ── --}}
+                @if($isNewSubjectRev && $thisSubjectRev)
+                <div class="result-subject-divider">
+                    <div class="result-subject-divider-inner">
+                        <span class="result-subject-divider-icon">
+                            {{ $subjectIconsRev[$thisSubjectRev] ?? '📚' }}
+                        </span>
+                        <div>
+                            <div class="result-subject-divider-label">Mata Pelajaran</div>
+                            <div class="result-subject-divider-name">
+                                {{ $subjectLabelsRev[$thisSubjectRev] ?? ucwords(str_replace('_', ' ', $thisSubjectRev)) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-subject-divider-line"></div>
+                </div>
+                @endif
+
+                {{-- Passage --}}
                 @if($isNewPassage && $hasPassage)
                     <div class="result-story-block">
                         <div class="result-story-text">
@@ -693,6 +791,7 @@
                     </div>
                 @endif
 
+                {{-- Soal --}}
                 <div class="review-block" id="review-{{ $question->id }}">
                     <div class="review-block-header">
                         <span class="review-block-num">Soal {{ $qNum }}</span>
@@ -745,6 +844,7 @@
                 </div>
 
             @endforeach
+            {{-- End Review Jawaban --}}
 
             {{-- Tombol Kembali --}}
             <div class="result-actions" style="margin-top:24px;">

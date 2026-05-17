@@ -1914,3 +1914,63 @@ body.login-page {
         font-size: 0.9em;
     }
 }
+
+/* ── SUBJECT DIVIDER ── */
+.subject-divider {
+    margin: 32px 0 20px;
+}
+
+.subject-divider-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border-accent);
+    border-radius: var(--radius-lg);
+    padding: 14px 20px;
+    margin-bottom: 16px;
+}
+
+.subject-divider-icon {
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(210,160,80,0.1);
+    border: 1px solid var(--border-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.subject-divider-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+}
+
+.subject-divider-name {
+    font-family: var(--ff-display);
+    font-size: 20px;
+    color: var(--gold);
+    font-weight: 400;
+}
+
+.subject-divider-line {
+    height: 1px;
+    background: linear-gradient(to right, var(--border-accent), transparent);
+}
+
+/* Divider pertama tidak perlu margin atas besar */
+.screen-quiz > .subject-divider:first-child {
+    margin-top: 0;
+}
+
+@media (max-width: 640px) {
+    .subject-divider-name { font-size: 17px; }
+    .subject-divider-icon { width: 38px; height: 38px; font-size: 20px; }
+    .subject-divider-inner { padding: 12px 14px; gap: 10px; }
+}

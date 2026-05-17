@@ -25,20 +25,18 @@ class QuizController extends Controller
     {
         $user = Auth::user();
 
-        // ── Fallback: auto-submit jika ada deadline personal yang sudah habis
-        //    tapi quiz_hasil belum ada (misal siswa logout sebelum waktu habis) ──
+        // ── Fallback force-submit jika ada deadline yang lewat ──
         $expiredStarts = SiswaQuizStart::where('user_id', $user->id)
             ->where('deadline_at', '<=', now())
             ->get();
 
         if ($expiredStarts->isNotEmpty()) {
-            $sessionIds    = $expiredStarts->pluck('session_id');
+            $sessionIds     = $expiredStarts->pluck('session_id');
             $sudahSubmitIds = QuizHasil::where('user_id', $user->id)
                 ->whereIn('session_id', $sessionIds)
                 ->pluck('session_id')
                 ->toArray();
 
-            // Pre-load semua questions sekali saja
             $sessions = QuizSession::whereIn('id', $sessionIds)->get()->keyBy('id');
 
             foreach ($expiredStarts as $start) {
@@ -48,12 +46,10 @@ class QuizController extends Controller
                     ->where('user_id', $user->id)
                     ->get();
 
-                $questionIds = $existingAnswers->pluck('question_id');
-                $pointsMap   = Question::whereIn('id', $questionIds)->pluck('points', 'id');
-
+                $questionIds  = $existingAnswers->pluck('question_id');
+                $pointsMap    = Question::whereIn('id', $questionIds)->pluck('points', 'id');
                 $correctCount = $existingAnswers->where('is_correct', true)->count();
-                $earnedPoints = $existingAnswers
-                    ->where('is_correct', true)
+                $earnedPoints = $existingAnswers->where('is_correct', true)
                     ->sum(fn($a) => $pointsMap[$a->question_id] ?? 1);
 
                 $sessionModel = $sessions[$start->session_id] ?? null;
@@ -72,19 +68,37 @@ class QuizController extends Controller
             }
         }
 
-        // ── Ambil sesi aktif ──
+        // ── Sesi aktif (untuk ujian yang sedang berjalan) ──
         $activeSessions = QuizSession::where('is_active', true)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
             })
             ->get();
 
-        $submittedIds = QuizHasil::where('user_id', $user->id)
-            ->whereIn('session_id', $activeSessions->pluck('id'))
-            ->pluck('session_id')
-            ->toArray();
+        // ── Sesi yang sudah disubmit siswa (meski sesi sudah nonaktif) ──
+        $submittedResults = QuizHasil::where('user_id', $user->id)
+            ->with('session')
+            ->latest('submitted_at')
+            ->get();
 
-        $sessionSubjects = $activeSessions->mapWithKeys(function ($session) {
+        $submittedSessionIds = $submittedResults->pluck('session_id')->toArray();
+
+        // Ambil sesi nonaktif yang sudah disubmit siswa (untuk tampil di dashboard)
+        $completedSessions = QuizSession::where('is_active', false)
+            ->whereIn('id', $submittedSessionIds)
+            ->where(function ($q) use ($user) {
+                $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
+            })
+            ->get();
+
+        // Gabung: sesi aktif + sesi selesai milik siswa (deduplikasi)
+        $allSessions = $activeSessions->merge($completedSessions)->unique('id');
+
+        // ID sesi yang sudah disubmit
+        $submittedIds = $submittedSessionIds;
+
+        // Subject label per sesi
+        $sessionSubjects = $allSessions->mapWithKeys(function ($session) {
             $subjects = \App\Models\Question::with('passage')
                 ->where('paket', $session->paket)
                 ->get()
@@ -98,7 +112,14 @@ class QuizController extends Controller
             return [$session->id => $subjects->implode(', ') ?: 'Semua Mapel'];
         });
 
-        return view('siswa.dashboard', compact('activeSessions', 'user', 'submittedIds', 'sessionSubjects'));
+        return view('siswa.dashboard', compact(
+            'activeSessions',    // sesi yang sedang aktif
+            'completedSessions', // sesi yang sudah selesai dikerjakan siswa
+            'allSessions',       // gabungan keduanya
+            'user',
+            'submittedIds',
+            'sessionSubjects',
+        ));
     }
 
     // ══════════════════════════════════════

@@ -13,8 +13,8 @@
     </p>
 </div>
 
+{{-- ── SESI AKTIF ── --}}
 @if($activeSessions->isEmpty())
-{{-- Tidak ada sesi aktif --}}
 <div style="
     background: var(--surface);
     border: 1px solid var(--border);
@@ -39,7 +39,6 @@
 </div>
 
 @else
-{{-- Loop semua sesi aktif --}}
 @foreach($activeSessions as $session)
 @php $sudahSubmit = in_array($session->id, $submittedIds); @endphp
 
@@ -83,12 +82,7 @@
     </div>
 
     {{-- Detail --}}
-    <div style="
-        display:grid;
-        grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
-        gap:0;
-    ">
-        {{-- GANTI kolom Mata Pelajaran ──────────────────────── --}}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0;">
         <div style="padding:16px 20px;border-right:1px solid var(--border);">
             <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;
                         letter-spacing:1px;margin-bottom:4px;">Mata Pelajaran</div>
@@ -96,8 +90,6 @@
                 {{ $sessionSubjects[$session->id] ?? 'Semua Mapel' }}
             </div>
         </div>
-        {{-- ─────────────────────────────────────────────────── --}}
-
         <div style="padding:16px 20px;border-right:1px solid var(--border);">
             <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;
                         letter-spacing:1px;margin-bottom:4px;">Durasi</div>
@@ -113,14 +105,10 @@
     </div>
 
     {{-- CTA --}}
-    <div style="
-        padding:16px 24px;
-        border-top:1px solid var(--border);
-        display:flex; align-items:center; justify-content:flex-end;
-    ">
+    <div style="padding:16px 24px;border-top:1px solid var(--border);
+                display:flex;align-items:center;justify-content:flex-end;">
         @if($sudahSubmit)
-            <a href="{{ route('quiz.result', ['session' => $session->id]) }}"
-               class="btn-ghost">
+            <a href="{{ route('quiz.result', ['session' => $session->id]) }}" class="btn-ghost">
                 Lihat Hasil
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
@@ -128,8 +116,7 @@
                 </svg>
             </a>
         @else
-            <a href="{{ route('quiz.start', ['session' => $session->id]) }}"
-               class="btn-primary">
+            <a href="{{ route('quiz.start', ['session' => $session->id]) }}" class="btn-primary">
                 Mulai Ujian
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
@@ -141,12 +128,70 @@
 </div>
 @endforeach
 @endif
+
+{{-- ── RIWAYAT UJIAN SELESAI (sesi sudah nonaktif) ── --}}
+@if($completedSessions->isNotEmpty())
+<div style="margin-top:32px;margin-bottom:12px;">
+    <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;
+                color:var(--text-dim);margin-bottom:16px;">Riwayat Ujian</div>
+
+    @foreach($completedSessions as $session)
+    <div style="
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: 14px;
+        opacity: 0.9;
+    ">
+        <div style="
+            padding: 16px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px;
+            border-bottom: 1px solid var(--border);
+        ">
+            <div>
+                <div style="font-size:11px;color:var(--text-dim);letter-spacing:1px;
+                            text-transform:uppercase;margin-bottom:3px;">Sudah Selesai</div>
+                <div style="font-family:var(--ff-display);font-size:18px;color:var(--text);">
+                    {{ $session->paket }}
+                </div>
+            </div>
+            <span style="font-size:12px;padding:4px 12px;border-radius:100px;
+                         background:rgba(150,150,150,0.08);color:var(--text-dim);
+                         border:1px solid var(--border);">
+                Nonaktif
+            </span>
+        </div>
+
+        <div style="
+            padding: 12px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 8px;
+        ">
+            <span style="font-size:13px;color:var(--text-muted);">
+                {{ $sessionSubjects[$session->id] ?? 'Semua Mapel' }}
+                @if($session->ended_at)
+                    · Berakhir {{ $session->ended_at->format('d M Y, H:i') }}
+                @endif
+            </span>
+            <a href="{{ route('quiz.result', ['session' => $session->id]) }}" class="btn-ghost"
+               style="padding:7px 16px;font-size:13px;">
+                Lihat Hasil →
+            </a>
+        </div>
+    </div>
+    @endforeach
+</div>
+@endif
+
 {{-- Info siswa --}}
 <div style="
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 20px 24px;
+    margin-top: 20px;
 ">
     <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;
                 color:var(--text-dim);margin-bottom:14px;">Informasi Akun</div>
@@ -174,10 +219,8 @@
     </div>
 </div>
 
-{{-- Di siswa/dashboard.blade.php, sebelum @endsection --}}
-@if($activeSessions->isNotEmpty() && count($submittedIds) < $activeSessions->count())
+@if($activeSessions->isNotEmpty() && count(array_diff($activeSessions->pluck('id')->toArray(), $submittedIds)) > 0)
 <script>
-// Cek setiap 30 detik apakah ada hasil baru
 setInterval(() => {
     fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(() => window.location.reload())
