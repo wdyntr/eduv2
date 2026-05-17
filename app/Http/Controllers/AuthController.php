@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/AuthController.php
 
 namespace App\Http\Controllers;
 
@@ -10,11 +9,9 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        // Redirect jika sudah login
         if (Auth::check()) {
             return $this->redirectByRole(Auth::user()->role);
         }
-
         return view('auth.login');
     }
 
@@ -28,31 +25,24 @@ class AuthController extends Controller
             'password.required' => 'Password wajib diisi.',
         ]);
 
-        // Cek apakah user aktif sebelum login
         $user = \App\Models\User::where('username', $credentials['username'])->first();
 
-        // Debug sementara — hapus setelah masalah terselesaikan
         if (!$user) {
-            return back()->withErrors(['username' => 'User tidak ditemukan di DB.']);
+            return back()
+                ->withInput($request->only('username'))
+                ->withErrors(['username' => 'Username atau password salah.']);
         }
 
         if (!$user->is_active) {
-            return back()->withInput($request->only('username'))
-                        ->withErrors(['username' => 'Akun Anda tidak aktif.']);
-        }
-
-        if (!Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
-            return back()->withInput($request->only('username'))
-                        ->withErrors(['username' => 'Password salah atau hash tidak cocok.']);
-        }
-
-        if ($user && !$user->is_active) {
             return back()
                 ->withInput($request->only('username'))
                 ->withErrors(['username' => 'Akun Anda tidak aktif. Hubungi admin.']);
         }
 
-        if (!Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
+        if (!Auth::attempt(
+            ['username' => $credentials['username'], 'password' => $credentials['password']],
+            $request->boolean('remember')
+        )) {
             return back()
                 ->withInput($request->only('username'))
                 ->withErrors(['username' => 'Username atau password salah.']);
@@ -68,7 +58,6 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect()->route('login');
     }
 

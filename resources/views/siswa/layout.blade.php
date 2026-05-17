@@ -59,10 +59,12 @@
             </svg>
         </button>
 
-        {{-- Logout --}}
-        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+        {{-- Logout — pakai safeLogout ──────────────── --}}
+        <form method="POST" action="{{ route('logout') }}"
+              style="display:inline;" id="logout-form-siswa">
             @csrf
-            <button type="submit" class="btn-ghost" style="padding:7px 14px;font-size:13px;">
+            <button type="button" onclick="safeLogout('logout-form-siswa')"
+                    class="btn-ghost" style="padding:7px 14px;font-size:13px;">
                 Keluar
             </button>
         </form>
@@ -80,6 +82,29 @@ function toggleTheme() {
     const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
     html.dataset.theme = next;
     localStorage.setItem('quiz-theme', next);
+}
+
+// ── SESSION KEEPALIVE ──
+setInterval(() => {
+    fetch(window.location.href, {
+        method: 'HEAD',
+        credentials: 'same-origin',
+    }).catch(() => {});
+}, 10 * 60 * 1000);
+
+// ── SAFE LOGOUT ──
+async function safeLogout(formId) {
+    try {
+        const res  = await fetch('/logout-token');
+        const data = await res.json();
+        const form = document.getElementById(formId);
+        if (form) {
+            form.querySelector('input[name="_token"]').value = data.token;
+            form.submit();
+        }
+    } catch (e) {
+        window.location.href = '/logout';
+    }
 }
 </script>
 @yield('scripts')

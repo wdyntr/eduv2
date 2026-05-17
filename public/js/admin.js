@@ -15,7 +15,6 @@ function closeModalOutside(event, id) {
 }
 
 function openEdit(userId) {
-  // Tutup semua edit row lain
   document.querySelectorAll('.edit-row').forEach(r => r.style.display = 'none');
   document.getElementById('edit-row-' + userId).style.display = 'table-row';
 }
@@ -40,7 +39,6 @@ function toggleSidebar() {
     document.body.style.overflow = isOpen ? '' : 'hidden';
 }
 
-// Tutup sidebar saat resize ke desktop
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) {
         const sidebar = document.querySelector('.admin-sidebar');
@@ -50,3 +48,29 @@ window.addEventListener('resize', () => {
         document.body.style.overflow = '';
     }
 });
+
+// ── SESSION KEEPALIVE ──────────────────────────────────────
+// Ping setiap 10 menit agar session & CSRF token tidak expire
+// saat admin membiarkan halaman terbuka lama
+setInterval(() => {
+    fetch(window.location.href, {
+        method: 'HEAD',
+        credentials: 'same-origin',
+    }).catch(() => {});
+}, 10 * 60 * 1000);
+
+// ── SAFE LOGOUT — ambil CSRF token terbaru sebelum logout ──
+async function safeLogout() {
+    try {
+        const res  = await fetch('/logout-token');
+        const data = await res.json();
+        const form = document.getElementById('logout-form');
+        if (form) {
+            form.querySelector('input[name="_token"]').value = data.token;
+            form.submit();
+        }
+    } catch (e) {
+        // Fallback jika gagal ambil token
+        window.location.href = '/logout';
+    }
+}

@@ -14,6 +14,16 @@ Route::get('/',       [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
+// Untuk refresh CSRF token
+Route::get('/logout-token', function () {
+    return response()->json(['token' => csrf_token()]);
+})->middleware('auth');
+
+// Fallback logout via GET
+Route::get('/logout', [AuthController::class, 'logout'])
+     ->name('logout.get')
+     ->middleware('auth');
+
 // ── IMPORT (opsional, bisa diproteksi nanti) ──
 Route::get('/import',         [ImportController::class, 'index']);
 Route::post('/import/upload', [ImportController::class, 'import']);
