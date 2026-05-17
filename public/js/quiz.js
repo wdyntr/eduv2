@@ -299,10 +299,21 @@ function clearAnswers() {
 }
 
 function restoreAnswers() {
-    const saved = loadAnswers();
-    if (!saved || Object.keys(saved).length === 0) return;
+    // Jawaban dari DB (dikirim server saat render)
+    const fromServer = (typeof SAVED_ANSWERS !== 'undefined')
+        ? SAVED_ANSWERS
+        : {};
 
-    Object.entries(saved).forEach(([questionId, answer]) => {
+    // Jawaban dari localStorage (lebih baru, hasil pilihan sejak halaman dibuka)
+    const fromLocal = loadAnswers();
+
+    // Merge: server sebagai base, localStorage override jika ada
+    // Ini memastikan device baru tetap dapat jawaban dari DB
+    const merged = { ...fromServer, ...fromLocal };
+
+    if (Object.keys(merged).length === 0) return;
+
+    Object.entries(merged).forEach(([questionId, answer]) => {
         const container = document.getElementById('opts-' + questionId);
         if (!container) return;
 

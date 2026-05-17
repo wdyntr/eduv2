@@ -193,12 +193,18 @@ class QuizController extends Controller
 
         $sisaDetik = max(0, (int) now()->diffInSeconds($start->deadline_at));
 
+        // ── Ambil jawaban yang sudah tersimpan di DB ──
+        $savedAnswers = SiswaAnswer::where('session_id', $activeSession->id)
+            ->where('user_id', $user->id)
+            ->pluck('answer', 'question_id'); // { question_id: 'A', ... }
+
         return view('quiz.index', compact(
             'questions',
             'totalQuestions',
             'totalPoints',
             'activeSession',
             'sisaDetik',
+            'savedAnswers',
         ));
     }
 
