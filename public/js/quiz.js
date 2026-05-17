@@ -352,10 +352,20 @@ function renderMath() {
     });
 }
 
+function startSessionKeepalive() {
+    setInterval(() => {
+        fetch(window.location.href, {
+            method: 'HEAD',
+            credentials: 'same-origin',
+        }).catch(() => {});
+    }, 10 * 60 * 1000);
+}
+
 // ── INIT ──
 restoreAnswers();
 startTimer();
 startSync(); // ← mulai periodic sync
+startSessionKeepalive(); // ← tambah ini
 
 if (typeof renderMathInElement !== 'undefined') {
     renderMath();
