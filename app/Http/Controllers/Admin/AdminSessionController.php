@@ -73,11 +73,10 @@ class AdminSessionController extends Controller
     public function toggle(QuizSession $session)
     {
         if (!$session->is_active) {
-            // ← HAPUS blok nonaktifkan sesi lain
             $session->update([
                 'is_active'  => true,
                 'started_at' => now(),
-                'ended_at'   => null,
+                'ended_at'   => now()->endOfDay(), // ← otomatis 23:59:59 hari ini
             ]);
         } else {
             $session->update(['is_active' => false, 'ended_at' => now()]);

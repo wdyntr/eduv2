@@ -168,7 +168,9 @@ class QuizController extends Controller
             ['user_id' => $user->id, 'session_id' => $activeSession->id],
             [
                 'started_at'  => now(),
-                'deadline_at' => now()->addMinutes($activeSession->durasi), // ← per siswa
+                'deadline_at' => $activeSession->ended_at
+                    ? min(now()->addMinutes($activeSession->durasi), $activeSession->ended_at)
+                    : now()->addMinutes($activeSession->durasi), // fallback jika ended_at null
             ]
         );
 
