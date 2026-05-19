@@ -146,10 +146,14 @@ class QuizController extends Controller
             });
 
         if ($sessionId) {
-            $activeSession = $query->where('id', $sessionId)->firstOrFail();
+            $activeSession = $query->where('id', $sessionId)->first(); // ← ganti firstOrFail()
+
+            // Jika sesi tidak ditemukan atau sudah nonaktif → ke dashboard
+            if (!$activeSession) {
+                return redirect()->route('quiz.index')
+                    ->with('error', 'Sesi ujian tidak ditemukan atau sudah berakhir.');
+            }
         } else {
-            // Jika tidak ada sessionId → arahkan ke dashboard
-            // karena sekarang bisa ada beberapa sesi aktif
             return redirect()->route('quiz.index')
                 ->with('error', 'Pilih sesi ujian terlebih dahulu.');
         }
