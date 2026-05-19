@@ -76,10 +76,41 @@ class AdminSessionController extends Controller
             $session->update([
                 'is_active'  => true,
                 'started_at' => now(),
-                'ended_at'   => now()->endOfDay(), // ← otomatis 23:59:59 hari ini
+                'ended_at'   => now()->endOfDay(),
             ]);
         } else {
+            // ── Nonaktifkan sesi ──
             $session->update(['is_active' => false, 'ended_at' => now()]);
+
+            // ── Auto-submit semua siswa yang belum submit ──
+            $starts = \App\Models\SiswaQuizStart::where('session_id', $session->id)->get();
+
+            foreach ($starts as $start) {
+                $sudahSubmit = \App\Models\QuizHasil::where('session_id', $session->id)
+                    ->where('user_id', $start->user_id)
+                    ->exists();
+
+                if ($sudahSubmit) continue;
+
+                $existingAnswers = \App\Models\SiswaAnswer::where('session_id', $session->id)
+                    ->where('user_id', $start->user_id)
+                    ->get();
+
+                $correctCount = $existingAnswers->where('is_correct', true)->count();
+                $earnedPoints = $existingAnswers->where('is_correct', true)
+                    ->sum(fn($a) => \App\Models\Question::find($a->question_id)?->points ?? 1);
+
+                $totalInPaket = \App\Models\Question::where('paket', $session->paket)->count();
+
+                \App\Models\QuizHasil::create([
+                    'session_id'      => $session->id,
+                    'user_id'         => $start->user_id,
+                    'score'           => $earnedPoints,
+                    'total_questions' => $totalInPaket,
+                    'correct_count'   => $correctCount,
+                    'submitted_at'    => now(),
+                ]);
+            }
         }
 
         return back()->with('success', 'Status sesi diperbarui.');

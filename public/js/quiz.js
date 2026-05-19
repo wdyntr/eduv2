@@ -61,7 +61,7 @@ function selectOption(btn, questionId, answer) {
 
     const isNew = !selected[questionId];
     selected[questionId] = answer;
-    saveAnswers(); // simpan ke localStorage
+    saveAnswers();
 
     if (isNew) {
         answered++;
@@ -97,14 +97,14 @@ function selectOption(btn, questionId, answer) {
     syncDebounce = setTimeout(syncAnswersToServer, 3000);
 }
 
-// ── PERIODIC SYNC — kirim ke server setiap 60 detik ──
+// ── PERIODIC SYNC — kirim ke server setiap 30 detik ──
 let syncInterval = null;
 
 async function syncAnswersToServer() {
     if (submitted || Object.keys(selected).length === 0) return;
 
     try {
-        await fetch(SAVE_ANSWERS_URL, {
+        const response = await fetch(SAVE_ANSWERS_URL, {
             method : 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
             body   : JSON.stringify({
@@ -112,21 +112,62 @@ async function syncAnswersToServer() {
                 answers:    selected,
             })
         });
+
+        const data = await response.json();
+
+        // ── Jika sudah di-submit dari server (admin nonaktifkan) → redirect ──
+        if (data.already_submitted) {
+            submitted = true;
+            clearInterval(syncInterval);
+            clearInterval(timerInterval);
+            clearAnswers();
+            window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+        }
+
     } catch (e) {
-        // Gagal sync — tidak masalah, coba lagi 60 detik berikutnya
         console.warn('Sync jawaban gagal, akan dicoba lagi.');
     }
 }
 
 function startSync() {
-    syncInterval = setInterval(syncAnswersToServer, 30000); // setiap 60 detik
+    syncInterval = setInterval(syncAnswersToServer, 30000); // setiap 30 detik
 }
 
-// Tambahkan setelah fungsi startSync()
+// ── CEK STATUS SESI (untuk siswa yang belum jawab apapun) ──
+function startStatusCheck() {
+    setInterval(async () => {
+        if (submitted) return;
+
+        // Jika ada jawaban, biarkan syncAnswersToServer yang handle
+        if (Object.keys(selected).length > 0) return;
+
+        try {
+            const response = await fetch(SAVE_ANSWERS_URL, {
+                method : 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body   : JSON.stringify({
+                    session_id: SESSION_ID,
+                    answers:    {},
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.already_submitted) {
+                submitted = true;
+                clearInterval(syncInterval);
+                clearInterval(timerInterval);
+                clearAnswers();
+                window.location.href = RESULT_URL + '?session=' + SESSION_ID;
+            }
+        } catch (e) {}
+    }, 30000);
+}
+
+// ── BEFOREUNLOAD — sync saat siswa keluar halaman ──
 window.addEventListener('beforeunload', () => {
     if (submitted || Object.keys(selected).length === 0) return;
 
-    // ✅ Gunakan FormData agar _token terbaca Laravel
     const fd = new FormData();
     fd.append('_token', CSRF);
     fd.append('session_id', SESSION_ID);
@@ -144,13 +185,12 @@ async function submitQuiz() {
     }
 
     submitted = true;
-    clearInterval(syncInterval); // stop periodic sync
+    clearInterval(syncInterval);
 
     const btn = document.getElementById('btn-finish');
     btn.textContent   = 'Memproses...';
     btn.style.opacity = '0.6';
 
-    // Sync sekali lagi sebelum submit final
     await syncAnswersToServer();
 
     try {
@@ -167,7 +207,7 @@ async function submitQuiz() {
             submitted         = false;
             btn.textContent   = 'Kumpulkan Jawaban';
             btn.style.opacity = '1';
-            startSync(); // hidupkan lagi sync
+            startSync();
             return;
         }
 
@@ -190,17 +230,14 @@ async function autoSubmit() {
     const btn = document.getElementById('btn-finish');
     if (btn) btn.textContent = 'Waktu habis...';
 
-    // Ambil dari localStorage jika selected kosong
     if (Object.keys(selected).length === 0) {
         const saved = loadAnswers();
         if (saved && Object.keys(saved).length > 0) selected = saved;
     }
 
-    // Sync dulu ke server
     await syncAnswersToServer();
 
     if (Object.keys(selected).length === 0) {
-        // Tidak ada jawaban — scheduler yang handle
         clearAnswers();
         window.location.href = RESULT_URL + '?session=' + SESSION_ID;
         return;
@@ -213,13 +250,11 @@ async function autoSubmit() {
             body   : JSON.stringify({ answers: selected, session_id: SESSION_ID })
         });
 
-        // Apapun hasilnya → ke result
         clearAnswers();
         clearInterval(timerInterval);
         window.location.href = RESULT_URL + '?session=' + SESSION_ID;
 
     } catch (e) {
-        // Network error → ke result, scheduler yang handle
         clearAnswers();
         window.location.href = RESULT_URL + '?session=' + SESSION_ID;
     }
@@ -234,25 +269,20 @@ function scrollToQuestion(questionId) {
 // ── TIMER ──
 let timerInterval = null;
 
-// Simpan deadline sebagai timestamp absolut
 const DEADLINE_TS = Date.now() + (DURASI * 1000);
 
 function startTimer() {
     if (typeof DURASI === 'undefined' || !DURASI) return;
 
-    updateTimerFromDeadline(); // tampilkan langsung sebelum interval pertama
-
+    updateTimerFromDeadline();
     timerInterval = setInterval(updateTimerFromDeadline, 1000);
 }
 
 function updateTimerFromDeadline() {
-    // Hitung sisa waktu dari waktu sekarang vs deadline
-    // Ini akurat meski tab tidak aktif / setInterval terlambat
     const remaining = Math.max(0, Math.floor((DEADLINE_TS - Date.now()) / 1000));
 
     updateTimerDisplay(remaining);
 
-    // Warning state
     if (remaining <= 300 && remaining > 60) {
         document.getElementById('timer-wrap')?.classList.add('timer-warning');
         document.getElementById('timer-float')?.classList.add('timer-warning');
@@ -282,6 +312,7 @@ function updateTimerDisplay(seconds) {
     if (el)      el.textContent      = time;
     if (elFloat) elFloat.textContent = time;
 }
+
 // ── ANSWER STORAGE ──
 const ANSWER_KEY = 'quiz-answers-' + USER_ID + '-' + SESSION_ID;
 
@@ -299,17 +330,9 @@ function clearAnswers() {
 }
 
 function restoreAnswers() {
-    // Jawaban dari DB (dikirim server saat render)
-    const fromServer = (typeof SAVED_ANSWERS !== 'undefined')
-        ? SAVED_ANSWERS
-        : {};
-
-    // Jawaban dari localStorage (lebih baru, hasil pilihan sejak halaman dibuka)
-    const fromLocal = loadAnswers();
-
-    // Merge: server sebagai base, localStorage override jika ada
-    // Ini memastikan device baru tetap dapat jawaban dari DB
-    const merged = { ...fromServer, ...fromLocal };
+    const fromServer = (typeof SAVED_ANSWERS !== 'undefined') ? SAVED_ANSWERS : {};
+    const fromLocal  = loadAnswers();
+    const merged     = { ...fromServer, ...fromLocal };
 
     if (Object.keys(merged).length === 0) return;
 
@@ -375,8 +398,9 @@ function startSessionKeepalive() {
 // ── INIT ──
 restoreAnswers();
 startTimer();
-startSync(); // ← mulai periodic sync
-startSessionKeepalive(); // ← tambah ini
+startSync();
+startStatusCheck(); // ← cek status untuk siswa yang belum jawab
+startSessionKeepalive();
 
 if (typeof renderMathInElement !== 'undefined') {
     renderMath();

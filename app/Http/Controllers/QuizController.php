@@ -224,10 +224,6 @@ class QuizController extends Controller
             $answers = json_decode($answers, true) ?? [];
         }
 
-        if (empty($answers)) {
-            return response()->json(['ok' => true, 'saved' => 0]);
-        }
-
         $session = QuizSession::where('id', $sessionId)
             ->where(function ($q) use ($user) {
                 $q->whereNull('kelas')->orWhere('kelas', $user->kelas);
@@ -235,6 +231,15 @@ class QuizController extends Controller
 
         if (!$session) {
             return response()->json(['ok' => false, 'error' => 'Sesi tidak ditemukan.']);
+        }
+
+        // ── Cek sudah submit DULU sebelum cek answers kosong ──
+        if (QuizHasil::where('session_id', $session->id)->where('user_id', $user->id)->exists()) {
+            return response()->json(['ok' => true, 'already_submitted' => true]);
+        }
+
+        if (empty($answers)) {
+            return response()->json(['ok' => true, 'saved' => 0]);
         }
 
         // Cek deadline siswa
@@ -246,14 +251,8 @@ class QuizController extends Controller
             return response()->json(['ok' => false, 'error' => 'Data start tidak ditemukan.']);
         }
 
-        // ← kembalikan ke $start->deadline_at (bukan $session->ended_at)
         if (now()->gt($start->deadline_at->addSeconds(30))) {
             return response()->json(['ok' => false, 'error' => 'Waktu telah habis.']);
-        }
-
-        // Sudah submit? Tidak perlu sync lagi
-        if (QuizHasil::where('session_id', $session->id)->where('user_id', $user->id)->exists()) {
-            return response()->json(['ok' => true, 'already_submitted' => true]);
         }
 
         $saved = 0;
