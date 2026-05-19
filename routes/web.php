@@ -54,3 +54,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('results/{session}',               [AdminResultController::class, 'show'])->name('results.show');
     Route::get('results/{session}/user/{user}',   [AdminResultController::class, 'detail'])->name('results.detail');
 });
+
+
+// ── FALLBACK ──────────────────────────────────
+Route::fallback(function () {
+    if (auth()->check()) {
+        $role = auth()->user()->role;
+
+        if ($role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return redirect()->route('quiz.index');
+    }
+
+    return redirect()->route('login');
+});
