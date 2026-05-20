@@ -16,6 +16,18 @@ class CloseExpiredSessions extends Command
 
     public function handle()
     {
+        // ── 1. Tutup sesi yang ended_at sudah lewat ──
+        $expiredSessions = QuizSession::where('is_active', true)
+            ->whereNotNull('ended_at')
+            ->where('ended_at', '<=', now())
+            ->get();
+
+        foreach ($expiredSessions as $session) {
+            $session->update(['is_active' => false]);
+            $this->info("Sesi id={$session->id} ditutup otomatis (ended_at lewat).");
+        }
+
+        // ── 2. Handle deadline personal siswa yang sudah habis ──
         $expiredStarts = SiswaQuizStart::where('deadline_at', '<=', now())->get();
 
         $handled = 0;
@@ -31,8 +43,8 @@ class CloseExpiredSessions extends Command
             $handled++;
         }
 
-        if ($handled === 0) {
-            $this->info('Tidak ada deadline siswa yang perlu diproses.');
+        if ($expiredSessions->isEmpty() && $handled === 0) {
+            $this->info('Tidak ada sesi atau deadline siswa yang perlu diproses.');
         }
     }
 

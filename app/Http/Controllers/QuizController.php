@@ -153,6 +153,13 @@ class QuizController extends Controller
                 return redirect()->route('quiz.index')
                     ->with('error', 'Sesi ujian tidak ditemukan atau sudah berakhir.');
             }
+
+                // ── Auto-close jika ended_at sudah lewat ──
+            if ($activeSession->ended_at && now()->gt($activeSession->ended_at)) {
+                $activeSession->update(['is_active' => false]);
+                return redirect()->route('quiz.index')
+                    ->with('error', 'Sesi ujian telah berakhir.');
+            }
         } else {
             return redirect()->route('quiz.index')
                 ->with('error', 'Pilih sesi ujian terlebih dahulu.');
