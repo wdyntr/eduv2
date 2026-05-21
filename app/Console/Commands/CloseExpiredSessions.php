@@ -8,6 +8,7 @@ use App\Models\SiswaQuizStart;
 use App\Models\SiswaAnswer;
 use App\Models\QuizHasil;
 use App\Models\Question;
+use Illuminate\Support\Facades\Log;
 
 class CloseExpiredSessions extends Command
 {
@@ -16,6 +17,8 @@ class CloseExpiredSessions extends Command
 
     public function handle()
     {
+        \Illuminate\Support\Facades\Log::info('quiz:close-expired dijalankan', ['time' => now()]);
+
         // ── 1. Tutup sesi yang ended_at sudah lewat ──
         $expiredSessions = QuizSession::where('is_active', true)
             ->whereNotNull('ended_at')
