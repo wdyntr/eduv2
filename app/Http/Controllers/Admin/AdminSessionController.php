@@ -11,12 +11,19 @@ use App\Models\QuizHasil;
 
 class AdminSessionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $sessions = QuizSession::with('creator')
-                               ->latest()
-                               ->paginate(15);
-
+            ->when($request->kelas, fn($q, $k) =>
+                $q->where(function($q) use ($k) {
+                    $q->where('kelas', $k)->orWhereNull('kelas');
+                })
+            )
+            ->when($request->status === 'aktif',    fn($q) => $q->where('is_active', true))
+            ->when($request->status === 'nonaktif', fn($q) => $q->where('is_active', false))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString(); // ← agar filter tidak hilang saat pindah halaman
         // Ambil daftar paket beserta mata pelajaran yang ada di tiap paket
         $pakets = Question::with('passage')
             ->select('paket', 'passage_id')

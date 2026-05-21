@@ -10,6 +10,26 @@
     </button>
 </div>
 
+{{-- Setelah .page-header, sebelum .admin-table-wrap --}}
+<form method="GET" class="filter-row" style="margin-bottom:20px;">
+    <select name="kelas" class="admin-select" onchange="this.form.submit()">
+        <option value="">Semua Kelas</option>
+        @foreach($kelasList as $k)
+            <option value="{{ $k }}" {{ request('kelas') === $k ? 'selected' : '' }}>
+                {{ $k }}
+            </option>
+        @endforeach
+    </select>
+    <select name="status" class="admin-select" onchange="this.form.submit()">
+        <option value="">Semua Status</option>
+        <option value="aktif"    {{ request('status') === 'aktif'    ? 'selected' : '' }}>Aktif</option>
+        <option value="nonaktif" {{ request('status') === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+    </select>
+    @if(request('kelas') || request('status'))
+        <a href="{{ route('admin.sessions.index') }}" class="btn-ghost">Reset</a>
+    @endif
+</form>
+
 <div class="admin-table-wrap">
     <table class="admin-table">
         <thead>
