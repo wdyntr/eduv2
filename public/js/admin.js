@@ -74,3 +74,11 @@ async function safeLogout() {
         window.location.href = '/logout';
     }
 }
+
+// Auto-refresh halaman sesi setiap 60 detik
+// Hanya aktif di halaman sessions
+if (window.location.pathname.includes('/admin/sessions')) {
+    setInterval(() => {
+        window.location.reload();
+    }, 60 * 1000);
+}
