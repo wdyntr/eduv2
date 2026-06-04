@@ -18,9 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             Artisan::call('quiz:close-expired');
         })->everyMinute();
     })
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role' => RoleMiddleware::class,
+            'admin.auth' => \App\Http\Middleware\AdminAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
