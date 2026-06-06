@@ -1,0 +1,182 @@
+/* =====================
+   CLASSROOM HERO
+===================== */
+.classroom-hero {
+  background: var(--dark);
+  padding-top: 120px;
+  padding-bottom: 60px;
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+}
+
+.classroom-hero::before {
+  content: '';
+  position: absolute;
+  top: -150px; right: -150px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(26,122,74,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.classroom-hero .row {
+  min-height: 360px;
+}
+
+.classroom-hero-stats {
+  width: 100%;
+  padding-left: 20px;
+}
+
+/* =====================
+   HERO STAT CARDS
+===================== */
+.hero-stat-card {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.hero-stat-card:hover { background: rgba(255,255,255,0.12); }
+
+.hero-stat-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.hero-stat-num {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--gold, #f0a500);
+  line-height: 1;
+  display: block;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+  display: block;
+}
+
+/* =====================
+   SCHOOL CARD
+===================== */
+.school-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,0.07);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.school-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+}
+
+.school-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.school-avatar {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.school-avatar.sma { background: #e8f7ef; }
+.school-avatar.smk { background: #e8f0ff; }
+.school-avatar.slb { background: #fff3e0; }
+
+.school-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text, #1a1a2e);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.school-kota {
+  font-size: 0.78rem;
+  color: var(--text-muted, #6c757d);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.school-card-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-classroom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--green, #1a7a4a);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-classroom:hover {
+  background: var(--green-dark, #0d3b26);
+  color: #fff;
+}
+
+.btn-classroom.disabled {
+  background: #f0f0f0;
+  color: var(--text-muted, #6c757d);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =====================
+   EMPTY STATE
+===================== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted, #6c757d);
+}
+
+.empty-state .empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.empty-state h5 { font-family: 'Sora', sans-serif; font-weight: 700; margin-bottom: 8px; }
+.empty-state p  { font-size: 0.88rem; }
+
+/* =====================
+   RESPONSIVE
+===================== */
+@media (max-width: 992px) {
+  .classroom-hero         { padding-top: 100px; padding-bottom: 40px; }
+  .classroom-hero-stats   { padding-left: 0; margin-top: 30px; }
+}
+
+@media (max-width: 768px) {
+  .classroom-hero { padding-top: 90px; }
+}

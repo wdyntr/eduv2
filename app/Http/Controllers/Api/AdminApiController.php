@@ -30,7 +30,7 @@ class AdminApiController extends Controller
         ]);
 
         return response()->json(['ok' => true])
-            ->cookie('admin_session', $token, 1440, '/', null, false, true);
+            ->withCookie(\Cookie::make('admin_session', $token, 1440, '/', null, false, false));
     }
 
     public function getUsers(Request $request)
