@@ -71,7 +71,7 @@ function renderTabelMateri(tbodyId, items, page, perPage, withActions = false) {
     return;
   }
 
-  const EMOJI = { video: '🎬', ppt: '📑', pdf: '📄' };
+  const EMOJI = { video: '🎬', ppt: '📑' };
 
   tbody.innerHTML = items.map((m, i) => `
     <tr>

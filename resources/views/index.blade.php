@@ -20,10 +20,10 @@
   </div>
   <div class="tumpal-right d-none d-lg-block">
     <svg viewBox="0 0 120 400" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="0,0 120,40 0,80" fill="rgba(26,122,74,0.2)"/>
-      <polygon points="0,90 120,130 0,170" fill="rgba(26,122,74,0.15)"/>
-      <polygon points="0,180 120,220 0,260" fill="rgba(26,122,74,0.1)"/>
-      <polygon points="0,270 120,310 0,350" fill="rgba(26,122,74,0.07)"/>
+      <polygon points="0,0 120,40 0,80" fill="rgba(26,58,107,0.2)"/>
+      <polygon points="0,90 120,130 0,170" fill="rgba(26,58,107,0.15)"/>
+      <polygon points="0,180 120,220 0,260" fill="rgba(26,58,107,0.1)"/>
+      <polygon points="0,270 120,310 0,350" fill="rgba(26,58,107,0.07)"/>
     </svg>
   </div>
 
@@ -51,34 +51,10 @@
       </div>
       <div class="col-lg-5 d-none d-lg-flex justify-content-center">
         <div class="hero-visual">
-          <svg viewBox="0 0 400 360" xmlns="http://www.w3.org/2000/svg" class="siger-illustration">
-            <circle cx="200" cy="180" r="160" fill="rgba(26,122,74,0.08)"/>
-            <circle cx="200" cy="180" r="120" fill="rgba(26,122,74,0.06)"/>
-            <g transform="translate(80, 60)">
-              <rect x="40" y="180" width="160" height="20" rx="4" fill="#1a7a4a"/>
-              <polygon points="120,40 100,180 140,180" fill="#f0a500"/>
-              <polygon points="80,80 60,180 100,180" fill="#1a7a4a"/>
-              <polygon points="160,80 140,180 180,180" fill="#1a7a4a"/>
-              <polygon points="40,110 20,180 60,180" fill="#f0a500" opacity="0.8"/>
-              <polygon points="200,110 180,180 220,180" fill="#f0a500" opacity="0.8"/>
-              <circle cx="120" cy="36" r="12" fill="#f0a500"/>
-              <circle cx="80" cy="76" r="9" fill="#1a7a4a"/>
-              <circle cx="160" cy="76" r="9" fill="#1a7a4a"/>
-              <circle cx="40" cy="106" r="7" fill="#f0a500"/>
-              <circle cx="200" cy="106" r="7" fill="#f0a500"/>
-              <circle cx="120" cy="36" r="5" fill="#fff" opacity="0.8"/>
-              <circle cx="80" cy="76" r="4" fill="#fff" opacity="0.7"/>
-              <circle cx="160" cy="76" r="4" fill="#fff" opacity="0.7"/>
-            </g>
-            <g transform="translate(40, 290)">
-              <rect x="0" y="0" width="320" height="30" rx="4" fill="rgba(26,122,74,0.15)"/>
-              <g fill="rgba(240,165,0,0.6)">
-                @for ($i = 0; $i < 17; $i++)
-                <rect x="{{ 10 + $i * 18 }}" y="5" width="8" height="20" rx="2"/>
-                @endfor
-              </g>
-            </g>
-          </svg>
+          <img src="{{ asset('images/logoBalai.png') }}"
+               alt="Siger Baltik Lampung"
+               class="siger-illustration"
+               style="max-width:380px; width:100%;">
         </div>
       </div>
     </div>
@@ -100,7 +76,7 @@
         <a href="/media" class="menu-card menu-media">
           <div class="menu-icon">🎬</div>
           <h5>Media</h5>
-          <p>Video, PPT & PDF pembelajaran SMA, SMK, SLB</p>
+          <p>Video & PPT pembelajaran SMA, SMK, SLB</p>
           <span class="menu-arrow"><i class="bi bi-arrow-right"></i></span>
         </a>
       </div>
@@ -127,7 +103,62 @@
         <a href="{{ config('site.youtube_url') }}" target="_blank" rel="noopener" class="menu-card menu-youtube">
           <div class="menu-icon">▶️</div>
           <h5>YouTube</h5>
-          <p>Channel YouTube resmi EduLampung</p>
+          <p>Channel YouTube resmi Balai TIK</p>
+          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
+        </a>
+      </div>
+
+      {{-- Aksi Jihan --}}
+      <div class="col-6 col-lg-3">
+        <a href="{{ config('site.aksijihan')  }}" target="_blank" rel="noopener" class="menu-card menu-aksijihan">
+          <div class="menu-icon">
+            <img src="{{ asset('images/aksiJihan.png') }}" alt="Aksi Jihan" style="height:48px;object-fit:contain;"> </div>
+          <h5>Aksi Jihan</h5>
+          <p>Platform pembelajaran interaktif</p>
+          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
+        </a>
+      </div>
+
+      {{-- RMD --}}
+      <div class="col-6 col-lg-3">
+        <a href="{{ config('site.rmd')  }}" target="_blank" rel="noopener" class="menu-card menu-rmd">
+          <div class="menu-icon">
+            <img src="{{ asset('images/rmd.webp') }}" alt="RMD" style="height:48px;object-fit:contain;">
+          </div>
+          <h5>RMD</h5>
+          <p>Sumber referensi pendidikan digital</p>
+          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
+        </a>
+      </div>
+
+      {{-- PDF Pembelajaran --}}
+      <div class="col-6 col-lg-3">
+        <a href="{{ config('site.pdf')  }}" target="_blank" rel="noopener" class="menu-card menu-pdf">
+          <div class="menu-icon">📄</div>
+          <h5>PDF Pembelajaran</h5>
+          <p>Kumpulan modul dan buku pelajaran PDF</p>
+          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
+        </a>
+      </div>
+
+      {{-- D Smart --}}
+      <div class="col-6 col-lg-3">
+        <a href="{{ config('site.dsmart')  }}" target="_blank" rel="noopener" class="menu-card menu-dsmart">
+          <div class="menu-icon">
+            <img src="{{ asset('images/dsmart.png') }}" alt="D Smart" style="height:48px;object-fit:contain;">
+          </div>
+          <h5>D Smart</h5>
+          <p>Platform belajar cerdas berbasis AI</p>
+          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
+        </a>
+      </div>
+
+      {{-- Tes MBTI --}}
+      <div class="col-6 col-lg-3">
+        <a href="{{ config('site.mbti')  }}" target="_blank" rel="noopener" class="menu-card menu-mbti">
+          <div class="menu-icon">🧠</div>
+          <h5>Tes MBTI</h5>
+          <p>Kenali kepribadianmu dengan tes MBTI gratis</p>
           <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
         </a>
       </div>
@@ -188,7 +219,7 @@
           <div class="col-sm-6">
             <div class="fitur-card">
               <div class="fitur-icon bg-gold-pale">📄</div>
-              <h5>Modul PDF</h5>
+              <h5>Journal </h5>
               <p>Baca modul dan buku pelajaran PDF langsung di browser.</p>
             </div>
           </div>

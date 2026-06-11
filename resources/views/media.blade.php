@@ -21,7 +21,7 @@
           Semua Materi<br>dalam Satu <span class="text-highlight">Tempat</span>
         </h1>
         <p class="hero-desc mb-4">
-          Video YouTube, slide PPT, dan modul PDF untuk SMA, SMK, dan SLB —
+          Video YouTube dan slide PPT untuk SMA, SMK, dan SLB —
           dikelola oleh guru terpilih se-Provinsi Lampung.
         </p>
       </div>
@@ -42,13 +42,7 @@
                 <div class="hero-stat-label">Slide PPT</div>
               </div>
             </div>
-            <div class="col-6">
-              <div class="hero-stat-card">
-                <div class="hero-stat-icon">📄</div>
-                <div class="hero-stat-num" id="countPdf">-</div>
-                <div class="hero-stat-label">Modul PDF</div>
-              </div>
-            </div>
+
             <div class="col-6">
               <div class="hero-stat-card">
                 <div class="hero-stat-icon">📚</div>
@@ -128,9 +122,7 @@
         <button class="btn btn-filter" data-tipe="ppt" onclick="filterTipe('ppt', this)">
           <i class="bi bi-file-earmark-slides me-1"></i>PPT
         </button>
-        <button class="btn btn-filter" data-tipe="pdf" onclick="filterTipe('pdf', this)">
-          <i class="bi bi-file-earmark-pdf me-1"></i>PDF
-        </button>
+
         <div class="view-toggle ms-2">
           <button class="view-btn active" id="btnGrid" onclick="setView('grid')" title="Grid View">
             <i class="bi bi-grid-3x3-gap"></i>

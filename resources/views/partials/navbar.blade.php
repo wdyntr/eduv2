@@ -3,7 +3,7 @@
 
     <!-- Brand -->
     <a class="navbar-brand" href="/">
-      <span class="brand-edu">Edu</span><span class="brand-lampung">Lampung</span>
+      <span class="brand-edu">Lampung</span><span class="brand-lampung">Belajar</span>
     </a>
 
     <!-- Toggler mobile -->

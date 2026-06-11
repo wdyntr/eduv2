@@ -4,9 +4,8 @@
 const THUMB_BG = {
   video: 'linear-gradient(135deg,#e8f7ef,#c5ebd8)',
   ppt:   'linear-gradient(135deg,#e8f0ff,#c5d5f5)',
-  pdf:   'linear-gradient(135deg,#fff8e8,#faebc5)',
 };
-const THUMB_EMOJI = { video: '🎬', ppt: '📑', pdf: '📄' };
+const THUMB_EMOJI = { video: '🎬', ppt: '📑' };
 const BADGE_CLASS  = { sma: 'badge-sma', smk: 'badge-smk', slb: 'badge-slb' };
 
 // State
@@ -175,7 +174,6 @@ function updateStats(data) {
   if (data.stats) {
     setText('countVideo', data.stats.video ?? '-');
     setText('countPpt',   data.stats.ppt   ?? '-');
-    setText('countPdf',   data.stats.pdf   ?? '-');
     setText('countTotal', data.total       ?? '-');
   }
 }
@@ -200,11 +198,9 @@ function setText(id, val) {
 function getPlaceholder() {
   return [
     { id:'#', jenjang:'SMA', tipe:'video', judul:'Limit dan Turunan Fungsi', deskripsi:'Konsep limit, turunan, dan penerapannya.', mata_pelajaran:'Matematika' },
-    { id:'#', jenjang:'SMA', tipe:'pdf',   judul:'Fisika: Listrik Dinamis',  deskripsi:'Hukum Ohm dan rangkaian listrik.',        mata_pelajaran:'Fisika' },
     { id:'#', jenjang:'SMK', tipe:'ppt',   judul:'Bahasa Indonesia Profesi', deskripsi:'Teknik penulisan laporan resmi.',          mata_pelajaran:'Bahasa Indonesia' },
     { id:'#', jenjang:'SMA', tipe:'video', judul:'Kimia Organik Dasar',      deskripsi:'Struktur dan reaksi senyawa organik.',     mata_pelajaran:'Kimia' },
     { id:'#', jenjang:'SLB', tipe:'video', judul:'Mengenal Makhluk Hidup',   deskripsi:'Materi adaptif pendekatan visual.',        mata_pelajaran:'IPA' },
-    { id:'#', jenjang:'SMA', tipe:'pdf',   judul:'Sejarah Indonesia Modern', deskripsi:'Perjalanan bangsa dari kemerdekaan.',      mata_pelajaran:'Sejarah' },
   ];
 }
 

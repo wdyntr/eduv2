@@ -85,33 +85,6 @@
               </div>
             </div>
           </div>
-
-          @elseif ($materi->tipe == 'pdf')
-          <div class="drive-viewer">
-            <div class="drive-toolbar">
-              <span class="drive-type-badge">
-                <i class="bi bi-file-earmark-pdf me-1"></i>Modul PDF
-              </span>
-              <a href="{{ $materi->url }}" target="_blank" rel="noopener" class="btn btn-outline-custom btn-sm">
-                <i class="bi bi-download me-1"></i>Download PDF
-              </a>
-            </div>
-            <iframe
-              src="{{ driveEmbed($materi->url, 'pdf') }}"
-              frameborder="0"
-              allowfullscreen
-              id="driveFrame"
-              style="width:100%; height:560px; display:block; border:none;">
-            </iframe>
-            <div class="drive-loading" id="driveLoading">
-              <div class="spinner-border text-success"></div>
-              <p class="mt-2 text-muted small">Memuat dokumen...</p>
-              <a href="{{ $materi->url }}" target="_blank" rel="noopener"
-                class="btn btn-outline-custom btn-sm mt-2" id="fallbackBtn" style="display:none">
-                <i class="bi bi-box-arrow-up-right me-1"></i>Buka Langsung di Drive
-              </a>
-            </div>
-          </div>
           @endif
         </div>
 

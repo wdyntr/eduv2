@@ -83,10 +83,6 @@
                 <input type="radio" name="tipe" value="ppt" onchange="applyFilter()">
                 <i class="bi bi-file-earmark-slides text-primary me-1"></i> Slide PPT
               </label>
-              <label class="filter-check">
-                <input type="radio" name="tipe" value="pdf" onchange="applyFilter()">
-                <i class="bi bi-file-earmark-pdf text-danger me-1"></i> Modul PDF
-              </label>
             </div>
           </div>
           <div class="filter-group">

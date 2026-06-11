@@ -2,16 +2,16 @@
    GLOBAL
 ===================== */
 :root {
-  --green: #1a7a4a;
-  --green-light: #25a862;
-  --green-pale: #e8f7ef;
+  --green: #1a3a6b;
+  --green-light: #2d5090;
+  --green-pale: #e8f0ff;
   --gold: #f0a500;
   --gold-pale: #fff8e8;
-  --dark: #0d1f15;
-  --dark-2: #0a1a10;
-  --text: #1c2e23;
-  --text-muted: #6b8070;
-  --bg-light: #f8faf9;
+  --dark: #0a1628;
+  --dark-2: #081020;
+  --text: #1c2440;
+  --text-muted: #6b7890;
+  --bg-light: #f8f9ff;
 }
 
 * { box-sizing: border-box; }
@@ -30,7 +30,7 @@ body {
 .section-label {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--green);
+  color: #2d5090;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -154,7 +154,7 @@ body {
   position: absolute;
   top: -200px; right: -200px;
   width: 700px; height: 700px;
-  background: radial-gradient(circle, rgba(26,122,74,0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(26,58,107,0.25) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -192,9 +192,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(26,122,74,0.2);
-  border: 1px solid rgba(26,122,74,0.4);
-  color: #6debb4;
+  background: rgba(26,58,107,0.2);
+  border: 1px solid rgba(26,58,107,0.4);
+  color: #6db4eb;
   padding: 6px 16px;
   border-radius: 50px;
   font-size: 0.78rem;
@@ -204,7 +204,7 @@ body {
 
 .badge-dot {
   width: 7px; height: 7px;
-  background: var(--green-light);
+  background: #2d5090;
   border-radius: 50%;
   animation: pulse 2s infinite;
 }
@@ -336,9 +336,14 @@ body {
   color: #fff;
 }
 
-.card-sma { background: linear-gradient(135deg, #0d3b26, #1a7a4a); }
-.card-smk { background: linear-gradient(135deg, #1a2b4a, #2d5090); }
-.card-slb { background: linear-gradient(135deg, #3b1a0d, #8a4a1a); }
+/* .card-sma { background: linear-gradient(135deg, #0d3b26, #1a7a4a); } */
+/* .card-smk { background: linear-gradient(135deg, #1a2b4a, #2d5090); } */
+/* .card-slb { background: linear-gradient(135deg, #3b1a0d, #8a4a1a); } */
+
+.card-sma { background: linear-gradient(135deg, #0a1e3d, #1a3a6b); }
+.card-smk { background: linear-gradient(135deg, #0d1f3b, #2d5090); }
+.card-slb { background: linear-gradient(135deg, #0a1628, #1a4a8a); }
+
 
 .jenjang-icon { font-size: 2.5rem; margin-bottom: 12px; }
 
@@ -515,7 +520,7 @@ body {
   font-family: 'Sora', sans-serif;
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--green);
+  color: #2d5090;
   margin-bottom: 6px;
 }
 

@@ -38,7 +38,6 @@
         <option value="">Pilih Tipe</option>
         <option value="video" {{ isset($materi) && $materi->tipe == 'video' ? 'selected' : '' }}>🎬 Video YouTube</option>
         <option value="ppt"   {{ isset($materi) && $materi->tipe == 'ppt'   ? 'selected' : '' }}>📑 Slide PPT</option>
-        <option value="pdf"   {{ isset($materi) && $materi->tipe == 'pdf'   ? 'selected' : '' }}>📄 Modul PDF</option>
       </select>
     </div>
 

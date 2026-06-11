@@ -179,8 +179,8 @@ function renderItems(items) {
     return;
   }
 
-  const THUMB_BG    = { video:'linear-gradient(135deg,#e8f7ef,#c5ebd8)', ppt:'linear-gradient(135deg,#e8f0ff,#c5d5f5)', pdf:'linear-gradient(135deg,#fff8e8,#faebc5)' };
-  const THUMB_EMOJI = { video:'🎬', ppt:'📑', pdf:'📄' };
+  const THUMB_BG    = { video:'linear-gradient(135deg,#e8f7ef,#c5ebd8)', ppt:'linear-gradient(135deg,#e8f0ff,#c5d5f5)' };
+  const THUMB_EMOJI = { video:'🎬', ppt:'📑'};
   const BADGE_CLASS = { sma:'badge-sma', smk:'badge-smk', slb:'badge-slb' };
   const j = state.jenjang;
 
@@ -305,20 +305,16 @@ function getPlaceholder() {
   const byJenjang = {
     sma: [
       { id:'#', tipe:'video', judul:'Limit dan Turunan Fungsi',  deskripsi:'Konsep limit, turunan.',     mata_pelajaran:'Matematika' },
-      { id:'#', tipe:'pdf',   judul:'Fisika: Listrik Dinamis',   deskripsi:'Hukum Ohm dan rangkaian.',   mata_pelajaran:'Fisika' },
       { id:'#', tipe:'video', judul:'Kimia Organik Dasar',       deskripsi:'Struktur senyawa organik.',  mata_pelajaran:'Kimia' },
-      { id:'#', tipe:'pdf',   judul:'Sejarah Indonesia Modern',  deskripsi:'Dari kemerdekaan ke kini.',  mata_pelajaran:'Sejarah' },
       { id:'#', tipe:'ppt',   judul:'Ekonomi: Pasar Modal',      deskripsi:'Investasi dan saham.',       mata_pelajaran:'Ekonomi' },
       { id:'#', tipe:'video', judul:'Biologi: Sel dan Jaringan', deskripsi:'Struktur sel makhluk hidup.',mata_pelajaran:'Biologi' },
     ],
     smk: [
       { id:'#', tipe:'ppt',   judul:'Bahasa Indonesia Profesi',  deskripsi:'Penulisan laporan resmi.',   mata_pelajaran:'Bahasa Indonesia' },
       { id:'#', tipe:'video', judul:'Matematika Terapan',        deskripsi:'Aplikasi matematika kerja.', mata_pelajaran:'Matematika' },
-      { id:'#', tipe:'pdf',   judul:'IPA Terapan',               deskripsi:'Sains untuk industri.',      mata_pelajaran:'IPA Terapan' },
     ],
     slb: [
       { id:'#', tipe:'video', judul:'Mengenal Makhluk Hidup',    deskripsi:'Materi adaptif visual.',     mata_pelajaran:'IPA' },
-      { id:'#', tipe:'pdf',   judul:'Matematika Dasar',          deskripsi:'Berhitung sederhana.',       mata_pelajaran:'Matematika' },
       { id:'#', tipe:'ppt',   judul:'Bahasa Indonesia Dasar',    deskripsi:'Membaca dan menulis.',       mata_pelajaran:'Bahasa Indonesia' },
     ],
   };

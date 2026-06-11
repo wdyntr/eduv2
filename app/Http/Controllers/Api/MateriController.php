@@ -13,7 +13,9 @@ class MateriController extends Controller
         $page  = $request->get('page', 1);
         $sort  = $request->get('sort', 'terbaru');
 
-        $query = Materi::with('mapel')->where('is_active', 1);
+        $query = Materi::with('mapel')
+            ->where('is_active', 1)
+            ->whereIn('tipe', ['video', 'ppt']); // tambahkan ini
 
         if ($request->jenjang) $query->where('jenjang', $request->jenjang);
         if ($request->tipe)    $query->where('tipe', $request->tipe);

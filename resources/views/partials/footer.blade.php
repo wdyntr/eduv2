@@ -6,7 +6,7 @@
       <!-- Brand & desc -->
       <div class="col-lg-4">
         <a class="navbar-brand mb-3 d-block" href="/">
-          <span class="brand-edu">Edu</span><span class="brand-lampung">Lampung</span>
+          <span class="brand-edu">Lampung</span><span class="brand-lampung">Belajar</span>
         </a>
         <p class="text-white-50 small">
           Platform belajar digital untuk pelajar Lampung. Akses materi berkualitas dari mana saja, kapan saja.
@@ -55,8 +55,7 @@
 
     <hr class="border-secondary mt-4 mb-3">
     <div class="d-flex justify-content-between flex-wrap gap-2">
-      <p class="text-white-50 small mb-0">© 2026 EduLampung. Hak cipta dilindungi.</p>
-      <p class="text-white-50 small mb-0">Dibuat dengan ❤️ untuk Lampung</p>
+      <p class="text-white-50 small mb-0">© 2026 LampungBelajar. Hak cipta dilindungi.</p>
     </div>
   </div>
 </footer>

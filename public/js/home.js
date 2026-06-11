@@ -37,9 +37,8 @@ function renderMateriCard(m) {
   const thumbBg = {
     video: 'linear-gradient(135deg,#e8f7ef,#c5ebd8)',
     ppt:   'linear-gradient(135deg,#e8f0ff,#c5d5f5)',
-    pdf:   'linear-gradient(135deg,#fff8e8,#faebc5)',
   };
-  const emoji = { video: '🎬', ppt: '📑', pdf: '📄' };
+  const emoji = { video: '🎬', ppt: '📑'};
   const badge = { sma: 'badge-sma', smk: 'badge-smk', slb: 'badge-slb' };
   const j = (m.jenjang || 'sma').toLowerCase();
   const t = (m.tipe || 'video').toLowerCase();
@@ -67,7 +66,6 @@ function renderPlaceholder() {
   const items = [
     { jenjang: 'SMA', tipe: 'video', judul: 'Limit dan Turunan Fungsi', desc: 'Konsep limit, turunan, dan penerapannya.' },
     { jenjang: 'SMK', tipe: 'ppt',   judul: 'Bahasa Indonesia Profesi', desc: 'Teknik penulisan laporan resmi.' },
-    { jenjang: 'SLB', tipe: 'pdf',   judul: 'Mengenal Makhluk Hidup',   desc: 'Materi adaptif pendekatan visual.' },
   ];
   return items.map(i => renderMateriCard({ ...i, id: '#', deskripsi: i.desc })).join('');
 }
