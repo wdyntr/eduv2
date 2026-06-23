@@ -61,13 +61,19 @@ class AdminApiController extends Controller
 
     public function tambahMateri(Request $request)
     {
-        Materi::create($request->only(['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url']));
+        $data = $request->only(['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url']);
+        $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
+
+        Materi::create($data);
         return response()->json(['ok' => true]);
     }
 
     public function editMateri(Request $request, int $id)
     {
-        Materi::findOrFail($id)->update($request->only(['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url']));
+        $data = $request->only(['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url']);
+        $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
+
+        Materi::findOrFail($id)->update($data);
         return response()->json(['ok' => true]);
     }
 

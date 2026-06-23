@@ -6,6 +6,6 @@ return [
     'aksijihan' => 'https://aksijihan.com/',
     'rmd' => 'https://rmd.lampungprov.go.id/',
     'dsmart' => 'https://dsmartlampung.com/',
-    'pdf' => '',
+    'pdf' => 'https://buku.kemendikdasmen.go.id/katalog',
     'mbti' => ''
 ];

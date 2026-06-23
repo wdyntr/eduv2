@@ -148,7 +148,7 @@
             <img src="{{ asset('images/dsmart.png') }}" alt="D Smart" style="height:48px;object-fit:contain;">
           </div>
           <h5>D Smart</h5>
-          <p>Platform belajar cerdas berbasis AI</p>
+          <p>Platform belajar cerdas</p>
           <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
         </a>
       </div>
@@ -193,7 +193,7 @@
   <div class="container py-3">
     <div class="row align-items-center g-5">
       <div class="col-lg-5">
-        <span class="section-label">Kenapa EduLampung?</span>
+        <span class="section-label">Kenapa Lampung Belajar?</span>
         <h2 class="section-title mt-2 mb-4">Belajar Lebih<br>Efektif & Menyenangkan</h2>
         <p class="text-muted">Platform kami dirancang khusus untuk kebutuhan pelajar Lampung dengan konten yang relevan dan mudah diakses.</p>
         <a href="/media" class="btn btn-primary-custom mt-4 px-4">

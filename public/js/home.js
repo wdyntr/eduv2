@@ -38,16 +38,20 @@ function renderMateriCard(m) {
     video: 'linear-gradient(135deg,#e8f7ef,#c5ebd8)',
     ppt:   'linear-gradient(135deg,#e8f0ff,#c5d5f5)',
   };
-  const emoji = { video: '🎬', ppt: '📑'};
+  const emoji = { video: '🎬', ppt: '📑' };
   const badge = { sma: 'badge-sma', smk: 'badge-smk', slb: 'badge-slb' };
   const j = (m.jenjang || 'sma').toLowerCase();
   const t = (m.tipe || 'video').toLowerCase();
+
+  const thumbInner = m.thumbnail
+    ? `<img src="${m.thumbnail}" alt="${m.judul}" class="materi-thumb-img" loading="lazy">`
+    : `${emoji[t] || '📚'}`;
 
   return `
     <div class="col-md-6 col-lg-4">
       <a href="/media/${j}/${m.id}" class="materi-card">
         <div class="materi-thumb" style="background:${thumbBg[t] || thumbBg.video}">
-          ${emoji[t] || '📚'}
+          ${thumbInner}
         </div>
         <div class="materi-body">
           <span class="badge rounded-pill ${badge[j] || 'badge-sma'} mb-2">${m.jenjang}</span>

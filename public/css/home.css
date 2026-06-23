@@ -2,31 +2,33 @@
    HERO
 ===================== */
 .hero-section {
-  background: var(--dark);
+  background:
+    linear-gradient(135deg, rgba(10,22,40,0.88), rgba(10,22,40,0.75)),
+    url('/images/bg.png') center center / cover no-repeat;
   position: relative;
   overflow: hidden;
   padding-top: 80px;
 }
 
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: -200px; right: -200px;
-  width: 700px; height: 700px;
-  background: radial-gradient(circle, rgba(26,122,74,0.25) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.hero-section::after {
-  content: '';
-  position: absolute;
-  bottom: -100px; left: 100px;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(240,165,0,0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
+/* .hero-section::before { */
+/*   content: ''; */
+/*   position: absolute; */
+/*   top: -200px; right: -200px; */
+/*   width: 700px; height: 700px; */
+/*   background: radial-gradient(circle, rgba(26,122,74,0.25) 0%, transparent 70%); */
+/*   border-radius: 50%; */
+/*   pointer-events: none; */
+/* } */
+/**/
+/* .hero-section::after { */
+/*   content: ''; */
+/*   position: absolute; */
+/*   bottom: -100px; left: 100px; */
+/*   width: 400px; height: 400px; */
+/*   background: radial-gradient(circle, rgba(240,165,0,0.1) 0%, transparent 70%); */
+/*   border-radius: 50%; */
+/*   pointer-events: none; */
+/* } */
 
 .siger-decoration {
   position: absolute;
@@ -229,4 +231,19 @@
   margin-bottom: 12px;
   display: block;
   line-height: 1;
+}
+
+.materi-thumb-img,
+.materi-list-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.materi-thumb {
+  position: relative;
+  overflow: hidden;
 }

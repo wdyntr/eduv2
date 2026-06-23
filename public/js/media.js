@@ -130,10 +130,14 @@ function renderGrid(items) {
 function cardGrid(m) {
   const t = (m.tipe || 'video').toLowerCase();
   const j = (m.jenjang || 'sma').toLowerCase();
+  const thumbInner = m.thumbnail
+    ? `<img src="${m.thumbnail}" alt="${m.judul}" class="materi-thumb-img" loading="lazy">`
+    : `${THUMB_EMOJI[t] || '📚'}`;
+
   return `
     <a href="/media/${j}/${m.id}" class="materi-card">
       <div class="materi-thumb" style="background:${THUMB_BG[t] || THUMB_BG.video}">
-        ${THUMB_EMOJI[t] || '📚'}
+        ${thumbInner}
         <span class="tipe-badge">${t.toUpperCase()}</span>
       </div>
       <div class="materi-body">
@@ -151,10 +155,14 @@ function cardGrid(m) {
 function cardList(m) {
   const t = (m.tipe || 'video').toLowerCase();
   const j = (m.jenjang || 'sma').toLowerCase();
+  const iconInner = m.thumbnail
+    ? `<img src="${m.thumbnail}" alt="${m.judul}" class="materi-list-img" loading="lazy">`
+    : `${THUMB_EMOJI[t] || '📚'}`;
+
   return `
     <a href="/media/${j}/${m.id}" class="materi-list-item">
       <div class="materi-list-icon" style="background:${THUMB_BG[t] || THUMB_BG.video}">
-        ${THUMB_EMOJI[t] || '📚'}
+        ${iconInner}
       </div>
       <div class="materi-list-body">
         <h6>${m.judul}</h6>

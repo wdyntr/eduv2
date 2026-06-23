@@ -143,7 +143,9 @@ body {
    HERO
 ===================== */
 .hero-section {
-  background: var(--dark);
+  background:
+    linear-gradient(135deg, rgba(10,22,40,0.88), rgba(10,22,40,0.75)),
+    url('/images/bg.png') center center / cover no-repeat;
   position: relative;
   overflow: hidden;
   padding-top: 80px;
