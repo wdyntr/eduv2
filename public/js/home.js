@@ -52,6 +52,7 @@ function renderMateriCard(m) {
       <a href="/media/${j}/${m.id}" class="materi-card">
         <div class="materi-thumb" style="background:${thumbBg[t] || thumbBg.video}">
           ${thumbInner}
+          <span class="tipe-badge">${t.toUpperCase()}</span>
         </div>
         <div class="materi-body">
           <span class="badge rounded-pill ${badge[j] || 'badge-sma'} mb-2">${m.jenjang}</span>
@@ -59,7 +60,7 @@ function renderMateriCard(m) {
           <p>${m.deskripsi || ''}</p>
         </div>
         <div class="materi-footer">
-          <span class="materi-type">${emoji[t]} ${t.toUpperCase()}</span>
+          <span class="materi-type">${emoji[t]} ${m.mata_pelajaran || ''}</span>
           <span class="materi-cta">Buka →</span>
         </div>
       </a>

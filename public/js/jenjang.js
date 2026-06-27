@@ -188,11 +188,14 @@ function renderItems(items) {
     grid.className = 'row g-3';
     grid.innerHTML = items.map(m => {
       const t = (m.tipe || 'video').toLowerCase();
+      const thumbInner = m.thumbnail
+        ? `<img src="${m.thumbnail}" alt="${m.judul}" class="materi-thumb-img" loading="lazy">`
+        : `${THUMB_EMOJI[t] || '📚'}`;
       return `
         <div class="col-sm-6 col-xl-4">
           <a href="/media/${j}/${m.id}" class="materi-card">
             <div class="materi-thumb" style="background:${THUMB_BG[t] || THUMB_BG.video}">
-              ${THUMB_EMOJI[t] || '📚'}
+              ${thumbInner}
               <span class="tipe-badge">${t.toUpperCase()}</span>
             </div>
             <div class="materi-body">
@@ -211,11 +214,14 @@ function renderItems(items) {
     grid.className = 'row g-2';
     grid.innerHTML = items.map(m => {
       const t = (m.tipe || 'video').toLowerCase();
+      const iconInner = m.thumbnail
+        ? `<img src="${m.thumbnail}" alt="${m.judul}" class="materi-list-img" loading="lazy">`
+        : `${THUMB_EMOJI[t] || '📚'}`;
       return `
         <div class="col-12">
           <a href="/media/${j}/${m.id}" class="materi-list-item">
             <div class="materi-list-icon" style="background:${THUMB_BG[t] || THUMB_BG.video}">
-              ${THUMB_EMOJI[t] || '📚'}
+              ${iconInner}
             </div>
             <div class="materi-list-body">
               <h6>${m.judul}</h6>
