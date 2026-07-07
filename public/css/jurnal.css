@@ -2,13 +2,9 @@
    JURNAL HERO
 ===================== */
 .jurnal-hero {
-  background: linear-gradient(135deg, rgba(74,26,122,0.92), rgba(123,47,181,0.85)),
+  background: linear-gradient(135deg, rgba(10,22,40,0.88), rgba(10,22,40,0.75)),
     url('/images/bg.png') center center / cover no-repeat;
   padding: 130px 0 60px;
-  color: #fff;
-}
-.jurnal-hero .hero-badge {
-  background: rgba(255,255,255,0.15);
   color: #fff;
 }
 
@@ -26,9 +22,9 @@
   transition: 0.2s;
   white-space: nowrap;
 }
-.kategori-chip:hover { border-color: #7b2fb5; color: #7b2fb5; }
+.kategori-chip:hover { border-color: var(--green); color: var(--green); }
 .kategori-chip.active {
-  background: linear-gradient(135deg, #4a1a7a, #7b2fb5);
+  background: linear-gradient(135deg, var(--green), var(--green-light));
   border-color: transparent;
   color: #fff;
 }
@@ -50,14 +46,14 @@
 }
 .jurnal-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(74,26,122,0.12);
+  box-shadow: 0 16px 32px rgba(26,58,107,0.12);
   border-color: transparent;
 }
 .jurnal-card-kategori {
   display: inline-flex;
   align-self: flex-start;
-  background: #f3e8ff;
-  color: #7b2fb5;
+  background: var(--green-pale);
+  color: var(--green);
   font-size: 0.72rem;
   font-weight: 700;
   padding: 4px 12px;

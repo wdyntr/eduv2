@@ -41,7 +41,7 @@
         @endif
 
         <a href="{{ asset('uploads/jurnal/' . basename($jurnal->file_jurnal)) }}" target="_blank"
-           class="btn btn-lg mt-3 px-5" style="background:linear-gradient(135deg,#4a1a7a,#7b2fb5);color:#fff;border-radius:12px">
+           class="btn btn-lg mt-3 px-5" style="background:linear-gradient(135deg,var(--green),var(--green-light));color:#fff;border-radius:12px">
           <i class="bi bi-download me-2"></i>Unduh Jurnal
         </a>
       </div>
