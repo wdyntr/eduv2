@@ -1,0 +1,107 @@
+/* =====================
+   JURNAL HERO
+===================== */
+.jurnal-hero {
+  background: linear-gradient(135deg, rgba(74,26,122,0.92), rgba(123,47,181,0.85)),
+    url('/images/bg.png') center center / cover no-repeat;
+  padding: 130px 0 60px;
+  color: #fff;
+}
+.jurnal-hero .hero-badge {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+/* =====================
+   FILTER KATEGORI
+===================== */
+.kategori-chip {
+  border: 1.5px solid #e2e6f0;
+  background: #fff;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+.kategori-chip:hover { border-color: #7b2fb5; color: #7b2fb5; }
+.kategori-chip.active {
+  background: linear-gradient(135deg, #4a1a7a, #7b2fb5);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* =====================
+   JURNAL CARD
+===================== */
+.jurnal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  height: 100%;
+  border: 1px solid #eef1f6;
+  transition: 0.25s;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+.jurnal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(74,26,122,0.12);
+  border-color: transparent;
+}
+.jurnal-card-kategori {
+  display: inline-flex;
+  align-self: flex-start;
+  background: #f3e8ff;
+  color: #7b2fb5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.jurnal-card h5 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.jurnal-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+.jurnal-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f1f6;
+}
+
+/* =====================
+   DETAIL JURNAL
+===================== */
+.jurnal-detail-box {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #eef1f6;
+  padding: 32px;
+}
+.jurnal-detail-box .jurnal-card-kategori { margin-bottom: 16px; }

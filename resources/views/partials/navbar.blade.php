@@ -36,6 +36,12 @@
         </li>
 
         <li class="nav-item">
+          <a class="nav-link {{ ($active_page ?? '') == 'jurnal' ? 'active' : '' }}" href="/jurnal">
+            <i class="bi bi-journal-text me-1"></i>Jurnal
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a class="nav-link" href="{{ config('site.radio_url') }}" target="_blank" rel="noopener">
             <i class="bi bi-broadcast me-1"></i>Radio
             <i class="bi bi-box-arrow-up-right ms-1" style="font-size:0.65rem;opacity:0.6;"></i>

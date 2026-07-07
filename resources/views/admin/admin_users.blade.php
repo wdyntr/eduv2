@@ -20,13 +20,14 @@
           <th>#</th>
           <th>Nama</th>
           <th>Username</th>
+          <th>Role</th>
           <th>Bergabung</th>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody id="tabelAdmin">
         <tr>
-          <td colspan="5" class="text-center py-4">
+          <td colspan="6" class="text-center py-4">
             <div class="spinner-border spinner-border-sm text-success"></div>
           </td>
         </tr>
@@ -63,6 +64,13 @@
               <i class="bi bi-eye" id="eyeAdminIcon"></i>
             </button>
           </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Role <span class="text-danger">*</span></label>
+          <select id="fRoleAdmin" class="form-select">
+            <option value="admin">Admin</option>
+            <option value="penulis">Penulis (Guru/Author Jurnal)</option>
+          </select>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">

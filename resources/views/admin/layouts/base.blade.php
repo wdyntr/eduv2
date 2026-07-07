@@ -29,6 +29,7 @@
         <span>Dashboard</span>
       </a>
 
+      @if (($session_role ?? 'admin') === 'admin')
       <a href="/admin/materi" class="sidebar-link {{ $active_menu == 'materi' ? 'active' : '' }}">
         <i class="bi bi-collection-play"></i>
         <span>Kelola Materi</span>
@@ -43,18 +44,26 @@
         <i class="bi bi-book"></i>
         <span>Mata Pelajaran</span>
       </a>
+      @endif
+
+      <a href="/admin/jurnal" class="sidebar-link {{ $active_menu == 'jurnal' ? 'active' : '' }}">
+        <i class="bi bi-journal-text"></i>
+        <span>{{ ($session_role ?? 'admin') === 'admin' ? 'Request Jurnal' : 'Jurnal Saya' }}</span>
+      </a>
 
       <a href="/admin/profile" class="sidebar-link {{ $active_menu == 'profile' ? 'active' : '' }}">
         <i class="bi bi-person-gear"></i>
         <span>Profil Saya</span>
       </a>
 
+      @if (($session_role ?? 'admin') === 'admin')
       <div class="nav-section-label mt-3">Pengaturan</div>
 
       <a href="/admin/users" class="sidebar-link {{ $active_menu == 'users' ? 'active' : '' }}">
         <i class="bi bi-people"></i>
-        <span>Kelola Admin</span>
+        <span>Kelola User</span>
       </a>
+      @endif
 
       <a href="/" target="_blank" class="sidebar-link">
         <i class="bi bi-box-arrow-up-right"></i>
@@ -69,7 +78,7 @@
         </div>
         <div class="admin-detail">
           <span class="admin-name">{{ $session_user }}</span>
-          <span class="admin-role">Administrator</span>
+          <span class="admin-role">{{ ($session_role ?? 'admin') === 'admin' ? 'Administrator' : 'Penulis' }}</span>
         </div>
       </div>
       <a href="/admin/logout" class="btn-logout" title="Logout">

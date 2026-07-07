@@ -152,6 +152,7 @@
 .menu-pdf       { background: linear-gradient(135deg, #2b1a0d, #7a4a1a); }
 .menu-dsmart    { background: linear-gradient(135deg, #0d1a3b, #1a3a8a); }
 .menu-mbti      { background: linear-gradient(135deg, #2b0d3b, #7a1a8a); }
+.menu-jurnal { background: linear-gradient(135deg, #4a1a7a, #7b2fb5); }
 
 .menu-icon {
   font-size: 2.8rem;

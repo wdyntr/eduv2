@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\AdminSession;
+use App\Models\Admin;
 
 class AdminAuth
 {
@@ -23,7 +24,8 @@ class AdminAuth
             return $this->unauthorized($request);
         }
 
-        $request->merge(['admin_session' => $session]);
+        $role = Admin::where('id', $session->admin_id)->value('role') ?? 'admin';
+        $request->merge(['admin_session' => $session, 'admin_role' => $role]);
         return $next($request);
     }
 

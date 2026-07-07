@@ -163,6 +163,16 @@
         </a>
       </div>
 
+     {{-- Jurnal --}}
+     <div class="col-6 col-lg-3">
+        <a href="/jurnal" class="menu-card menu-jurnal">
+            <div class="menu-icon">📰</div>
+            <h5>Jurnal</h5>
+            <p>Kumpulan jurnal dan karya ilmiah pendidikan</p>
+            <span class="menu-arrow"><i class="bi bi-arrow-right"></i></span>
+        </a>
+     </div>
+
     </div>
   </div>
   <div class="tapis-border bottom"></div>

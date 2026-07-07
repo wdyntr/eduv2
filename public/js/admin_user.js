@@ -9,7 +9,7 @@ async function loadAdminUsers() {
   const tbody = document.getElementById('tabelAdmin');
   if (tbody) tbody.innerHTML = `
     <tr>
-      <td colspan="5" class="text-center py-4">
+      <td colspan="6" class="text-center py-4">
         <div class="spinner-border spinner-border-sm text-success"></div>
       </td>
     </tr>`;
@@ -21,7 +21,7 @@ async function loadAdminUsers() {
   } catch {
     if (tbody) tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="text-center text-muted py-4">Gagal memuat data.</td>
+        <td colspan="6" class="text-center text-muted py-4">Gagal memuat data.</td>
       </tr>`;
   }
 }
@@ -33,7 +33,7 @@ function renderTabelAdmin(items) {
   if (!items.length) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="text-center text-muted py-4">Belum ada administrator.</td>
+        <td colspan="6" class="text-center text-muted py-4">Belum ada administrator.</td>
       </tr>`;
     return;
   }
@@ -52,6 +52,11 @@ function renderTabelAdmin(items) {
       <td>
         <code class="text-success" style="font-size:0.85rem">@${a.username}</code>
       </td>
+      <td>
+        <span class="badge rounded-pill ${a.role === 'penulis' ? 'bg-warning text-dark' : 'bg-primary'}">
+          ${a.role === 'penulis' ? 'Penulis' : 'Admin'}
+        </span>
+      </td>
       <td class="text-muted small">${a.created_at?.slice(0, 10) || '-'}</td>
       <td>
         ${a.id === CURRENT_ADMIN_ID
@@ -69,6 +74,7 @@ function showFormTambahAdmin() {
   document.getElementById('fNamaAdmin').value     = '';
   document.getElementById('fUsernameAdmin').value = '';
   document.getElementById('fPasswordAdmin').value = '';
+  document.getElementById('fRoleAdmin').value     = 'admin';
   document.getElementById('adminAlert').classList.add('d-none');
   adminModal.show();
 }
@@ -77,6 +83,7 @@ async function submitAdmin() {
   const nama     = document.getElementById('fNamaAdmin').value.trim();
   const username = document.getElementById('fUsernameAdmin').value.trim();
   const password = document.getElementById('fPasswordAdmin').value;
+  const role     = document.getElementById('fRoleAdmin').value;
 
   if (!username || !password) {
     showAdminAlert('danger', 'Username dan password wajib diisi.');
@@ -91,7 +98,7 @@ async function submitAdmin() {
     const res = await fetch('/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, nama }),
+      body: JSON.stringify({ username, password, nama, role }),
     });
 
     if (res.ok) {

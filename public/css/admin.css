@@ -443,3 +443,48 @@ body.admin-body {
   color: var(--text-muted);
   flex-shrink: 0;
 }
+
+/* =====================
+   JURNAL - status badge
+===================== */
+.badge-pending  { background: #fff3e0; color: #e65100; }
+.badge-approved { background: #e8f7ef; color: #1a7a4a; }
+.badge-rejected { background: #fdecea; color: #c0392b; }
+
+.jurnal-note-box {
+  background: #fdecea;
+  border: 1px solid #f5c6c1;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #c0392b;
+}
+
+.nav-tabs-admin {
+  border-bottom: 2px solid #eef1f6;
+  margin-bottom: 0;
+}
+.nav-tabs-admin .nav-link {
+  border: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 14px 20px;
+}
+.nav-tabs-admin .nav-link.active {
+  color: var(--green);
+  border-bottom: 3px solid var(--green);
+  background: transparent;
+}
+
+.dropzone-jurnal {
+  border: 2px dashed #d7deee;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+  background: #f8f9ff;
+}
+.dropzone-jurnal:hover { border-color: var(--green); background: var(--green-pale); }
+.dropzone-jurnal.has-file { border-color: var(--green); background: var(--green-pale); }

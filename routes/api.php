@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Api\MapelController;
 use App\Http\Controllers\Api\MateriController;
 use App\Http\Controllers\Api\ClassroomController;
+use App\Http\Controllers\Api\JurnalApiController;
 
 // Auth — tidak perlu middleware
 Route::post('/admin/login', [AdminApiController::class, 'login']);
@@ -32,9 +33,31 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('/admin/mapel', [AdminApiController::class, 'tambahMapel']);
     Route::put('/admin/mapel/{id}', [AdminApiController::class, 'editMapel']);
     Route::delete('/admin/mapel/{id}', [AdminApiController::class, 'hapusMapel']);
+
+    // Jurnal — penulis
+    Route::get('/admin/jurnal/mine', [JurnalApiController::class, 'mine']);
+    Route::post('/admin/jurnal', [JurnalApiController::class, 'store']);
+    Route::post('/admin/jurnal/{id}/resubmit', [JurnalApiController::class, 'resubmit']);
+
+    // Jurnal — admin (review)
+    Route::get('/admin/jurnal/pending', [JurnalApiController::class, 'pending']);
+    Route::get('/admin/jurnal/all', [JurnalApiController::class, 'allAdmin']);
+    Route::post('/admin/jurnal/{id}/approve', [JurnalApiController::class, 'approve']);
+    Route::put('/admin/jurnal/{id}/detail', [JurnalApiController::class, 'updateDetail']);
+    Route::post('/admin/jurnal/{id}/reject', [JurnalApiController::class, 'reject']);
+    Route::delete('/admin/jurnal/{id}', [JurnalApiController::class, 'destroy']);
+
+    // Jurnal — admin (kelola kategori)
+    Route::get('/admin/jurnal-kategori', [JurnalApiController::class, 'kategoriAdminList']);
+    Route::post('/admin/jurnal-kategori', [JurnalApiController::class, 'kategoriStore']);
+    Route::put('/admin/jurnal-kategori/{id}', [JurnalApiController::class, 'kategoriUpdate']);
+    Route::delete('/admin/jurnal-kategori/{id}', [JurnalApiController::class, 'kategoriDestroy']);
 });
 
 // Public API
 Route::get('/mapel', [MapelController::class, 'index']);
 Route::get('/materi', [MateriController::class, 'index']);
 Route::get('/classroom', [ClassroomController::class, 'index']);
+Route::get('/jurnal', [JurnalApiController::class, 'index']);
+Route::get('/jurnal-kategori', [JurnalApiController::class, 'kategori']);
+Route::get('/jurnal/{id}', [JurnalApiController::class, 'show']);
