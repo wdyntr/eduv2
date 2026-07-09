@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', 'EduLampung') — Platform Belajar Digital Lampung</title>
+  <title>@yield('title', 'LampungBelajar') — Platform Belajar Digital Lampung</title>
 
   <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -38,9 +38,9 @@
         <div class="modal-header border-0 pb-0">
           <div>
             <h5 class="modal-title fw-800">
-              <span class="brand-edu">Edu</span><span class="brand-lampung">Lampung</span>
+              <span class="brand-edu">Lampung</span><span class="brand-lampung">Belajar</span>
             </h5>
-            <p class="text-muted small mb-0">Login khusus administrator</p>
+            <p class="text-muted small mb-0">Login khusus pengguna</p>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>

@@ -6,10 +6,13 @@ let state = {
   sort:       'terbaru',
   q:          '',
   page:       1,
-  perPage:    12,
+  perPage:    6,
   view:       'grid',
   total:      0,
 };
+
+let mapelFilterList = []; // daftar nama mapel valid (untuk validasi datalist)
+let mapelFilterTimeout = null;
 
 // =====================
 // INIT
@@ -35,8 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // LOAD MATA PELAJARAN FILTER
 // =====================
 async function loadMapelFilter() {
-  const container = document.getElementById('filterMapel');
-  if (!container) return;
+  const datalist = document.getElementById('filterMapelOptions');
+  if (!datalist) return;
 
   try {
     const res  = await fetch(`/api/mapel?jenjang=${state.jenjang}`);
@@ -54,22 +57,14 @@ async function loadMapelFilter() {
 }
 
 function renderMapelFilter(items) {
-  const container = document.getElementById('filterMapel');
-  if (!container) return;
-  container.innerHTML = [
-    { nama: 'Semua' },
-    ...items,
-  ].map(m => `
-    <label class="filter-check">
-      <input type="radio" name="mapel" value="${m.nama.toLowerCase()}"
-        ${m.nama === 'Semua' ? 'checked' : ''}
-        onchange="applyMapelFilter('${m.nama.toLowerCase()}')">
-      ${m.nama}
-    </label>`).join('');
+  const datalist = document.getElementById('filterMapelOptions');
+  if (!datalist) return;
+  mapelFilterList = items.map(m => m.nama);
+  datalist.innerHTML = mapelFilterList.map(n => `<option value="${n}">`).join('');
 }
 
 // =====================
-// FILTER HANDLERS
+// FILTER TIPE KONTEN (radio / bullet choice)
 // =====================
 function applyFilter() {
   state.tipe = document.querySelector('input[name="tipe"]:checked')?.value || 'semua';
@@ -78,10 +73,46 @@ function applyFilter() {
   loadMateri();
 }
 
-function applyMapelFilter(mapel) {
-  state.mapel = mapel;
-  state.page  = 1;
-  loadMateri();
+// =====================
+// FILTER MATA PELAJARAN (datalist)
+// =====================
+function applyMapelFilterInput() {
+  clearTimeout(mapelFilterTimeout);
+  mapelFilterTimeout = setTimeout(() => {
+    const input = document.getElementById('filterMapelInput');
+    const val = input.value.trim();
+
+    if (!val) {
+      state.mapel = 'semua';
+      state.page = 1;
+      loadMateri();
+      return;
+    }
+
+    const cocok = mapelFilterList.find(n => n.toLowerCase() === val.toLowerCase());
+    if (cocok) {
+      state.mapel = cocok.toLowerCase();
+      state.page = 1;
+      loadMateri();
+    }
+  }, 300);
+}
+
+function validasiMapelFilterInput() {
+  const input = document.getElementById('filterMapelInput');
+  const val = input.value.trim();
+  if (!val) { state.mapel = 'semua'; return; }
+
+  const cocok = mapelFilterList.find(n => n.toLowerCase() === val.toLowerCase());
+  if (!cocok) {
+    // Tidak cocok dengan mata pelajaran manapun, kosongkan & tampilkan semua
+    input.value = '';
+    state.mapel = 'semua';
+    state.page = 1;
+    loadMateri();
+  } else {
+    input.value = cocok; // normalisasi ke penulisan asli
+  }
 }
 
 function resetFilter() {
@@ -93,7 +124,8 @@ function resetFilter() {
 
   // Reset UI
   document.querySelector('input[name="tipe"][value="semua"]').checked = true;
-  document.querySelector('input[name="mapel"][value="semua"]')?.click();
+  const mapelInput = document.getElementById('filterMapelInput');
+  if (mapelInput) mapelInput.value = '';
   document.getElementById('sortSelect').value = 'terbaru';
   document.getElementById('searchInput').value = '';
 

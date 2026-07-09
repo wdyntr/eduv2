@@ -481,6 +481,7 @@
 .pagination .page-item.active .page-link {
   background: var(--green);
   border-color: var(--green);
+  color: #fff;
 }
 
 /* =====================

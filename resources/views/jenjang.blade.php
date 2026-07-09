@@ -87,9 +87,10 @@
           </div>
           <div class="filter-group">
             <label class="filter-label">Mata Pelajaran</label>
-            <div id="filterMapel" class="d-flex flex-column gap-1">
-              <div class="spinner-border spinner-border-sm text-success"></div>
-            </div>
+            <input type="text" id="filterMapelInput" class="form-control form-control-sm"
+              list="filterMapelOptions" placeholder="Cari mata pelajaran..." autocomplete="off"
+              oninput="applyMapelFilterInput()" onblur="validasiMapelFilterInput()">
+            <datalist id="filterMapelOptions"></datalist>
           </div>
           <button class="btn btn-outline-custom btn-sm w-100 mt-2" onclick="resetFilter()">
             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filter
@@ -127,6 +128,5 @@
   const JENJANG = "{{ $jenjang }}";
   const JENJANG_NAMA = "{{ $jenjang_nama }}";
 </script>
-<script src="{{ asset('js/media.js') }}"></script>
 <script src="{{ asset('js/jenjang.js') }}"></script>
 @endsection
