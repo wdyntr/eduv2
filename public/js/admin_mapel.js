@@ -1,6 +1,8 @@
 let mapelPage = 1;
 let mapelModal = null;
 let allMapel   = [];
+let filteredMapel = [];
+const MAPEL_PER_PAGE = 10;
 
 document.addEventListener('DOMContentLoaded', () => {
   mapelModal = new bootstrap.Modal(document.getElementById('modalMapel'));
@@ -25,21 +27,57 @@ async function fetchMapelAdmin() {
     allMapel     = data.items || [];
 
     // Filter lokal berdasarkan search
-    const filtered = search
+    filteredMapel = search
       ? allMapel.filter(m => m.nama.toLowerCase().includes(search))
       : allMapel;
 
-    // Fetch jumlah materi per mapel
-    const countRes  = await fetch('/api/materi?limit=1');
-    const countData = await countRes.json();
-
-    renderTabelMapel(filtered);
+    await renderMapelPage();
   } catch {
     if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Gagal memuat data.</td></tr>`;
   }
 }
 
-async function renderTabelMapel(items) {
+async function renderMapelPage() {
+  const start = (mapelPage - 1) * MAPEL_PER_PAGE;
+  const pageItems = filteredMapel.slice(start, start + MAPEL_PER_PAGE);
+  await renderTabelMapel(pageItems, start);
+  renderPaginasiMapel(filteredMapel.length);
+}
+
+function goPageMapel(page) {
+  if (page < 1) return;
+  mapelPage = page;
+  renderMapelPage();
+}
+
+function renderPaginasiMapel(total) {
+  const wrap = document.getElementById('paginasiMapel');
+  if (!wrap) return;
+  const totalPages = Math.ceil(total / MAPEL_PER_PAGE);
+  if (totalPages <= 1) { wrap.innerHTML = ''; return; }
+
+  wrap.innerHTML = `
+    <nav>
+      <ul class="pagination admin-pagination mb-0">
+        <li class="page-item ${mapelPage === 1 ? 'disabled' : ''}">
+          <button class="page-link" onclick="goPageMapel(${mapelPage - 1})">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        </li>
+        ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+          <li class="page-item ${p === mapelPage ? 'active' : ''}">
+            <button class="page-link" onclick="goPageMapel(${p})">${p}</button>
+          </li>`).join('')}
+        <li class="page-item ${mapelPage === totalPages ? 'disabled' : ''}">
+          <button class="page-link" onclick="goPageMapel(${mapelPage + 1})">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>`;
+}
+
+async function renderTabelMapel(items, startIndex = 0) {
   const tbody = document.getElementById('tabelMapel');
   if (!tbody) return;
 
@@ -48,7 +86,7 @@ async function renderTabelMapel(items) {
     return;
   }
 
-  // Fetch jumlah materi untuk setiap mapel
+  // Fetch jumlah materi hanya untuk baris yang tampil di halaman ini
   const counts = {};
   await Promise.all(items.map(async m => {
     try {
@@ -62,7 +100,7 @@ async function renderTabelMapel(items) {
 
   tbody.innerHTML = items.map((m, i) => `
     <tr>
-      <td class="text-muted small">${i + 1}</td>
+      <td class="text-muted small">${startIndex + i + 1}</td>
       <td style="font-weight:600">
         <i class="bi bi-book text-success me-2"></i>${m.nama}
       </td>
