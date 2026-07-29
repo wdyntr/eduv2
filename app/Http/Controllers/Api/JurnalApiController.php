@@ -75,7 +75,7 @@ class JurnalApiController extends Controller
     }
 
     // =====================
-    // PENULIS (role: penulis) & ADMIN (role: admin)
+    // PENULIS (role: guru) & ADMIN (role: admin)
     // =====================
 
     public function mine(Request $request)
@@ -320,6 +320,6 @@ class JurnalApiController extends Controller
 
     private function assertPenulis(Request $request): void
     {
-        abort_if(($request->admin_role ?? 'admin') !== 'penulis', 403, 'Hanya akun penulis yang bisa mengajukan jurnal.');
+        abort_if(($request->admin_role ?? 'admin') !== 'guru', 403, 'Hanya akun guru yang bisa mengajukan jurnal.');
     }
 }

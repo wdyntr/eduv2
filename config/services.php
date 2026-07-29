@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'google_classroom' => [
+        'impersonate_email' => env('GOOGLE_CLASSROOM_ADMIN_EMAIL'),
+    ],
+
 ];

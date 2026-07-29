@@ -7,6 +7,11 @@ class Admin extends Authenticatable
 {
     protected $table = 'admin';
     public $timestamps = false;
-    protected $fillable = ['username', 'password', 'nama', 'role'];
+    protected $fillable = ['username', 'password', 'nama', 'role', 'sekolah_id'];
     protected $hidden = ['password'];
+
+    public function sekolah()
+    {
+        return $this->belongsTo(Sekolah::class, 'sekolah_id');
+    }
 }

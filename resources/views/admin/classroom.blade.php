@@ -1,10 +1,47 @@
 @extends('admin.layouts.base')
 
-@section('title', 'Kelola Classroom')
-@section('page_title', 'Kelola Classroom')
+@section('title', ($session_role ?? 'admin') === 'sekolah' ? 'Classroom Saya' : 'Monitoring Classroom')
+@section('page_title', ($session_role ?? 'admin') === 'sekolah' ? 'Classroom Saya' : 'Kelola & Monitoring Classroom')
 
 @section('content')
 
+@if (($session_role ?? 'admin') === 'sekolah')
+
+<!-- ===================== -->
+<!-- TAMPILAN UNTUK ROLE: SEKOLAH -->
+<!-- ===================== -->
+<div class="row g-3">
+  <div class="col-lg-7 mx-auto">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <span class="admin-card-title"><i class="bi bi-building me-2"></i>Profil Sekolah</span>
+      </div>
+      <div class="p-3" id="profilSekolahBox">
+        <div class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div></div>
+      </div>
+    </div>
+
+    <div class="admin-card mt-3">
+      <div class="admin-card-header">
+        <span class="admin-card-title"><i class="bi bi-collection-play me-2"></i>Kelas per Mata Pelajaran</span>
+      </div>
+      <div class="p-3">
+        <p class="text-muted small mb-3">
+          Setiap mata pelajaran punya kelas Classroom masing-masing. Kelola link-nya di halaman khusus.
+        </p>
+        <button class="btn btn-admin-edit w-100" onclick="location.href='/admin/classroom/{{ $session_sekolah_id }}'">
+          <i class="bi bi-arrow-right me-1"></i>Kelola Kelas Mata Pelajaran
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@else
+
+<!-- ===================== -->
+<!-- TAMPILAN UNTUK ROLE: ADMIN / DINAS -->
+<!-- ===================== -->
 <div class="admin-card">
   <div class="admin-card-header">
     <span class="admin-card-title"><i class="bi bi-building me-2"></i>Daftar Sekolah</span>
@@ -42,13 +79,15 @@
           <th>Nama Sekolah</th>
           <th>Jenjang</th>
           <th>Kota/Kabupaten</th>
-          <th>Link Classroom</th>
+          <th>Kelas Terisi</th>
+          <th>Task Bulan Ini</th>
+          <th>Materi Bulan Ini</th>
           <th>Aksi</th>
         </tr>
       </thead>
       <tbody id="tabelSekolah">
         <tr>
-          <td colspan="6" class="text-center py-4">
+          <td colspan="8" class="text-center py-4">
             <div class="spinner-border spinner-border-sm text-success"></div>
           </td>
         </tr>
@@ -88,11 +127,10 @@
             <input type="text" id="fKotaSekolah" class="form-control" placeholder="Bandar Lampung">
           </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label small fw-600">Link Classroom</label>
-          <input type="url" id="fUrlSekolah" class="form-control"
-            placeholder="https://classroom.google.com/...">
-        </div>
+        <p class="text-muted small mb-0">
+          <i class="bi bi-info-circle me-1"></i>Link Google Classroom per mata pelajaran dikelola lewat halaman
+          <strong>Kelola Kelas</strong> (ikon <i class="bi bi-collection-play"></i>) setelah sekolah ini disimpan.
+        </p>
       </div>
       <div class="modal-footer border-0 pt-0">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:10px">Batal</button>
@@ -104,10 +142,21 @@
   </div>
 </div>
 
+@endif
+
 @endsection
 
 @section('scripts')
 <script src="{{ asset('js/admin.js') }}"></script>
 <script src="{{ asset('js/admin_classroom.js') }}"></script>
-<script>document.addEventListener('DOMContentLoaded', loadSekolahAdmin);</script>
+<script>
+  const CLASSROOM_ROLE = "{{ $session_role ?? 'admin' }}";
+  document.addEventListener('DOMContentLoaded', () => {
+    if (CLASSROOM_ROLE === 'sekolah') {
+      loadProfilSekolah({{ $session_sekolah_id ?? 'null' }});
+    } else {
+      loadSekolahAdmin();
+    }
+  });
+</script>
 @endsection

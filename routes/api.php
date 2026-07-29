@@ -16,6 +16,8 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('/admin/users', [AdminApiController::class, 'tambahAdmin']);
     Route::delete('/admin/users/{id}', [AdminApiController::class, 'hapusAdmin']);
 
+    // Monitoring Classroom (per mata pelajaran, lihat routes di bawah)
+
     // Profile
     Route::put('/admin/profile', [AdminApiController::class, 'updateProfile']);
 
@@ -28,6 +30,8 @@ Route::middleware('admin.auth')->group(function () {
     Route::post('/admin/classroom', [AdminApiController::class, 'tambahSekolah']);
     Route::put('/admin/classroom/{id}', [AdminApiController::class, 'editSekolah']);
     Route::delete('/admin/classroom/{id}', [AdminApiController::class, 'hapusSekolah']);
+    Route::get('/admin/sekolah/{id}/kelas', [AdminApiController::class, 'sekolahKelasList']);
+    Route::put('/admin/sekolah/{id}/kelas/{mapelId}', [AdminApiController::class, 'sekolahKelasUpdate']);
 
     // Mapel
     Route::post('/admin/mapel', [AdminApiController::class, 'tambahMapel']);
@@ -58,6 +62,7 @@ Route::middleware('admin.auth')->group(function () {
 Route::get('/mapel', [MapelController::class, 'index']);
 Route::get('/materi', [MateriController::class, 'index']);
 Route::get('/classroom', [ClassroomController::class, 'index']);
+Route::get('/classroom/{id}', [ClassroomController::class, 'show']);
 Route::get('/jurnal', [JurnalApiController::class, 'index']);
 Route::get('/jurnal-kategori', [JurnalApiController::class, 'kategori']);
 Route::get('/jurnal/{id}', [JurnalApiController::class, 'show']);

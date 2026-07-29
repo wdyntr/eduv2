@@ -5,13 +5,25 @@ let jurnalEditId = null; // null = ajukan baru, angka = revisi/resubmit
 let jurnalTolakId = null;
 let kategoriJurnalList = []; // daftar kategori valid dari tabel jurnal_kategori
 
+// Fetch dengan batas waktu, supaya koneksi hosting yang lambat/menggantung
+// tidak membuat spinner loading nyangkut selamanya tanpa pesan error apapun.
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('modalFormJurnal')) {
     jurnalFormModal = new bootstrap.Modal(document.getElementById('modalFormJurnal'));
     loadKategoriJurnalForm();
   }
 
-  if (JURNAL_ROLE === 'penulis') {
+  if (JURNAL_ROLE === 'guru') {
     if (document.getElementById('tabelJurnalSaya')) loadJurnalSaya();
     if (document.getElementById('statTotalUpload')) loadDashboardPenulis();
   } else {
@@ -63,7 +75,7 @@ async function loadJurnalSaya() {
   const tbody = document.getElementById('tabelJurnalSaya');
   if (!tbody) return;
   try {
-    const res = await fetch('/api/admin/jurnal/mine');
+    const res = await fetchWithTimeout('/api/admin/jurnal/mine');
     const data = await res.json();
     renderTabelJurnalSaya(data.items || []);
   } catch {
@@ -103,7 +115,7 @@ function renderTabelJurnalSaya(items) {
 // =====================
 async function loadDashboardPenulis() {
   try {
-    const res = await fetch('/api/admin/jurnal/mine');
+    const res = await fetchWithTimeout('/api/admin/jurnal/mine');
     const data = await res.json();
     const items = data.items || [];
 
@@ -150,6 +162,10 @@ async function loadDashboardPenulis() {
     setText('statApproved', '-');
     setText('statPending', '-');
     setText('statRejected', '-');
+    const tbody = document.getElementById('tabelAktivitasTerbaru');
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Gagal memuat data. <button class="btn btn-link btn-sm p-0" onclick="loadDashboardPenulis()">Coba lagi</button></td></tr>`;
+    }
   }
 }
 

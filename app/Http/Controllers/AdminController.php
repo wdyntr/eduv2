@@ -16,6 +16,7 @@ class AdminController extends Controller
             'session_user' => $session?->username ?? 'Admin',
             'session_id' => $session?->admin_id ?? 0,
             'session_role' => $request->admin_role ?? 'admin',
+            'session_sekolah_id' => $request->admin_sekolah_id ?? null,
         ], $extra);
     }
 
@@ -26,10 +27,28 @@ class AdminController extends Controller
         }
     }
 
+    private function guardClassroomAccess(Request $request)
+    {
+        if (!in_array($request->admin_role ?? 'admin', ['admin', 'sekolah'])) {
+            abort(403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        }
+    }
+
+    private function guardJurnalAccess(Request $request)
+    {
+        if (!in_array($request->admin_role ?? 'admin', ['admin', 'guru'])) {
+            abort(403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        }
+    }
+
     public function dashboard(Request $request)
     {
-        if (($request->admin_role ?? 'admin') === 'penulis') {
+        $role = $request->admin_role ?? 'admin';
+        if ($role === 'guru') {
             return view('admin.dashboard_penulis', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+        }
+        if ($role === 'sekolah') {
+            return view('admin.dashboard_sekolah', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
         return view('admin.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
     }
@@ -55,8 +74,20 @@ class AdminController extends Controller
 
     public function classroom(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardClassroomAccess($request);
         return view('admin.classroom', $this->adminCtx($request, ['active_menu' => 'classroom']));
+    }
+
+    public function classroomDetail(Request $request, int $id)
+    {
+        $this->guardClassroomAccess($request);
+
+        $role = $request->admin_role ?? 'admin';
+        if ($role === 'sekolah' && (int) ($request->admin_sekolah_id ?? 0) !== $id) {
+            abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
+        }
+
+        return view('admin.sekolah_kelas', $this->adminCtx($request, ['active_menu' => 'classroom', 'sekolah_id' => $id]));
     }
 
     public function mapel(Request $request)
@@ -73,6 +104,7 @@ class AdminController extends Controller
 
     public function jurnal(Request $request)
     {
+        $this->guardJurnalAccess($request);
         return view('admin.jurnal', $this->adminCtx($request, ['active_menu' => 'jurnal']));
     }
 

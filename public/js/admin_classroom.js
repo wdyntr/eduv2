@@ -2,7 +2,8 @@ let sekolahPage = 1;
 let sekolahModal = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  sekolahModal = new bootstrap.Modal(document.getElementById('modalSekolah'));
+  const modalEl = document.getElementById('modalSekolah');
+  if (modalEl) sekolahModal = new bootstrap.Modal(modalEl);
 });
 
 async function loadSekolahAdmin() {
@@ -21,7 +22,7 @@ async function fetchSekolahAdmin() {
   });
 
   const tbody = document.getElementById('tabelSekolah');
-  if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div></td></tr>`;
+  if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div></td></tr>`;
 
   try {
     const res  = await fetch(`/api/classroom?${params}`);
@@ -29,7 +30,7 @@ async function fetchSekolahAdmin() {
     renderTabelSekolah(data.items || []);
     renderPaginasiSekolah(data.total || 0);
   } catch {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Gagal memuat data.</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Gagal memuat data.</td></tr>`;
   }
 }
 
@@ -38,7 +39,7 @@ function renderTabelSekolah(items) {
   if (!tbody) return;
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Belum ada sekolah.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Belum ada sekolah.</td></tr>`;
     return;
   }
 
@@ -49,18 +50,21 @@ function renderTabelSekolah(items) {
       <td><span class="badge rounded-pill badge-${s.jenjang?.toLowerCase()}">${s.jenjang?.toUpperCase()}</span></td>
       <td class="text-muted small">${s.kota_kabupaten || '-'}</td>
       <td>
-        ${s.classroom_url
-          ? `<a href="${s.classroom_url}" target="_blank" class="text-success small">
-              <i class="bi bi-box-arrow-up-right me-1"></i>Buka
-             </a>`
-          : `<span class="text-muted small">-</span>`}
+        <span class="badge rounded-pill ${s.kelas_terisi > 0 ? 'bg-success-subtle text-success' : 'bg-light text-muted border'}">
+          ${s.kelas_terisi ?? 0} kelas
+        </span>
       </td>
+      <td class="text-center">${s.total_task ?? '-'}</td>
+      <td class="text-center">${s.total_materi ?? '-'}</td>
       <td>
         <div class="d-flex gap-1">
-          <button class="btn btn-admin-edit btn-sm" onclick="showFormEdit(${s.id}, '${s.nama.replace(/'/g,"\\'")}', '${s.jenjang}', '${s.kota_kabupaten || ''}', '${s.classroom_url || ''}')">
+          <button class="btn btn-admin-edit btn-sm" title="Kelola Kelas per Mapel" onclick="location.href='/admin/classroom/${s.id}'">
+            <i class="bi bi-collection-play"></i>
+          </button>
+          <button class="btn btn-admin-edit btn-sm" title="Edit Sekolah" onclick="showFormEdit(${s.id}, '${s.nama.replace(/'/g,"\\'")}', '${s.jenjang}', '${s.kota_kabupaten || ''}')">
             <i class="bi bi-pencil"></i>
           </button>
-          <button class="btn btn-admin-danger btn-sm" onclick="hapusSekolah(${s.id}, '${s.nama.replace(/'/g,"\\'")}')">
+          <button class="btn btn-admin-danger btn-sm" title="Hapus" onclick="hapusSekolah(${s.id}, '${s.nama.replace(/'/g,"\\'")}')">
             <i class="bi bi-trash"></i>
           </button>
         </div>
@@ -106,18 +110,16 @@ function showFormTambah() {
   document.getElementById('fNamaSekolah').value    = '';
   document.getElementById('fJenjangSekolah').value = '';
   document.getElementById('fKotaSekolah').value    = '';
-  document.getElementById('fUrlSekolah').value     = '';
   document.getElementById('sekolahAlert').classList.add('d-none');
   sekolahModal.show();
 }
 
-function showFormEdit(id, nama, jenjang, kota, url) {
+function showFormEdit(id, nama, jenjang, kota) {
   document.getElementById('modalSekolahTitle').textContent = 'Edit Sekolah';
   document.getElementById('fSekolahId').value      = id;
   document.getElementById('fNamaSekolah').value    = nama;
   document.getElementById('fJenjangSekolah').value = jenjang;
   document.getElementById('fKotaSekolah').value    = kota;
-  document.getElementById('fUrlSekolah').value     = url;
   document.getElementById('sekolahAlert').classList.add('d-none');
   sekolahModal.show();
 }
@@ -127,14 +129,13 @@ async function submitSekolah() {
   const nama   = document.getElementById('fNamaSekolah').value.trim();
   const jenjang= document.getElementById('fJenjangSekolah').value;
   const kota   = document.getElementById('fKotaSekolah').value.trim();
-  const url    = document.getElementById('fUrlSekolah').value.trim();
 
   if (!nama || !jenjang) {
     showSekolahAlert('danger', 'Nama sekolah dan jenjang wajib diisi.');
     return;
   }
 
-  const payload  = { nama, jenjang, kota_kabupaten: kota, classroom_url: url };
+  const payload  = { nama, jenjang, kota_kabupaten: kota };
   const method   = id ? 'PUT' : 'POST';
   const endpoint = id ? `/api/admin/classroom/${id}` : '/api/admin/classroom';
 
@@ -160,8 +161,9 @@ async function hapusSekolah(id, nama) {
   if (!confirm(`Hapus sekolah "${nama}"?`)) return;
   try {
     const res = await fetch(`/api/admin/classroom/${id}`, { method: 'DELETE' });
+    const data = await res.json();
     if (res.ok) { loadSekolahAdmin(); }
-    else { alert('Gagal menghapus sekolah.'); }
+    else { alert(data.detail || 'Gagal menghapus sekolah.'); }
   } catch { alert('Gagal terhubung ke server.'); }
 }
 
@@ -176,4 +178,34 @@ function resetFilterSekolah() {
   document.getElementById('searchSekolah').value       = '';
   document.getElementById('filterJenjangAdmin').value  = '';
   loadSekolahAdmin();
+}
+
+// =====================
+// CLASSROOM SAYA — ROLE SEKOLAH (profil ringkas sekolah sendiri)
+// =====================
+async function loadProfilSekolah(sekolahId) {
+  const profilBox = document.getElementById('profilSekolahBox');
+  if (!profilBox) return;
+
+  try {
+    const res  = await fetch(`/api/classroom/${sekolahId}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      profilBox.innerHTML = `<p class="text-danger small mb-0">Gagal memuat profil sekolah.</p>`;
+      return;
+    }
+
+    const s = data.sekolah;
+    const terisi = data.kelas.filter(k => k.classroom_url).length;
+    profilBox.innerHTML = `
+      <p class="mb-2"><span class="text-muted small d-block">Nama Sekolah</span><span class="fw-600">${s.nama}</span></p>
+      <p class="mb-2"><span class="text-muted small d-block">Jenjang</span>
+        <span class="badge rounded-pill badge-${s.jenjang}">${s.jenjang?.toUpperCase()}</span>
+      </p>
+      <p class="mb-2"><span class="text-muted small d-block">Kota/Kabupaten</span><span class="fw-600">${s.kota_kabupaten || '-'}</span></p>
+      <p class="mb-0"><span class="text-muted small d-block">Kelas Terisi</span><span class="fw-600">${terisi} dari ${data.kelas.length} mata pelajaran</span></p>`;
+  } catch {
+    profilBox.innerHTML = `<p class="text-danger small mb-0">Gagal terhubung ke server.</p>`;
+  }
 }

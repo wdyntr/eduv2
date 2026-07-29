@@ -24,8 +24,12 @@ class AdminAuth
             return $this->unauthorized($request);
         }
 
-        $role = Admin::where('id', $session->admin_id)->value('role') ?? 'admin';
-        $request->merge(['admin_session' => $session, 'admin_role' => $role]);
+        $admin = Admin::where('id', $session->admin_id)->first();
+        $request->merge([
+            'admin_session' => $session,
+            'admin_role' => $admin->role ?? 'admin',
+            'admin_sekolah_id' => $admin->sekolah_id ?? null,
+        ]);
         return $next($request);
     }
 

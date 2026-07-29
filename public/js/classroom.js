@@ -65,7 +65,6 @@ function schoolCard(s) {
   const j      = (s.jenjang || 'sma').toLowerCase();
   const icons  = { sma: '🎓', smk: '🔧', slb: '🌟' };
   const icon   = icons[j] || '🏫';
-  const hasUrl = s.classroom_url && s.classroom_url.trim() !== '';
 
   return `
     <div class="col-md-6 col-lg-4">
@@ -83,13 +82,9 @@ function schoolCard(s) {
           <span class="badge rounded-pill badge-${j} mb-2">${j.toUpperCase()}</span>
         </div>
         <div class="school-card-footer">
-          ${hasUrl
-            ? `<a href="${s.classroom_url}" target="_blank" rel="noopener" class="btn-classroom">
-                <i class="bi bi-box-arrow-up-right"></i> Buka Classroom
-               </a>`
-            : `<span class="btn-classroom disabled">
-                <i class="bi bi-clock"></i> Belum Tersedia
-               </span>`}
+          <a href="/classroom/${s.id}" class="btn-classroom">
+            <i class="bi bi-collection-play"></i> Lihat Kelas
+          </a>
         </div>
       </div>
     </div>`;

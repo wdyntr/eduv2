@@ -55,4 +55,10 @@ class PublicController extends Controller
     {
         return view('classroom', ['active_page' => 'classroom']);
     }
+
+    public function classroomDetail(int $id)
+    {
+        $sekolah = \App\Models\Sekolah::where('is_active', 1)->findOrFail($id);
+        return view('sekolah_detail', ['active_page' => 'classroom', 'sekolah' => $sekolah]);
+    }
 }

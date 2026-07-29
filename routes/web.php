@@ -10,6 +10,7 @@ Route::get('/media', [PublicController::class, 'media']);
 Route::get('/media/{jenjang}', [PublicController::class, 'mediaJenjang']);
 Route::get('/media/{jenjang}/{materi_id}', [PublicController::class, 'mediaDetail']);
 Route::get('/classroom', [PublicController::class, 'classroom']);
+Route::get('/classroom/{id}', [PublicController::class, 'classroomDetail']);
 Route::get('/jurnal', [JurnalController::class, 'index']);
 Route::get('/jurnal/{id}', [JurnalController::class, 'show']);
 
@@ -20,6 +21,7 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/materi/tambah', [AdminController::class, 'materiTambah']);
     Route::get('/materi/edit/{id}', [AdminController::class, 'materiEdit']);
     Route::get('/classroom', [AdminController::class, 'classroom']);
+    Route::get('/classroom/{id}', [AdminController::class, 'classroomDetail']);
     Route::get('/mapel', [AdminController::class, 'mapel']);
     Route::get('/jurnal', [AdminController::class, 'jurnal']);
     Route::get('/users', [AdminController::class, 'users']);

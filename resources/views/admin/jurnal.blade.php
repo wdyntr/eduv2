@@ -5,7 +5,7 @@
 
 @section('content')
 
-@if (($session_role ?? 'admin') === 'penulis')
+@if (($session_role ?? 'admin') === 'guru')
 
   {{-- ================= TAMPILAN PENULIS ================= --}}
   <div class="admin-card">

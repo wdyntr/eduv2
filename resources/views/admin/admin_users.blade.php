@@ -67,10 +67,18 @@
         </div>
         <div class="mb-3">
           <label class="form-label small fw-semibold">Role <span class="text-danger">*</span></label>
-          <select id="fRoleAdmin" class="form-select">
+          <select id="fRoleAdmin" class="form-select" onchange="toggleSekolahPicker()">
             <option value="admin">Admin</option>
-            <option value="penulis">Penulis (Guru/Author Jurnal)</option>
+            <option value="guru">Guru (Author Jurnal)</option>
+            <option value="sekolah">Sekolah (Monitoring Classroom)</option>
           </select>
+        </div>
+        <div class="mb-3 d-none" id="wrapSekolahPicker">
+          <label class="form-label small fw-semibold">Sekolah <span class="text-danger">*</span></label>
+          <select id="fSekolahAdmin" class="form-select">
+            <option value="">Memuat daftar sekolah...</option>
+          </select>
+          <div class="form-text">Akun ini hanya bisa mengelola data Classroom sekolah yang dipilih.</div>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">

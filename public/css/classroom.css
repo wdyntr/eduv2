@@ -10,6 +10,17 @@
   min-height: 500px;
 }
 
+/* =====================
+   SEKOLAH DETAIL HERO
+===================== */
+.sekolah-detail-hero {
+  background: var(--dark);
+  padding-top: 120px;
+  padding-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
 .classroom-hero::before {
   content: '';
   position: absolute;

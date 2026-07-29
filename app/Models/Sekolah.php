@@ -7,5 +7,10 @@ class Sekolah extends Model
 {
     protected $table = 'sekolah';
     public $timestamps = false;
-    protected $fillable = ['nama', 'jenjang', 'kota_kabupaten', 'classroom_url', 'is_active'];
+    protected $fillable = ['nama', 'jenjang', 'kota_kabupaten', 'is_active'];
+
+    public function kelas()
+    {
+        return $this->hasMany(SekolahKelas::class, 'sekolah_id');
+    }
 }

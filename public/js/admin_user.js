@@ -1,8 +1,9 @@
 let adminModal = null;
+let sekolahOptionsLoaded = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   adminModal = new bootstrap.Modal(document.getElementById('modalAdmin'));
-  loadAdminUsers(); // tambahkan ini
+  loadAdminUsers();
 });
 
 async function loadAdminUsers() {
@@ -17,14 +18,21 @@ async function loadAdminUsers() {
   try {
     const res  = await fetch('/api/admin/users');
     const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Gagal memuat data.');
     renderTabelAdmin(data.items || []);
-  } catch {
+  } catch (err) {
     if (tbody) tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="text-center text-muted py-4">Gagal memuat data.</td>
+        <td colspan="6" class="text-center text-muted py-4">${err.message || 'Gagal memuat data.'}</td>
       </tr>`;
   }
 }
+
+const ROLE_BADGE = {
+  admin:   { label: 'Admin',   class: 'bg-primary' },
+  guru:    { label: 'Guru',    class: 'bg-warning text-dark' },
+  sekolah: { label: 'Sekolah', class: 'bg-info text-dark' },
+};
 
 function renderTabelAdmin(items) {
   const tbody = document.getElementById('tabelAdmin');
@@ -38,7 +46,9 @@ function renderTabelAdmin(items) {
     return;
   }
 
-  tbody.innerHTML = items.map((a, i) => `
+  tbody.innerHTML = items.map((a, i) => {
+    const badge = ROLE_BADGE[a.role] || ROLE_BADGE.admin;
+    return `
     <tr>
       <td class="text-muted small">${i + 1}</td>
       <td>
@@ -46,16 +56,17 @@ function renderTabelAdmin(items) {
           <div class="admin-avatar-sm">
             <i class="bi bi-person-circle"></i>
           </div>
-          <span style="font-weight:600">${a.nama || '-'}</span>
+          <div>
+            <div style="font-weight:600">${a.nama || '-'}</div>
+            ${a.role === 'sekolah' && a.sekolah ? `<div class="small text-muted">${a.sekolah.nama}</div>` : ''}
+          </div>
         </div>
       </td>
       <td>
         <code class="text-success" style="font-size:0.85rem">@${a.username}</code>
       </td>
       <td>
-        <span class="badge rounded-pill ${a.role === 'penulis' ? 'bg-warning text-dark' : 'bg-primary'}">
-          ${a.role === 'penulis' ? 'Penulis' : 'Admin'}
-        </span>
+        <span class="badge rounded-pill ${badge.class}">${badge.label}</span>
       </td>
       <td class="text-muted small">${a.created_at?.slice(0, 10) || '-'}</td>
       <td>
@@ -67,7 +78,8 @@ function renderTabelAdmin(items) {
             </button>`
         }
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function showFormTambahAdmin() {
@@ -75,15 +87,50 @@ function showFormTambahAdmin() {
   document.getElementById('fUsernameAdmin').value = '';
   document.getElementById('fPasswordAdmin').value = '';
   document.getElementById('fRoleAdmin').value     = 'admin';
+  document.getElementById('wrapSekolahPicker').classList.add('d-none');
+  document.getElementById('fSekolahAdmin').value  = '';
   document.getElementById('adminAlert').classList.add('d-none');
   adminModal.show();
 }
 
+function toggleSekolahPicker() {
+  const role = document.getElementById('fRoleAdmin').value;
+  const wrap = document.getElementById('wrapSekolahPicker');
+
+  if (role === 'sekolah') {
+    wrap.classList.remove('d-none');
+    if (!sekolahOptionsLoaded) loadSekolahPickerOptions();
+  } else {
+    wrap.classList.add('d-none');
+  }
+}
+
+async function loadSekolahPickerOptions() {
+  const select = document.getElementById('fSekolahAdmin');
+  select.innerHTML = `<option value="">Memuat daftar sekolah...</option>`;
+
+  try {
+    const res = await fetch('/api/classroom');
+    const data = await res.json();
+    const items = data.items || [];
+
+    select.innerHTML = items.length
+      ? `<option value="">-- Pilih sekolah --</option>` +
+        items.map(s => `<option value="${s.id}">${s.nama}</option>`).join('')
+      : `<option value="">Belum ada data sekolah</option>`;
+
+    sekolahOptionsLoaded = true;
+  } catch {
+    select.innerHTML = `<option value="">Gagal memuat daftar sekolah</option>`;
+  }
+}
+
 async function submitAdmin() {
-  const nama     = document.getElementById('fNamaAdmin').value.trim();
-  const username = document.getElementById('fUsernameAdmin').value.trim();
-  const password = document.getElementById('fPasswordAdmin').value;
-  const role     = document.getElementById('fRoleAdmin').value;
+  const nama      = document.getElementById('fNamaAdmin').value.trim();
+  const username  = document.getElementById('fUsernameAdmin').value.trim();
+  const password  = document.getElementById('fPasswordAdmin').value;
+  const role      = document.getElementById('fRoleAdmin').value;
+  const sekolahId = document.getElementById('fSekolahAdmin').value;
 
   if (!username || !password) {
     showAdminAlert('danger', 'Username dan password wajib diisi.');
@@ -93,12 +140,19 @@ async function submitAdmin() {
     showAdminAlert('danger', 'Password minimal 6 karakter.');
     return;
   }
+  if (role === 'sekolah' && !sekolahId) {
+    showAdminAlert('danger', 'Pilih sekolah untuk akun dengan peran Sekolah.');
+    return;
+  }
 
   try {
     const res = await fetch('/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, nama, role }),
+      body: JSON.stringify({
+        username, password, nama, role,
+        sekolah_id: role === 'sekolah' ? sekolahId : null,
+      }),
     });
 
     if (res.ok) {
@@ -141,4 +195,5 @@ function showAdminAlert(type, msg) {
   if (!el) return;
   el.className   = `alert alert-${type} small py-2`;
   el.textContent = msg;
+  el.classList.remove('d-none');
 }

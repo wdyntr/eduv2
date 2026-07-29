@@ -18,7 +18,7 @@
       <a href="/admin">
         <span class="brand-edu">Lampung</span><span class="brand-lampung">Belajar</span>
       </a>
-      <span class="sidebar-badge">Admin</span>
+      <span class="sidebar-badge">{{ ['admin' => 'Admin', 'guru' => 'Guru', 'sekolah' => 'Sekolah'][$session_role ?? 'admin'] ?? 'Admin' }}</span>
     </div>
 
     <nav class="sidebar-nav">
@@ -34,22 +34,28 @@
         <i class="bi bi-collection-play"></i>
         <span>Kelola Materi</span>
       </a>
+      @endif
 
+      @if (in_array($session_role ?? 'admin', ['admin', 'sekolah']))
       <a href="/admin/classroom" class="sidebar-link {{ $active_menu == 'classroom' ? 'active' : '' }}">
         <i class="bi bi-building"></i>
-        <span>Kelola Classroom</span>
+        <span>{{ ($session_role ?? 'admin') === 'sekolah' ? 'Classroom Saya' : 'Monitoring Classroom' }}</span>
       </a>
+      @endif
 
+      @if (($session_role ?? 'admin') === 'admin')
       <a href="/admin/mapel" class="sidebar-link {{ $active_menu == 'mapel' ? 'active' : '' }}">
         <i class="bi bi-book"></i>
         <span>Mata Pelajaran</span>
       </a>
       @endif
 
+      @if (in_array($session_role ?? 'admin', ['admin', 'guru']))
       <a href="/admin/jurnal" class="sidebar-link {{ $active_menu == 'jurnal' ? 'active' : '' }}">
         <i class="bi bi-journal-text"></i>
         <span>{{ ($session_role ?? 'admin') === 'admin' ? 'Request Jurnal' : 'Jurnal Saya' }}</span>
       </a>
+      @endif
 
       <a href="/admin/profile" class="sidebar-link {{ $active_menu == 'profile' ? 'active' : '' }}">
         <i class="bi bi-person-gear"></i>
@@ -78,7 +84,7 @@
         </div>
         <div class="admin-detail">
           <span class="admin-name">{{ $session_user }}</span>
-          <span class="admin-role">{{ ($session_role ?? 'admin') === 'admin' ? 'Administrator' : 'Penulis' }}</span>
+          <span class="admin-role">{{ ['admin' => 'Administrator', 'guru' => 'Guru', 'sekolah' => 'Operator Sekolah'][$session_role ?? 'admin'] ?? 'Administrator' }}</span>
         </div>
       </div>
       <a href="/admin/logout" class="btn-logout" title="Logout">
