@@ -10,18 +10,19 @@ return new class extends Migration
     {
         if (!Schema::hasTable('classroom_kelas_stats')) {
             DB::statement("
-                CREATE TABLE classroom_kelas_stats (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    sekolah_kelas_id INT NOT NULL,
-                    bulan CHAR(7) NOT NULL COMMENT 'format YYYY-MM',
-                    jumlah_guru INT NOT NULL DEFAULT 0,
-                    jumlah_siswa INT NOT NULL DEFAULT 0,
-                    jumlah_task INT NOT NULL DEFAULT 0 COMMENT 'courseWork yang dibuat guru bulan ini',
-                    jumlah_materi INT NOT NULL DEFAULT 0 COMMENT 'courseWorkMaterials (upload) bulan ini',
-                    synced_at DATETIME NOT NULL,
-                    UNIQUE KEY uniq_kelas_bulan (sekolah_kelas_id, bulan),
-                    FOREIGN KEY (sekolah_kelas_id) REFERENCES sekolah_kelas(id) ON DELETE CASCADE
-                )
+                CREATE TABLE `classroom_kelas_stats` (
+                    `id` int NOT NULL AUTO_INCREMENT,
+                    `sekolah_kelas_id` int NOT NULL,
+                    `bulan` char(7) NOT NULL COMMENT 'format YYYY-MM',
+                    `jumlah_guru` int NOT NULL DEFAULT 0,
+                    `jumlah_siswa` int NOT NULL DEFAULT 0,
+                    `jumlah_task` int NOT NULL DEFAULT 0 COMMENT 'courseWork yang dibuat guru bulan ini',
+                    `jumlah_materi` int NOT NULL DEFAULT 0 COMMENT 'courseWorkMaterials (upload) bulan ini',
+                    `synced_at` datetime NOT NULL,
+                    PRIMARY KEY (`id`),
+                    UNIQUE KEY `uniq_kelas_bulan` (`sekolah_kelas_id`,`bulan`),
+                    CONSTRAINT `classroom_kelas_stats_ibfk_1` FOREIGN KEY (`sekolah_kelas_id`) REFERENCES `sekolah_kelas` (`id`) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             ");
         }
     }
