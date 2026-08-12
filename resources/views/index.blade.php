@@ -109,15 +109,15 @@
       </div>
 
       {{-- Aksi Jihan --}}
-      <div class="col-6 col-lg-3">
-        <a href="{{ config('site.aksijihan')  }}" target="_blank" rel="noopener" class="menu-card menu-aksijihan">
-          <div class="menu-icon">
-            <img src="{{ asset('images/aksiJihan.png') }}" alt="Aksi Jihan" style="height:48px;object-fit:contain;"> </div>
-          <h5>Aksi Jihan</h5>
-          <p>Platform pembelajaran interaktif</p>
-          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
-        </a>
-      </div>
+      {{-- <div class="col-6 col-lg-3"> --}}
+      {{--   <a href="{{ config('site.aksijihan')  }}" target="_blank" rel="noopener" class="menu-card menu-aksijihan"> --}}
+      {{--     <div class="menu-icon"> --}}
+      {{--       <img src="{{ asset('images/aksiJihan.png') }}" alt="Aksi Jihan" style="height:48px;object-fit:contain;"> </div> --}}
+      {{--     <h5>Aksi Jihan</h5> --}}
+      {{--     <p>Platform pembelajaran interaktif</p> --}}
+      {{--     <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span> --}}
+      {{--   </a> --}}
+      {{-- </div> --}}
 
       {{-- RMD --}}
       <div class="col-6 col-lg-3">
@@ -154,14 +154,14 @@
       </div>
 
       {{-- Tes MBTI --}}
-      <div class="col-6 col-lg-3">
-        <a href="{{ config('site.mbti')  }}" target="_blank" rel="noopener" class="menu-card menu-mbti">
-          <div class="menu-icon">🧠</div>
-          <h5>Tes MBTI</h5>
-          <p>Kenali kepribadianmu dengan tes MBTI gratis</p>
-          <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span>
-        </a>
-      </div>
+      {{-- <div class="col-6 col-lg-3"> --}}
+      {{--   <a href="{{ config('site.mbti')  }}" target="_blank" rel="noopener" class="menu-card menu-mbti"> --}}
+      {{--     <div class="menu-icon">🧠</div> --}}
+      {{--     <h5>Tes MBTI</h5> --}}
+      {{--     <p>Kenali kepribadianmu dengan tes MBTI gratis</p> --}}
+      {{--     <span class="menu-arrow"><i class="bi bi-box-arrow-up-right"></i></span> --}}
+      {{--   </a> --}}
+      {{-- </div> --}}
 
      {{-- Jurnal --}}
      <div class="col-6 col-lg-3">

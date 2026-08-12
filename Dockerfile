@@ -27,6 +27,7 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-RUN chown -R www-data:www-data /var/www
+# Memastikan folder /var/www ada dan dapat diakses sebelum volume ditempel
+RUN mkdir -p /var/www && chown -R www-data:www-data /var/www
 
 EXPOSE 9000

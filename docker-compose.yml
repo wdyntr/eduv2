@@ -5,17 +5,35 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: edulampung-laravel
+    container_name: lbelajar-laravel
     restart: unless-stopped
     working_dir: /var/www
     volumes:
-      - ./:/var/www
+      - ./:/var/www:Z
     ports:
       - "8002:8000"
     command: php artisan serve --host=0.0.0.0 --port=8000
     environment:
-      - DB_HOST=host.containers.internal
-      - DB_PORT=3307
-      - DB_DATABASE=edulampung
+      - DB_HOST=db-mysql
+      - DB_PORT=3306
+      - DB_DATABASE=lbelajar
       - DB_USERNAME=root
       - DB_PASSWORD=root
+    depends_on:
+      - db-mysql
+
+  db-mysql:
+    image: docker.io/library/mysql:8.0
+    container_name: lbelajar-mysql
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_DATABASE=lbelajar
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      # Membuat data database tetap tersimpan di host secara lokal walau container dihapus
+      - lbelajar_db_data:/var/lib/mysql:Z
+
+volumes:
+  lbelajar_db_data:
