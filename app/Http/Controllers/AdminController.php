@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Materi;
-use App\Models\UserSession;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
