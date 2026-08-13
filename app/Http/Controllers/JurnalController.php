@@ -13,7 +13,12 @@ class JurnalController extends Controller
 
     public function show(int $id)
     {
-        $jurnal = Jurnal::where('status', 'approved')->findOrFail($id);
+        // "Approved" sekarang ditentukan dari status jurnal_review milik
+        // revisi terbaru, bukan kolom `status` langsung di tabel jurnal.
+        $jurnal = Jurnal::with(['kategori', 'revisiTerbaru.reviewTerbaru'])
+            ->whereHas('revisiTerbaru.reviewTerbaru', fn($q) => $q->where('status', 'approved'))
+            ->findOrFail($id);
+
         return view('jurnal_detail', ['active_page' => 'jurnal', 'jurnal' => $jurnal]);
     }
 }

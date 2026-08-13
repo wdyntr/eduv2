@@ -2,52 +2,46 @@
 namespace App\Http\Controllers;
 
 use App\Models\Materi;
-use App\Models\AdminSession;
+use App\Models\UserSession;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     private function adminCtx(Request $request, array $extra = []): array
     {
-        $token = $request->cookie('admin_session');
-        $session = $token ? AdminSession::where('token', $token)->first() : null;
+        $user = $request->auth_user;
 
         return array_merge([
-            'session_user' => $session?->username ?? 'Admin',
-            'session_id' => $session?->admin_id ?? 0,
-            'session_role' => $request->admin_role ?? 'admin',
-            'session_sekolah_id' => $request->admin_sekolah_id ?? null,
+            'session_user'        => $user?->username ?? 'User',
+            'session_id'          => $user?->id ?? 0,
+            'session_role'        => $user?->getRoleNames()->first() ?? 'admin',
+            'session_sekolah_id'  => $request->user_sekolah_id ?? null,
         ], $extra);
     }
 
     private function guardAdminOnly(Request $request)
     {
-        if (($request->admin_role ?? 'admin') !== 'admin') {
-            abort(403, 'Halaman ini hanya untuk admin.');
-        }
+        abort_unless($request->auth_user?->hasRole('admin'), 403, 'Halaman ini hanya untuk admin.');
     }
 
     private function guardClassroomAccess(Request $request)
     {
-        if (!in_array($request->admin_role ?? 'admin', ['admin', 'sekolah'])) {
-            abort(403, 'Halaman ini tidak tersedia untuk peran Anda.');
-        }
+        abort_unless($request->auth_user?->hasAnyRole(['admin', 'sekolah']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
     }
 
     private function guardJurnalAccess(Request $request)
     {
-        if (!in_array($request->admin_role ?? 'admin', ['admin', 'guru'])) {
-            abort(403, 'Halaman ini tidak tersedia untuk peran Anda.');
-        }
+        abort_unless($request->auth_user?->hasAnyRole(['admin', 'guru']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
     }
 
     public function dashboard(Request $request)
     {
-        $role = $request->admin_role ?? 'admin';
-        if ($role === 'guru') {
+        $user = $request->auth_user;
+
+        if ($user?->hasRole('guru')) {
             return view('admin.dashboard_penulis', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
-        if ($role === 'sekolah') {
+        if ($user?->hasRole('sekolah')) {
             return view('admin.dashboard_sekolah', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
         return view('admin.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
@@ -82,8 +76,8 @@ class AdminController extends Controller
     {
         $this->guardClassroomAccess($request);
 
-        $role = $request->admin_role ?? 'admin';
-        if ($role === 'sekolah' && (int) ($request->admin_sekolah_id ?? 0) !== $id) {
+        $user = $request->auth_user;
+        if ($user?->hasRole('sekolah') && (int) ($request->user_sekolah_id ?? 0) !== $id) {
             abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
         }
 
@@ -115,10 +109,10 @@ class AdminController extends Controller
 
     public function logout(Request $request)
     {
-        $token = $request->cookie('admin_session');
+        $token = $request->cookie('user_session');
         if ($token) {
-            \App\Models\AdminSession::where('token', $token)->delete();
+            UserSession::where('token', $token)->delete();
         }
-        return redirect('/')->withCookie(cookie()->forget('admin_session'));
+        return redirect('/')->withCookie(cookie()->forget('user_session'));
     }
 }

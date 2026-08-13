@@ -7,5 +7,5 @@ class JurnalKategori extends Model
 {
     protected $table = 'jurnal_kategori';
     public $timestamps = false;
-    protected $fillable = ['nama'];
+    protected $fillable = ['nama_kategori'];
 }

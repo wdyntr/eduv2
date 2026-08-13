@@ -6,51 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 class Materi extends Model
 {
     protected $table = 'materi';
-    protected $fillable = ['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url', 'thumbnail'];
+    protected $fillable = ['judul', 'deskripsi', 'tipe', 'mapel_id', 'url', 'thumbnail', 'is_active'];
+    // ^ 'jenjang' dihapus dari $fillable, kolom itu sudah tidak ada di tabel
 
     public function mapel()
     {
         return $this->belongsTo(MataPelajaran::class, 'mapel_id');
     }
 
-    /**
-     * Ekstrak video ID dari berbagai format URL YouTube.
-     * Mendukung: watch?v=, youtu.be/, embed/, shorts/, ?v= dengan parameter tambahan.
-     */
-    public static function extractYoutubeId(?string $url): ?string
+    /** Jenjang materi sekarang diturunkan dari mapel-nya, bukan kolom sendiri lagi */
+    public function getJenjangAttribute()
     {
-        if (!$url) {
-            return null;
-        }
-
-        $pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i';
-
-        if (preg_match($pattern, $url, $matches)) {
-            return $matches[1];
-        }
-
-        return null;
+        return $this->mapel?->jenjang;
     }
 
-    /**
-     * Bangun URL thumbnail YouTube dari video ID.
-     */
-    public static function youtubeThumbnailUrl(string $videoId, string $quality = 'hqdefault'): string
-    {
-        return "https://img.youtube.com/vi/{$videoId}/{$quality}.jpg";
-    }
-
-    /**
-     * Tentukan thumbnail otomatis berdasarkan tipe & url.
-     * Mengembalikan null jika bukan video atau ID tidak ditemukan (supaya fallback emoji tetap jalan).
-     */
-    public static function resolveThumbnail(string $tipe, ?string $url): ?string
-    {
-        if ($tipe !== 'video') {
-            return null;
-        }
-
-        $videoId = self::extractYoutubeId($url);
-        return $videoId ? self::youtubeThumbnailUrl($videoId) : null;
-    }
+    // PENTING: method resolveThumbnail() dan method lain yang sudah ada
+    // di file Materi.php kamu SEKARANG biarkan tetap seperti semula,
+    // tidak perlu diubah — cuma constructor $fillable + tambahan relasi
+    // mapel() dan accessor jenjang di atas yang baru.
 }

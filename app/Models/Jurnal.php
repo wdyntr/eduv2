@@ -6,37 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 class Jurnal extends Model
 {
     protected $table = 'jurnal';
-    protected $fillable = [
-        'judul', 'kategori', 'penulis', 'abstrak',
-        'jumlah_halaman', 'tahun_terbit', 'volume', 'nomor_edisi', 'issn', 'kata_kunci', 'bahasa',
-        'file_jurnal', 'file_bukti_plagiarisme',
-        'status', 'catatan_admin', 'admin_id', 'reviewed_by', 'reviewed_at',
-    ];
+    public $timestamps = false;
+    protected $fillable = ['kategori_id', 'user_id'];
+
+    public function kategori()
+    {
+        return $this->belongsTo(JurnalKategori::class, 'kategori_id');
+    }
 
     public function penulisAkun()
     {
-        return $this->belongsTo(Admin::class, 'admin_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function reviewer()
+    public function revisi()
     {
-        return $this->belongsTo(Admin::class, 'reviewed_by');
+        return $this->hasMany(JurnalRevisi::class, 'jurnal_id')->orderBy('versi_ke');
     }
 
-    protected static function booted()
+    /** Revisi paling baru — ini yang biasa ditampilkan di listing/detail */
+    public function revisiTerbaru()
     {
-        static::deleting(function (Jurnal $jurnal) {
-            self::hapusFileFisik($jurnal->file_jurnal);
-            self::hapusFileFisik($jurnal->file_bukti_plagiarisme);
-        });
-    }
-
-    public static function hapusFileFisik(?string $filename): void
-    {
-        if (!$filename) return;
-        $path = config('jurnal.upload_path') . '/' . basename($filename);
-        if (is_file($path)) {
-            @unlink($path);
-        }
+        return $this->hasOne(JurnalRevisi::class, 'jurnal_id')->latestOfMany('versi_ke');
     }
 }

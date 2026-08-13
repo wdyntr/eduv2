@@ -3,20 +3,20 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\AdminSession;
-use App\Models\Admin;
+use App\Models\UserSession;
+use App\Models\User;
 
 class AdminAuth
 {
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->cookie('admin_session');
+        $token = $request->cookie('user_session');
 
         if (!$token) {
             return $this->unauthorized($request);
         }
 
-        $session = AdminSession::where('token', $token)
+        $session = UserSession::where('token', $token)
             ->where('expires_at', '>', now())
             ->first();
 
@@ -24,12 +24,20 @@ class AdminAuth
             return $this->unauthorized($request);
         }
 
-        $admin = Admin::where('id', $session->admin_id)->first();
+        $user = User::find($session->user_id);
+
+        if (!$user) {
+            return $this->unauthorized($request);
+        }
+
+        // auth_user membawa model User lengkap supaya controller/middleware
+        // lain bisa cek role/permission langsung lewat Spatie: hasRole(), can(), dst.
         $request->merge([
-            'admin_session' => $session,
-            'admin_role' => $admin->role ?? 'admin',
-            'admin_sekolah_id' => $admin->sekolah_id ?? null,
+            'user_session'    => $session,
+            'auth_user'       => $user,
+            'user_sekolah_id' => $user->sekolah_id,
         ]);
+
         return $next($request);
     }
 

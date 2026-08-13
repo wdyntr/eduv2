@@ -2,8 +2,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
-use App\Models\AdminSession;
+use App\Models\User;
+use App\Models\UserSession;
 use App\Models\Materi;
 use App\Models\Sekolah;
 use App\Models\MataPelajaran;
@@ -14,67 +14,76 @@ use Illuminate\Support\Str;
 
 class AdminApiController extends Controller
 {
+    /** Role yang valid untuk akun admin/guru/sekolah (bukan siswa/publik) */
+    private const VALID_ROLES = ['admin', 'guru', 'sekolah'];
+
     private function guardAdminOnly(Request $request): void
     {
-        abort_if(($request->admin_role ?? 'admin') !== 'admin', 403, 'Hanya admin yang bisa melakukan aksi ini.');
+        abort_if(!$request->auth_user?->hasRole('admin'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
     }
 
     public function login(Request $request)
     {
-        $admin = Admin::where('username', $request->username)->first();
+        $user = User::where('username', $request->username)->first();
 
-        if (!$admin || !password_verify($request->password, $admin->password)) {
+        if (!$user || !password_verify($request->password, $user->password)) {
             return response()->json(['detail' => 'Username atau password salah.'], 401);
         }
 
         $token = Str::random(64);
-        AdminSession::create([
+        UserSession::create([
             'token' => $token,
-            'admin_id' => $admin->id,
-            'username' => $admin->username,
+            'user_id' => $user->id,
+            'username' => $user->username,
             'expires_at' => now()->addHours(24),
         ]);
 
         return response()->json(['ok' => true])
-            ->withCookie(\Cookie::make('admin_session', $token, 1440, '/', null, false, false));
+            ->withCookie(\Cookie::make('user_session', $token, 1440, '/', null, false, false));
     }
 
     public function getUsers(Request $request)
     {
         $this->guardAdminOnly($request);
-        $items = Admin::with('sekolah:id,nama')
-            ->select('id', 'username', 'nama', 'role', 'sekolah_id', 'created_at')
-            ->orderBy('id')->get();
+        $items = User::with(['sekolah:id,nama', 'roles:name'])
+            ->select('id', 'username', 'nama', 'sekolah_id', 'created_at')
+            ->orderBy('id')->get()
+            ->map(function ($u) {
+                $u->role = $u->roles->pluck('name')->first();
+                unset($u->roles);
+                return $u;
+            });
         return response()->json(['items' => $items, 'total' => $items->count()]);
     }
 
     public function tambahAdmin(Request $request)
     {
         $this->guardAdminOnly($request);
-        $role = in_array($request->role, ['admin', 'guru', 'sekolah']) ? $request->role : 'admin';
+        $role = in_array($request->role, self::VALID_ROLES) ? $request->role : 'admin';
 
         if ($role === 'sekolah' && !$request->sekolah_id) {
             return response()->json(['detail' => 'Akun dengan peran Sekolah wajib dikaitkan ke salah satu sekolah.'], 400);
         }
 
-        Admin::create([
+        $user = User::create([
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'nama' => $request->nama ?? '',
-            'role' => $role,
             'sekolah_id' => $role === 'sekolah' ? $request->sekolah_id : null,
         ]);
+        $user->assignRole($role);
+
         return response()->json(['ok' => true]);
     }
 
     public function hapusAdmin(Request $request, int $id)
     {
         $this->guardAdminOnly($request);
-        $session = $request->admin_session;
-        if ($session->admin_id == $id) {
+        $session = $request->user_session;
+        if ($session->user_id == $id) {
             return response()->json(['detail' => 'Tidak bisa hapus akun sendiri.'], 400);
         }
-        Admin::destroy($id);
+        User::destroy($id);
         return response()->json(['ok' => true]);
     }
 
@@ -84,7 +93,7 @@ class AdminApiController extends Controller
 
     private function guardClassroomAccess(Request $request): void
     {
-        abort_if(!in_array($request->admin_role ?? 'admin', ['admin', 'sekolah']), 403, 'Tidak memiliki akses.');
+        abort_if(!$request->auth_user?->hasAnyRole(['admin', 'sekolah']), 403, 'Tidak memiliki akses.');
     }
 
     // =====================
@@ -94,9 +103,9 @@ class AdminApiController extends Controller
     /** Pastikan admin bisa akses sekolah manapun, sedangkan role sekolah cuma sekolahnya sendiri */
     private function assertSekolahAccess(Request $request, int $sekolahId): void
     {
-        $role = $request->admin_role ?? 'admin';
-        if ($role === 'admin') return;
-        if ($role === 'sekolah' && (int) $request->admin_sekolah_id === $sekolahId) return;
+        $user = $request->auth_user;
+        if ($user?->hasRole('admin')) return;
+        if ($user?->hasRole('sekolah') && (int) $request->user_sekolah_id === $sekolahId) return;
         abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
     }
 
@@ -108,7 +117,7 @@ class AdminApiController extends Controller
 
         $bulan = now()->format('Y-m');
         $sekolah = Sekolah::findOrFail($id);
-        $mapel = MataPelajaran::where('jenjang', $sekolah->jenjang)->orderBy('nama')->get(['id', 'nama']);
+        $mapel = MataPelajaran::where('jenjang_id', $sekolah->jenjang_id)->orderBy('nama')->get(['id', 'nama']);
         $kelas = $sekolah->kelas()->get(['id', 'mapel_id', 'classroom_url'])->keyBy('mapel_id');
 
         $statsByKelasId = DB::table('classroom_kelas_stats')
@@ -139,10 +148,10 @@ class AdminApiController extends Controller
     {
         $this->guardClassroomAccess($request);
         $this->assertSekolahAccess($request, $id);
-        abort_if(($request->admin_role ?? 'admin') !== 'sekolah', 403, 'Hanya operator sekolah yang bisa mengubah link Classroom. Admin/dinas hanya dapat memantau.');
+        abort_if(!$request->auth_user?->hasRole('sekolah'), 403, 'Hanya operator sekolah yang bisa mengubah link Classroom. Admin/dinas hanya dapat memantau.');
 
         $sekolah = Sekolah::findOrFail($id);
-        $mapel = MataPelajaran::where('jenjang', $sekolah->jenjang)->findOrFail($mapelId);
+        $mapel = MataPelajaran::where('jenjang_id', $sekolah->jenjang_id)->findOrFail($mapelId);
 
         $request->validate(['classroom_url' => 'nullable|url|max:500']);
 
@@ -157,7 +166,7 @@ class AdminApiController extends Controller
     public function tambahMateri(Request $request)
     {
         $this->guardAdminOnly($request);
-        $data = $request->only(['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url']);
+        $data = $request->only(['judul', 'deskripsi', 'tipe', 'mapel_id', 'url']);
         $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
 
         Materi::create($data);
@@ -167,7 +176,7 @@ class AdminApiController extends Controller
     public function editMateri(Request $request, int $id)
     {
         $this->guardAdminOnly($request);
-        $data = $request->only(['judul', 'deskripsi', 'tipe', 'jenjang', 'mapel_id', 'url']);
+        $data = $request->only(['judul', 'deskripsi', 'tipe', 'mapel_id', 'url']);
         $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
 
         Materi::findOrFail($id)->update($data);
@@ -184,14 +193,14 @@ class AdminApiController extends Controller
     public function tambahSekolah(Request $request)
     {
         $this->guardAdminOnly($request);
-        Sekolah::create($request->only(['nama', 'jenjang', 'kota_kabupaten']));
+        Sekolah::create($request->only(['nama', 'jenjang_id', 'kota_kabupaten_id']));
         return response()->json(['ok' => true]);
     }
 
     public function editSekolah(Request $request, int $id)
     {
         $this->guardAdminOnly($request);
-        Sekolah::findOrFail($id)->update($request->only(['nama', 'jenjang', 'kota_kabupaten']));
+        Sekolah::findOrFail($id)->update($request->only(['nama', 'jenjang_id', 'kota_kabupaten_id']));
         return response()->json(['ok' => true]);
     }
 
@@ -218,7 +227,7 @@ class AdminApiController extends Controller
     {
         $this->guardAdminOnly($request);
         try {
-            MataPelajaran::create($request->only(['nama', 'jenjang']));
+            MataPelajaran::create($request->only(['nama', 'jenjang_id']));
         } catch (\Exception $e) {
             return response()->json(['detail' => 'Mata pelajaran sudah ada untuk jenjang ini.'], 400);
         }
@@ -228,7 +237,7 @@ class AdminApiController extends Controller
     public function editMapel(Request $request, int $id)
     {
         $this->guardAdminOnly($request);
-        MataPelajaran::findOrFail($id)->update($request->only(['nama', 'jenjang']));
+        MataPelajaran::findOrFail($id)->update($request->only(['nama', 'jenjang_id']));
         return response()->json(['ok' => true]);
     }
 
@@ -245,22 +254,22 @@ class AdminApiController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $session = $request->admin_session;
-        $admin = Admin::findOrFail($session->admin_id);
+        $session = $request->user_session;
+        $user = User::findOrFail($session->user_id);
 
         if ($request->password_baru) {
             if (!$request->password_lama) {
                 return response()->json(['detail' => 'Password lama wajib diisi.'], 400);
             }
-            if (!password_verify($request->password_lama, $admin->password)) {
+            if (!password_verify($request->password_lama, $user->password)) {
                 return response()->json(['detail' => 'Password lama salah.'], 400);
             }
             if (strlen($request->password_baru) < 6) {
                 return response()->json(['detail' => 'Password baru minimal 6 karakter.'], 400);
             }
-            $admin->update(['nama' => $request->nama, 'password' => Hash::make($request->password_baru)]);
+            $user->update(['nama' => $request->nama, 'password' => Hash::make($request->password_baru)]);
         } else {
-            $admin->update(['nama' => $request->nama]);
+            $user->update(['nama' => $request->nama]);
         }
 
         return response()->json(['ok' => true]);

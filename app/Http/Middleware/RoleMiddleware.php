@@ -7,25 +7,30 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Pasang setelah AdminAuth di route/group, mis:
+ *   Route::middleware(['admin.auth', 'role:admin'])->group(...)
+ *
+ * Catatan: middleware ini sebelumnya pakai auth()->user()->role dan
+ * ->is_active, tapi kolom itu tidak ada di skema `users` yang sekarang
+ * (role dikelola lewat tabel Spatie permission, dan tidak ada kolom
+ * is_active di users). Jadi dirombak untuk pakai $request->auth_user
+ * (di-set oleh AdminAuth) + Spatie hasRole().
+ */
 class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!auth()->check()) {
-            return redirect()->route('login');
+        $user = $request->auth_user;
+
+        if (!$user) {
+            return redirect('/')->withCookie(cookie()->forget('user_session'));
         }
 
-        // ✅ Cek is_active DULU sebelum cek role
-        if (!auth()->user()->is_active) {
-            auth()->logout();
-            return redirect()->route('login')
-                ->withErrors(['username' => 'Akun Anda tidak aktif. Hubungi admin.']);
-        }
-
-        if (auth()->user()->role !== $role) {
-            if (auth()->user()->role === 'siswa') {
-                return redirect()->route('quiz.index');
-            }
+        if (!$user->hasRole($role)) {
+            // Sebelumnya ada redirect khusus untuk role 'siswa' ke quiz.index,
+            // tapi role itu tidak ada di alur admin/guru/sekolah aplikasi ini,
+            // jadi fallback digeneralisasi ke dashboard admin.
             return redirect()->route('admin.dashboard');
         }
 

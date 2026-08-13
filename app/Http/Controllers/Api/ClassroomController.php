@@ -14,7 +14,9 @@ class ClassroomController extends Controller
         $query = Sekolah::where('is_active', 1);
 
         if ($request->search) $query->where('nama', 'like', "%{$request->search}%");
-        if ($request->jenjang) $query->where('jenjang', $request->jenjang);
+        if ($request->jenjang) {
+            $query->whereHas('jenjang', fn($q) => $q->where('kode', $request->jenjang));
+        }
 
         $query->withCount(['kelas as kelas_terisi' => function ($q) {
             $q->whereNotNull('classroom_url')->where('classroom_url', '!=', '');
@@ -30,9 +32,10 @@ class ClassroomController extends Controller
               ->where('classroom_kelas_stats.bulan', $bulan);
         }], 'classroom_kelas_stats.jumlah_materi');
 
+        $query->with(['jenjang:id,kode,nama', 'kotaKabupaten:id,nama']);
         $query->orderBy('nama', $request->get('sort', 'az') === 'za' ? 'desc' : 'asc');
 
-        $items = $query->get(['id', 'nama', 'jenjang', 'kota_kabupaten']);
+        $items = $query->get(['id', 'nama', 'jenjang_id', 'kota_kabupaten_id']);
         return response()->json(['items' => $items, 'total' => $items->count(), 'bulan' => $bulan]);
     }
 
@@ -41,7 +44,7 @@ class ClassroomController extends Controller
     {
         $sekolah = Sekolah::where('is_active', 1)->findOrFail($id);
 
-        $mapel = MataPelajaran::where('jenjang', $sekolah->jenjang)->orderBy('nama')->get(['id', 'nama']);
+        $mapel = MataPelajaran::where('jenjang_id', $sekolah->jenjang_id)->orderBy('nama')->get(['id', 'nama']);
         $kelas = $sekolah->kelas()->pluck('classroom_url', 'mapel_id');
 
         $items = $mapel->map(fn($m) => [

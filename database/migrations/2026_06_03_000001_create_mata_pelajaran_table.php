@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('sekolah')) {
+        if (!Schema::hasTable('mata_pelajaran')) {
             DB::statement("
-                CREATE TABLE `sekolah` (
+                CREATE TABLE `mata_pelajaran` (
                     `id` int NOT NULL AUTO_INCREMENT,
-                    `nama` varchar(255) NOT NULL,
-                    `jenjang` enum('sma','smk','slb') NOT NULL,
-                    `kota_kabupaten` varchar(100) DEFAULT NULL,
-                    `is_active` tinyint(1) DEFAULT 1,
+                    `nama` varchar(100) NOT NULL,
+                    `jenjang_id` int NOT NULL,
                     PRIMARY KEY (`id`),
-                    KEY `idx_sekolah_jenjang` (`jenjang`)
+                    UNIQUE KEY `uq_mapel` (`nama`,`jenjang_id`),
+                    KEY `idx_mapel_jenjang` (`jenjang_id`),
+                    CONSTRAINT `fk_mapel_jenjang` FOREIGN KEY (`jenjang_id`) REFERENCES `jenjang` (`id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             ");
         }
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('sekolah');
+        Schema::dropIfExists('mata_pelajaran');
     }
 };

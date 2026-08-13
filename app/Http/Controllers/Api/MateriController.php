@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Materi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MateriController extends Controller
 {
@@ -13,14 +14,18 @@ class MateriController extends Controller
         $page  = $request->get('page', 1);
         $sort  = $request->get('sort', 'terbaru');
 
-        $query = Materi::with('mapel')
+        $query = Materi::with('mapel.jenjang')
             ->where('is_active', 1)
             ->whereIn('tipe', ['video', 'ppt']); // tambahkan ini
 
-        if ($request->jenjang) $query->where('jenjang', $request->jenjang);
-        if ($request->tipe)    $query->where('tipe', $request->tipe);
-        if ($request->mapel)   $query->whereHas('mapel', fn($q) => $q->whereRaw('LOWER(nama) = ?', [$request->mapel]));
-        if ($request->q)       $query->where('judul', 'like', "%{$request->q}%");
+        // 'jenjang' (sma/smk/slb) sekarang disimpan sebagai kode di tabel jenjang,
+        // dihubungkan lewat mapel -> jenjang, bukan kolom langsung di materi.
+        if ($request->jenjang) {
+            $query->whereHas('mapel.jenjang', fn($q) => $q->where('kode', $request->jenjang));
+        }
+        if ($request->tipe)  $query->where('tipe', $request->tipe);
+        if ($request->mapel) $query->whereHas('mapel', fn($q) => $q->whereRaw('LOWER(nama) = ?', [$request->mapel]));
+        if ($request->q)     $query->where('judul', 'like', "%{$request->q}%");
 
         $orderMap = ['terbaru' => ['created_at', 'desc'], 'terlama' => ['created_at', 'asc'], 'az' => ['judul', 'asc'], 'za' => ['judul', 'desc']];
         [$col, $dir] = $orderMap[$sort] ?? ['created_at', 'desc'];
@@ -30,14 +35,20 @@ class MateriController extends Controller
         $items = $query->skip(($page - 1) * $limit)->take($limit)->get()->map(function ($m) {
             return [
                 'id' => $m->id, 'judul' => $m->judul, 'deskripsi' => $m->deskripsi,
-                'tipe' => $m->tipe, 'jenjang' => $m->jenjang, 'url' => $m->url,
+                'tipe' => $m->tipe, 'jenjang' => $m->mapel?->jenjang?->kode, 'url' => $m->url,
                 'thumbnail' => $m->thumbnail, 'created_at' => $m->created_at,
                 'mata_pelajaran' => $m->mapel?->nama,
             ];
         });
 
         $stats = Materi::where('is_active', 1)->selectRaw('tipe, COUNT(*) as cnt')->groupBy('tipe')->pluck('cnt', 'tipe');
-        $perJenjang = Materi::where('is_active', 1)->selectRaw('jenjang, COUNT(*) as cnt')->groupBy('jenjang')->pluck('cnt', 'jenjang');
+
+        $perJenjang = Materi::where('materi.is_active', 1)
+            ->join('mata_pelajaran', 'mata_pelajaran.id', '=', 'materi.mapel_id')
+            ->join('jenjang', 'jenjang.id', '=', 'mata_pelajaran.jenjang_id')
+            ->selectRaw('jenjang.kode as jenjang, COUNT(*) as cnt')
+            ->groupBy('jenjang.kode')
+            ->pluck('cnt', 'jenjang');
 
         return response()->json(['items' => $items, 'total' => $total, 'stats' => $stats, 'per_jenjang' => $perJenjang]);
     }

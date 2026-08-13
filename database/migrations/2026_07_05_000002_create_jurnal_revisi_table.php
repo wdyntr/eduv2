@@ -8,13 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('jurnal')) {
+        if (!Schema::hasTable('jurnal_revisi')) {
             DB::statement("
-                CREATE TABLE `jurnal` (
+                CREATE TABLE `jurnal_revisi` (
                     `id` int NOT NULL AUTO_INCREMENT,
+                    `jurnal_id` int NOT NULL,
+                    `versi_ke` int NOT NULL DEFAULT 1,
                     `judul` varchar(255) NOT NULL,
-                    `kategori` varchar(100) NOT NULL,
-                    `penulis` varchar(255) NOT NULL,
+                    `penulis` varchar(255) NOT NULL COMMENT 'nama penulis tercantum di jurnal, bisa lebih dari satu',
                     `abstrak` text,
                     `jumlah_halaman` int NOT NULL DEFAULT 0,
                     `tahun_terbit` int NOT NULL DEFAULT " . date('Y') . ",
@@ -25,20 +26,11 @@ return new class extends Migration
                     `bahasa` varchar(30) NOT NULL DEFAULT 'Indonesia',
                     `file_jurnal` varchar(500) NOT NULL,
                     `file_bukti_plagiarisme` varchar(500) NOT NULL,
-                    `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
-                    `catatan_admin` text,
-                    `admin_id` int NOT NULL COMMENT 'akun penulis yang mengajukan',
-                    `reviewed_by` int DEFAULT NULL COMMENT 'admin yang approve/reject',
-                    `reviewed_at` datetime DEFAULT NULL,
                     `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-                    `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     PRIMARY KEY (`id`),
-                    KEY `idx_jurnal_status` (`status`),
-                    KEY `idx_jurnal_kategori` (`kategori`),
-                    KEY `idx_jurnal_admin` (`admin_id`),
-                    KEY `jurnal_reviewer_fk` (`reviewed_by`),
-                    CONSTRAINT `jurnal_admin_fk` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`id`) ON DELETE CASCADE,
-                    CONSTRAINT `jurnal_reviewer_fk` FOREIGN KEY (`reviewed_by`) REFERENCES `admin` (`id`) ON DELETE SET NULL
+                    UNIQUE KEY `uniq_jurnal_versi` (`jurnal_id`,`versi_ke`),
+                    KEY `idx_jurnal_revisi_jurnal` (`jurnal_id`),
+                    CONSTRAINT `fk_jurnal_revisi_jurnal` FOREIGN KEY (`jurnal_id`) REFERENCES `jurnal` (`id`) ON DELETE CASCADE
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             ");
         }
@@ -46,6 +38,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('jurnal');
+        Schema::dropIfExists('jurnal_revisi');
     }
 };
