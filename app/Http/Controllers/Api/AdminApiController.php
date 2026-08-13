@@ -3,14 +3,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\UserSession;
 use App\Models\Materi;
 use App\Models\Sekolah;
 use App\Models\MataPelajaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class AdminApiController extends Controller
 {
@@ -18,27 +17,31 @@ class AdminApiController extends Controller
 
     private function guardAdminOnly(Request $request): void
     {
-        abort_if(!$request->auth_user?->hasRole('admin_sistem'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
+        abort_if(
+            !$request->user()?->hasRole('admin_sistem'),
+            403,
+            'Hanya admin yang bisa melakukan aksi ini.'
+        );
     }
 
     public function login(Request $request)
     {
-        $user = User::where('username', $request->username)->first();
-
-        if (!$user || !password_verify($request->password, $user->password)) {
-            return response()->json(['detail' => 'Username atau password salah.'], 401);
-        }
-
-        $token = Str::random(64);
-        UserSession::create([
-            'token' => $token,
-            'user_id' => $user->id,
-            'username' => $user->username,
-            'expires_at' => now()->addHours(24),
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
         ]);
 
-        return response()->json(['ok' => true])
-            ->withCookie(\Cookie::make('user_session', $token, 1440, '/', null, false, false));
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'detail' => 'Username atau password salah.'
+            ], 401);
+        }
+
+        $request->session()->regenerate();
+
+        return response()->json([
+            'ok' => true
+        ]);
     }
 
     public function getUsers(Request $request)
@@ -78,8 +81,7 @@ class AdminApiController extends Controller
     public function hapusAdmin(Request $request, int $id)
     {
         $this->guardAdminOnly($request);
-        $session = $request->user_session;
-        if ($session->user_id == $id) {
+        if ($request->user()->id == $id) {
             return response()->json(['detail' => 'Tidak bisa hapus akun sendiri.'], 400);
         }
         User::destroy($id);
@@ -92,7 +94,7 @@ class AdminApiController extends Controller
 
     private function guardClassroomAccess(Request $request): void
     {
-        abort_if(!$request->auth_user?->hasAnyRole(['admin', 'sekolah']), 403, 'Tidak memiliki akses.');
+        abort_if(!$request->user()?->hasAnyRole(['admin', 'sekolah']), 403, 'Tidak memiliki akses.');
     }
 
     // =====================
@@ -102,7 +104,7 @@ class AdminApiController extends Controller
     /** Pastikan admin bisa akses sekolah manapun, sedangkan role sekolah cuma sekolahnya sendiri */
     private function assertSekolahAccess(Request $request, int $sekolahId): void
     {
-        $user = $request->auth_user;
+        $user = $request->user();
         if ($user?->hasRole('admin_sistem')) return;
         if ($user?->hasRole('sekolah') && (int) $request->user_sekolah_id === $sekolahId) return;
         abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
@@ -147,7 +149,8 @@ class AdminApiController extends Controller
     {
         $this->guardClassroomAccess($request);
         $this->assertSekolahAccess($request, $id);
-        abort_if(!$request->auth_user?->hasRole('sekolah'), 403, 'Hanya operator sekolah yang bisa mengubah link Classroom. Admin/dinas hanya dapat memantau.');
+        abort_if(!$request->user()
+        ?->hasRole('sekolah'), 403, 'Hanya operator sekolah yang bisa mengubah link Classroom. Admin/dinas hanya dapat memantau.');
 
         $sekolah = Sekolah::findOrFail($id);
         $mapel = MataPelajaran::where('jenjang_id', $sekolah->jenjang_id)->findOrFail($mapelId);
@@ -253,22 +256,35 @@ class AdminApiController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $session = $request->user_session;
-        $user = User::findOrFail($session->user_id);
+        $user = $request->user();
 
         if ($request->password_baru) {
             if (!$request->password_lama) {
-                return response()->json(['detail' => 'Password lama wajib diisi.'], 400);
+                return response()->json([
+                    'detail' => 'Password lama wajib diisi.'
+                ], 400);
             }
+
             if (!password_verify($request->password_lama, $user->password)) {
-                return response()->json(['detail' => 'Password lama salah.'], 400);
+                return response()->json([
+                    'detail' => 'Password lama salah.'
+                ], 400);
             }
+
             if (strlen($request->password_baru) < 6) {
-                return response()->json(['detail' => 'Password baru minimal 6 karakter.'], 400);
+                return response()->json([
+                    'detail' => 'Password baru minimal 6 karakter.'
+                ], 400);
             }
-            $user->update(['nama' => $request->nama, 'password' => Hash::make($request->password_baru)]);
+
+            $user->update([
+                'nama' => $request->nama,
+                'password' => Hash::make($request->password_baru)
+            ]);
         } else {
-            $user->update(['nama' => $request->nama]);
+            $user->update([
+                'nama' => $request->nama
+            ]);
         }
 
         return response()->json(['ok' => true]);

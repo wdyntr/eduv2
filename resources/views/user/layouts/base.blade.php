@@ -87,9 +87,12 @@
           <span class="admin-role">{{ ['admin' => 'Administrator', 'guru' => 'Guru', 'sekolah' => 'Operator Sekolah'][$session_role ?? 'admin'] ?? 'Administrator' }}</span>
         </div>
       </div>
-      <a href="/admin/logout" class="btn-logout" title="Logout">
-        <i class="bi bi-box-arrow-right"></i>
-      </a>
+      <form method="POST" action="/admin/logout">
+          @csrf
+          <button type="submit" class="btn-logout" title="Logout">
+              <i class="bi bi-box-arrow-right"></i>
+          </button>
+      </form>
     </div>
   </aside>
 

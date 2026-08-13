@@ -15,7 +15,7 @@ Route::get('/jurnal', [JurnalController::class, 'index']);
 Route::get('/jurnal/{id}', [JurnalController::class, 'show']);
 
 // Admin Pages
-Route::prefix('admin')->middleware('admin.auth')->group(function () {
+Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard']);
     Route::get('/materi', [AdminController::class, 'materi']);
     Route::get('/materi/tambah', [AdminController::class, 'materiTambah']);
@@ -26,5 +26,5 @@ Route::prefix('admin')->middleware('admin.auth')->group(function () {
     Route::get('/jurnal', [AdminController::class, 'jurnal']);
     Route::get('/users', [AdminController::class, 'users']);
     Route::get('/profile', [AdminController::class, 'profile']);
-    Route::get('/logout', [AdminController::class, 'logout']);
+    Route::post('/logout', [AdminController::class, 'logout']);
 });

@@ -106,7 +106,7 @@ class JurnalApiController extends Controller
     public function mine(Request $request)
     {
         $items = Jurnal::with(['kategori', 'revisiTerbaru.reviewTerbaru'])
-            ->where('user_id', $request->auth_user->id)
+            ->where('user_id', $request->user()->id)
             ->orderByDesc('created_at')->get()
             ->map(fn($j) => $this->ownerFormat($j));
         return response()->json(['items' => $items]);
@@ -205,7 +205,7 @@ class JurnalApiController extends Controller
 
         $jurnal = Jurnal::create([
             'kategori_id' => $kategori->id,
-            'user_id' => $request->auth_user->id,
+            'user_id' => $request->user()->id,
         ]);
 
         $revisi = JurnalRevisi::create([
@@ -235,7 +235,7 @@ class JurnalApiController extends Controller
         $this->assertPenulis($request);
 
         $jurnal = Jurnal::with('revisiTerbaru.reviewTerbaru')
-            ->where('user_id', $request->auth_user->id)
+            ->where('user_id', $request->user()->id)
             ->findOrFail($id);
 
         $revisiLama = $jurnal->revisiTerbaru;
@@ -303,7 +303,7 @@ class JurnalApiController extends Controller
 
         $revisi->update($request->only(['volume', 'nomor_edisi', 'issn']));
 
-        $this->putReviewStatus($revisi, 'approved', $request->auth_user->id);
+        $this->putReviewStatus($revisi, 'approved', $request->user()->id);
 
         return response()->json(['ok' => true]);
     }
@@ -334,7 +334,7 @@ class JurnalApiController extends Controller
         $revisi = $jurnal->revisiTerbaru;
         abort_unless($revisi, 404, 'Jurnal ini belum punya revisi.');
 
-        $this->putReviewStatus($revisi, 'rejected', $request->auth_user->id, $request->catatan);
+        $this->putReviewStatus($revisi, 'rejected', $request->user()->id, $request->catatan);
 
         return response()->json(['ok' => true]);
     }
@@ -425,11 +425,11 @@ class JurnalApiController extends Controller
 
     private function assertAdmin(Request $request): void
     {
-        abort_if(!$request->auth_user?->hasRole('admin'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
+        abort_if(!$request->user()?->hasRole('admin'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
     }
 
     private function assertPenulis(Request $request): void
     {
-        abort_if(!$request->auth_user?->hasRole('guru'), 403, 'Hanya akun guru yang bisa mengajukan jurnal.');
+        abort_if(!$request->user()?->hasRole('guru'), 403, 'Hanya akun guru yang bisa mengajukan jurnal.');
     }
 }

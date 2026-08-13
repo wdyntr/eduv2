@@ -14,14 +14,14 @@ use Symfony\Component\HttpFoundation\Response;
  * Catatan: middleware ini sebelumnya pakai auth()->user()->role dan
  * ->is_active, tapi kolom itu tidak ada di skema `users` yang sekarang
  * (role dikelola lewat tabel Spatie permission, dan tidak ada kolom
- * is_active di users). Jadi dirombak untuk pakai $request->auth_user
+ * is_active di users). Jadi dirombak untuk pakai $request->user()
  * (di-set oleh AdminAuth) + Spatie hasRole().
  */
 class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        $user = $request->auth_user;
+        $user = $request->user();
 
         if (!$user) {
             return redirect('/')->withCookie(cookie()->forget('user_session'));

@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AdminApiController;
 use App\Http\Controllers\Api\MapelController;
@@ -6,59 +7,67 @@ use App\Http\Controllers\Api\MateriController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\JurnalApiController;
 
-// Auth — tidak perlu middleware
-Route::post('/admin/login', [AdminApiController::class, 'login']);
 
-// Admin API — butuh auth
-Route::middleware('admin.auth')->group(function () {
-    // Users
-    Route::get('/admin/users', [AdminApiController::class, 'getUsers']);
-    Route::post('/admin/users', [AdminApiController::class, 'tambahAdmin']);
-    Route::delete('/admin/users/{id}', [AdminApiController::class, 'hapusAdmin']);
+// ========================================
+// ADMIN AUTH
+// ========================================
 
-    // Monitoring Classroom (per mata pelajaran, lihat routes di bawah)
+Route::middleware('web')->group(function () {
 
-    // Profile
-    Route::put('/admin/profile', [AdminApiController::class, 'updateProfile']);
+    Route::post('/admin/login', [AdminApiController::class, 'login']);
 
-    // Materi
-    Route::post('/admin/materi', [AdminApiController::class, 'tambahMateri']);
-    Route::put('/admin/materi/{id}', [AdminApiController::class, 'editMateri']);
-    Route::delete('/admin/materi/{id}', [AdminApiController::class, 'hapusMateri']);
+    Route::middleware('auth')->group(function () {
 
-    // Classroom
-    Route::post('/admin/classroom', [AdminApiController::class, 'tambahSekolah']);
-    Route::put('/admin/classroom/{id}', [AdminApiController::class, 'editSekolah']);
-    Route::delete('/admin/classroom/{id}', [AdminApiController::class, 'hapusSekolah']);
-    Route::get('/admin/sekolah/{id}/kelas', [AdminApiController::class, 'sekolahKelasList']);
-    Route::put('/admin/sekolah/{id}/kelas/{mapelId}', [AdminApiController::class, 'sekolahKelasUpdate']);
+        // Users
+        Route::get('/admin/users', [AdminApiController::class, 'getUsers']);
+        Route::post('/admin/users', [AdminApiController::class, 'tambahAdmin']);
+        Route::delete('/admin/users/{id}', [AdminApiController::class, 'hapusAdmin']);
 
-    // Mapel
-    Route::post('/admin/mapel', [AdminApiController::class, 'tambahMapel']);
-    Route::put('/admin/mapel/{id}', [AdminApiController::class, 'editMapel']);
-    Route::delete('/admin/mapel/{id}', [AdminApiController::class, 'hapusMapel']);
+        // Profile
+        Route::put('/admin/profile', [AdminApiController::class, 'updateProfile']);
 
-    // Jurnal — penulis
-    Route::get('/admin/jurnal/mine', [JurnalApiController::class, 'mine']);
-    Route::post('/admin/jurnal', [JurnalApiController::class, 'store']);
-    Route::post('/admin/jurnal/{id}/resubmit', [JurnalApiController::class, 'resubmit']);
+        // Materi
+        Route::post('/admin/materi', [AdminApiController::class, 'tambahMateri']);
+        Route::put('/admin/materi/{id}', [AdminApiController::class, 'editMateri']);
+        Route::delete('/admin/materi/{id}', [AdminApiController::class, 'hapusMateri']);
 
-    // Jurnal — admin (review)
-    Route::get('/admin/jurnal/pending', [JurnalApiController::class, 'pending']);
-    Route::get('/admin/jurnal/all', [JurnalApiController::class, 'allAdmin']);
-    Route::post('/admin/jurnal/{id}/approve', [JurnalApiController::class, 'approve']);
-    Route::put('/admin/jurnal/{id}/detail', [JurnalApiController::class, 'updateDetail']);
-    Route::post('/admin/jurnal/{id}/reject', [JurnalApiController::class, 'reject']);
-    Route::delete('/admin/jurnal/{id}', [JurnalApiController::class, 'destroy']);
+        // Classroom
+        Route::post('/admin/classroom', [AdminApiController::class, 'tambahSekolah']);
+        Route::put('/admin/classroom/{id}', [AdminApiController::class, 'editSekolah']);
+        Route::delete('/admin/classroom/{id}', [AdminApiController::class, 'hapusSekolah']);
 
-    // Jurnal — admin (kelola kategori)
-    Route::get('/admin/jurnal-kategori', [JurnalApiController::class, 'kategoriAdminList']);
-    Route::post('/admin/jurnal-kategori', [JurnalApiController::class, 'kategoriStore']);
-    Route::put('/admin/jurnal-kategori/{id}', [JurnalApiController::class, 'kategoriUpdate']);
-    Route::delete('/admin/jurnal-kategori/{id}', [JurnalApiController::class, 'kategoriDestroy']);
+        Route::get('/admin/sekolah/{id}/kelas', [AdminApiController::class, 'sekolahKelasList']);
+        Route::put('/admin/sekolah/{id}/kelas/{mapelId}', [AdminApiController::class, 'sekolahKelasUpdate']);
+
+        // Mapel
+        Route::post('/admin/mapel', [AdminApiController::class, 'tambahMapel']);
+        Route::put('/admin/mapel/{id}', [AdminApiController::class, 'editMapel']);
+        Route::delete('/admin/mapel/{id}', [AdminApiController::class, 'hapusMapel']);
+
+        // Jurnal
+        Route::get('/admin/jurnal/mine', [JurnalApiController::class, 'mine']);
+        Route::post('/admin/jurnal', [JurnalApiController::class, 'store']);
+        Route::post('/admin/jurnal/{id}/resubmit', [JurnalApiController::class, 'resubmit']);
+
+        Route::get('/admin/jurnal/pending', [JurnalApiController::class, 'pending']);
+        Route::get('/admin/jurnal/all', [JurnalApiController::class, 'allAdmin']);
+        Route::post('/admin/jurnal/{id}/approve', [JurnalApiController::class, 'approve']);
+        Route::put('/admin/jurnal/{id}/detail', [JurnalApiController::class, 'updateDetail']);
+        Route::post('/admin/jurnal/{id}/reject', [JurnalApiController::class, 'reject']);
+        Route::delete('/admin/jurnal/{id}', [JurnalApiController::class, 'destroy']);
+
+        Route::get('/admin/jurnal-kategori', [JurnalApiController::class, 'kategoriAdminList']);
+        Route::post('/admin/jurnal-kategori', [JurnalApiController::class, 'kategoriStore']);
+        Route::put('/admin/jurnal-kategori/{id}', [JurnalApiController::class, 'kategoriUpdate']);
+        Route::delete('/admin/jurnal-kategori/{id}', [JurnalApiController::class, 'kategoriDestroy']);
+    });
 });
 
-// Public API
+
+// ========================================
+// PUBLIC API
+// ========================================
+
 Route::get('/mapel', [MapelController::class, 'index']);
 Route::get('/materi', [MateriController::class, 'index']);
 Route::get('/classroom', [ClassroomController::class, 'index']);

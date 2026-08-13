@@ -151,10 +151,19 @@ async function doLogin() {
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memuat...';
 
   try {
-    const res  = await fetch('/api/admin/login', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ username, password }),
+    const csrfToken = document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute('content');
+
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
 
