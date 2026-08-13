@@ -39,37 +39,37 @@ class AdminController extends Controller
         $user = $request->auth_user;
 
         if ($user?->hasRole('guru')) {
-            return view('admin.dashboard_penulis', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+            return view('user.dashboard_penulis', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
         if ($user?->hasRole('sekolah')) {
-            return view('admin.dashboard_sekolah', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+            return view('user.dashboard_sekolah', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
-        return view('admin.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+        return view('user.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
     }
 
     public function materi(Request $request)
     {
         $this->guardAdminOnly($request);
-        return view('admin.materi', $this->adminCtx($request, ['active_menu' => 'materi']));
+        return view('user.materi', $this->adminCtx($request, ['active_menu' => 'materi']));
     }
 
     public function materiTambah(Request $request)
     {
         $this->guardAdminOnly($request);
-        return view('admin.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => null]));
+        return view('user.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => null]));
     }
 
     public function materiEdit(Request $request, int $id)
     {
         $this->guardAdminOnly($request);
         $materi = Materi::with('mapel')->findOrFail($id);
-        return view('admin.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => $materi]));
+        return view('user.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => $materi]));
     }
 
     public function classroom(Request $request)
     {
         $this->guardClassroomAccess($request);
-        return view('admin.classroom', $this->adminCtx($request, ['active_menu' => 'classroom']));
+        return view('user.classroom', $this->adminCtx($request, ['active_menu' => 'classroom']));
     }
 
     public function classroomDetail(Request $request, int $id)
@@ -81,30 +81,30 @@ class AdminController extends Controller
             abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
         }
 
-        return view('admin.sekolah_kelas', $this->adminCtx($request, ['active_menu' => 'classroom', 'sekolah_id' => $id]));
+        return view('user.sekolah_kelas', $this->adminCtx($request, ['active_menu' => 'classroom', 'sekolah_id' => $id]));
     }
 
     public function mapel(Request $request)
     {
         $this->guardAdminOnly($request);
-        return view('admin.mapel', $this->adminCtx($request, ['active_menu' => 'mapel']));
+        return view('user.mapel', $this->adminCtx($request, ['active_menu' => 'mapel']));
     }
 
     public function users(Request $request)
     {
         $this->guardAdminOnly($request);
-        return view('admin.admin_users', $this->adminCtx($request, ['active_menu' => 'users']));
+        return view('user.admin_users', $this->adminCtx($request, ['active_menu' => 'users']));
     }
 
     public function jurnal(Request $request)
     {
         $this->guardJurnalAccess($request);
-        return view('admin.jurnal', $this->adminCtx($request, ['active_menu' => 'jurnal']));
+        return view('user.jurnal', $this->adminCtx($request, ['active_menu' => 'jurnal']));
     }
 
     public function profile(Request $request)
     {
-        return view('admin.profile', $this->adminCtx($request, ['active_menu' => 'profile']));
+        return view('user.profile', $this->adminCtx($request, ['active_menu' => 'profile']));
     }
 
     public function logout(Request $request)

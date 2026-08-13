@@ -38,8 +38,8 @@
     <div class="stat-card">
       <div class="stat-icon red"><i class="bi bi-people" style="color:#dc3545"></i></div>
       <div class="stat-info">
-        <div class="stat-num" id="statAdmin">-</div>
-        <div class="stat-label">Admin</div>
+        <div class="stat-num" id="statUser">-</div>
+        <div class="stat-label">User</div>
       </div>
     </div>
   </div>

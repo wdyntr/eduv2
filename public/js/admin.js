@@ -17,7 +17,7 @@ async function loadDashboard() {
     setText('statMateri',  mData.total          ?? 0);
     setText('statSekolah', sData.total          ?? 0);
     setText('statMapel',   mpData.items?.length ?? 0);
-    setText('statAdmin',   aData.total          ?? 0);
+    setText('statUser',    aData.total          ?? 0);
 
     const res  = await fetch('/api/materi?limit=5&sort=terbaru');
     const data = await res.json();
