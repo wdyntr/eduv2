@@ -1,4 +1,4 @@
-@extends('admin.layouts.base')
+@extends('user.layouts.base')
 
 @section('title', 'Kelola Kelas Sekolah')
 @section('page_title', 'Kelola Kelas & Mata Pelajaran')

@@ -1,4 +1,4 @@
-@extends('admin.layouts.base')
+@extends('user.layouts.base')
 
 @section('title', isset($materi) ? 'Edit Materi' : 'Tambah Materi')
 @section('page_title', isset($materi) ? 'Edit Materi' : 'Tambah Materi')

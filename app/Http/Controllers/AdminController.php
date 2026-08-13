@@ -21,17 +21,17 @@ class AdminController extends Controller
 
     private function guardAdminOnly(Request $request)
     {
-        abort_unless($request->auth_user?->hasRole('admin'), 403, 'Halaman ini hanya untuk admin.');
+        abort_unless($request->auth_user?->hasRole('admin_sistem'), 403, 'Halaman ini hanya untuk admin.');
     }
 
     private function guardClassroomAccess(Request $request)
     {
-        abort_unless($request->auth_user?->hasAnyRole(['admin', 'sekolah']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        abort_unless($request->auth_user?->hasAnyRole(['admin_sistem', 'sekolah']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
     }
 
     private function guardJurnalAccess(Request $request)
     {
-        abort_unless($request->auth_user?->hasAnyRole(['admin', 'guru']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        abort_unless($request->auth_user?->hasAnyRole(['admin_sistem', 'guru']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
     }
 
     public function dashboard(Request $request)

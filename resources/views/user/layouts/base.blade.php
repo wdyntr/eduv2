@@ -18,7 +18,7 @@
       <a href="/admin">
         <span class="brand-edu">Lampung</span><span class="brand-lampung">Belajar</span>
       </a>
-      <span class="sidebar-badge">{{ ['admin' => 'Admin', 'guru' => 'Guru', 'sekolah' => 'Sekolah'][$session_role ?? 'admin'] ?? 'Admin' }}</span>
+      
     </div>
 
     <nav class="sidebar-nav">
@@ -100,7 +100,7 @@
     </button>
     <div class="topbar-title">@yield('page_title', 'Dashboard')</div>
     <div class="topbar-right">
-      <span class="text-muted small">{{ $session_user }}</span>
+      <span class="sidebar-badge">{{ ['admin' => 'Admin', 'guru' => 'Guru', 'sekolah' => 'Sekolah'][$session_role ?? 'admin'] ?? 'Admin' }}</span>
     </div>
   </div>
 

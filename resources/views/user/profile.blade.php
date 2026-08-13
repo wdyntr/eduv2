@@ -1,4 +1,4 @@
-@extends('admin.layouts.base')
+@extends('user.layouts.base')
 
 @section('title', 'Profil Saya')
 @section('page_title', 'Profil Saya')

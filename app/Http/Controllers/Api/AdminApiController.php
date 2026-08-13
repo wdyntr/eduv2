@@ -15,11 +15,10 @@ use Illuminate\Support\Str;
 class AdminApiController extends Controller
 {
     /** Role yang valid untuk akun admin/guru/sekolah (bukan siswa/publik) */
-    private const VALID_ROLES = ['admin', 'guru', 'sekolah'];
 
     private function guardAdminOnly(Request $request): void
     {
-        abort_if(!$request->auth_user?->hasRole('admin'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
+        abort_if(!$request->auth_user?->hasRole('admin_sistem'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
     }
 
     public function login(Request $request)
@@ -104,7 +103,7 @@ class AdminApiController extends Controller
     private function assertSekolahAccess(Request $request, int $sekolahId): void
     {
         $user = $request->auth_user;
-        if ($user?->hasRole('admin')) return;
+        if ($user?->hasRole('admin_sistem')) return;
         if ($user?->hasRole('sekolah') && (int) $request->user_sekolah_id === $sekolahId) return;
         abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
     }

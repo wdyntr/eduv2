@@ -1,4 +1,4 @@
-@extends('admin.layouts.base')
+@extends('adusermin.layouts.base')
 
 @section('title', 'Jurnal')
 @section('page_title', ($session_role ?? 'admin') === 'admin' ? 'Request Upload Jurnal' : 'Jurnal Saya')

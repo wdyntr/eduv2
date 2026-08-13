@@ -1,4 +1,4 @@
-@extends('admin.layouts.base')
+@extends('user.layouts.base')
 
 @section('title', ($session_role ?? 'admin') === 'sekolah' ? 'Classroom Saya' : 'Monitoring Classroom')
 @section('page_title', ($session_role ?? 'admin') === 'sekolah' ? 'Classroom Saya' : 'Kelola & Monitoring Classroom')

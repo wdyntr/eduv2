@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
         ]);
         $middleware->encryptCookies(except: [
-            'admin_session',
+            'user_session',
         ]);
         $middleware->alias([
             'admin.auth' => \App\Http\Middleware\AdminAuth::class,

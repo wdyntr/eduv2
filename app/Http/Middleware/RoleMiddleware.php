@@ -31,7 +31,7 @@ class RoleMiddleware
             // Sebelumnya ada redirect khusus untuk role 'siswa' ke quiz.index,
             // tapi role itu tidak ada di alur admin/guru/sekolah aplikasi ini,
             // jadi fallback digeneralisasi ke dashboard admin.
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('user.dashboard');
         }
 
         return $next($request);
