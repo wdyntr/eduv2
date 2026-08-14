@@ -18,20 +18,68 @@ class MateriApiController extends Controller
     public function store(Request $request)
     {
         $this->guardKontenAccess($request);
-        $data = $request->only(['judul', 'deskripsi', 'tipe', 'mapel_id', 'url']);
-        $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
+
+        $data = $request->validate([
+            'judul'     => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'tipe'      => 'required|in:video,ppt',
+            'mapel_id'  => 'required|integer|exists:mata_pelajaran,id',
+            'url'       => 'required|url|max:500',
+            'jenjang'   => 'required|exists:jenjang,kode',
+        ]);
+
+        $mapel = \App\Models\MataPelajaran::with('jenjang')
+            ->findOrFail($data['mapel_id']);
+
+        if ($mapel->jenjang?->kode !== $data['jenjang']) {
+            return response()->json([
+                'detail' => 'Mata pelajaran tidak sesuai dengan jenjang yang dipilih.'
+            ], 422);
+        }
+
+        $data['thumbnail'] = Materi::resolveThumbnail(
+            $data['tipe'],
+            $data['url']
+        );
+
+        unset($data['jenjang']);
 
         Materi::create($data);
+
         return response()->json(['ok' => true]);
     }
 
     public function update(Request $request, int $id)
     {
         $this->guardKontenAccess($request);
-        $data = $request->only(['judul', 'deskripsi', 'tipe', 'mapel_id', 'url']);
-        $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
+
+        $data = $request->validate([
+            'judul'     => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'tipe'      => 'required|in:video,ppt',
+            'mapel_id'  => 'required|integer|exists:mata_pelajaran,id',
+            'url'       => 'required|url|max:500',
+            'jenjang'   => 'required|exists:jenjang,kode',
+        ]);
+
+        $mapel = \App\Models\MataPelajaran::with('jenjang')
+            ->findOrFail($data['mapel_id']);
+
+        if ($mapel->jenjang?->kode !== $data['jenjang']) {
+            return response()->json([
+                'detail' => 'Mata pelajaran tidak sesuai dengan jenjang yang dipilih.'
+            ], 422);
+        }
+
+        $data['thumbnail'] = Materi::resolveThumbnail(
+            $data['tipe'],
+            $data['url']
+        );
+
+        unset($data['jenjang']);
 
         Materi::findOrFail($id)->update($data);
+
         return response()->json(['ok' => true]);
     }
 

@@ -20,8 +20,21 @@ class Materi extends Model
         return $this->mapel?->jenjang;
     }
 
-    // PENTING: method resolveThumbnail() dan method lain yang sudah ada
-    // di file Materi.php kamu SEKARANG biarkan tetap seperti semula,
-    // tidak perlu diubah — cuma constructor $fillable + tambahan relasi
-    // mapel() dan accessor jenjang di atas yang baru.
+    /** Ambil thumbnail otomatis. Video YouTube: pakai thumbnail bawaan YouTube. Selain itu: null. */
+    public static function resolveThumbnail(string $tipe, ?string $url): ?string
+    {
+        if ($tipe !== 'video' || !$url) {
+            return null;
+        }
+
+        preg_match(
+            '/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/',
+            $url,
+            $match
+        );
+
+        return isset($match[1])
+            ? "https://img.youtube.com/vi/{$match[1]}/hqdefault.jpg"
+            : null;
+    }
 }

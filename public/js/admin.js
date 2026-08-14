@@ -220,28 +220,65 @@ async function submitMateri(id) {
     showFormAlert('danger', 'Semua field wajib diisi kecuali deskripsi.');
     return;
   }
+
   if (!mapel_id) {
-    showFormAlert('danger', 'Mata pelajaran tidak ditemukan, pastikan sesuai dengan daftar.');
+    showFormAlert(
+      'danger',
+      'Mata pelajaran tidak ditemukan, pastikan pilih mata pelajaran dari daftar.'
+    );
     return;
   }
 
-  const payload  = { judul, jenjang, tipe, mapel_id: parseInt(mapel_id), url, deskripsi };
-  const method   = id ? 'PUT' : 'POST';
-  const endpoint = id ? `/api/materi/${id}` : '/api/materi';
+  const payload = {
+    judul,
+    jenjang,
+    tipe,
+    mapel_id: parseInt(mapel_id, 10),
+    url,
+    deskripsi
+  };
+
+  const method = id ? 'PUT' : 'POST';
+  const endpoint = id
+    ? `/api/materi/${id}`
+    : '/api/materi';
 
   try {
     const res = await fetch(endpoint, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(payload),
     });
+
+    const data = await res.json();
+
     if (res.ok) {
       window.location.href = '/admin/materi?success=1';
-    } else {
-      const data = await res.json();
-      showFormAlert('danger', data.detail || 'Gagal menyimpan materi.');
+      return;
     }
-  } catch {
+
+    // Tampilkan error Laravel yang sebenarnya
+    let message = data.detail || data.message || 'Gagal menyimpan materi.';
+
+    if (data.errors) {
+      const firstError = Object.values(data.errors).flat()[0];
+      if (firstError) {
+        message = firstError;
+      }
+    }
+
+    showFormAlert('danger', message);
+
+    console.error('Gagal menyimpan materi:', {
+      status: res.status,
+      data
+    });
+
+  } catch (error) {
+    console.error(error);
     showFormAlert('danger', 'Gagal terhubung ke server.');
   }
 }
