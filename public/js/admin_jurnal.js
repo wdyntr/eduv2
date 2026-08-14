@@ -518,12 +518,29 @@ async function hapusJurnal(id, judul) {
 // =====================
 async function loadKategoriAdmin() {
   const tbody = document.getElementById('tabelKategoriJurnal');
+
   try {
     const res = await fetch('/api/jurnal-kategori/manage');
+
     const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.detail || 'Gagal memuat kategori.');
+    }
+
     renderKategoriAdmin(data.items || []);
-  } catch {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Gagal memuat data.</td></tr>`;
+  } catch (error) {
+    console.error('loadKategoriAdmin:', error);
+
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center text-danger py-4">
+            ${error.message || 'Gagal memuat data.'}
+          </td>
+        </tr>
+      `;
+    }
   }
 }
 
@@ -542,10 +559,16 @@ function renderKategoriAdmin(items) {
       <td style="font-weight:600">${k.nama}</td>
       <td class="text-muted small">${k.jumlah_jurnal} jurnal</td>
       <td>
-        ${JURNAL_CAN_SYSTEM ? `
+        ${JURNAL_CAN_MANAGE_SYSTEM ? `
         <div class="d-flex gap-1">
-          <button class="btn btn-admin-edit btn-sm" onclick="renameKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-pencil"></i></button>
-          <button class="btn btn-admin-danger btn-sm" onclick="hapusKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
+          <button class="btn btn-admin-edit btn-sm"
+            onclick="renameKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-admin-danger btn-sm"
+            onclick="hapusKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')">
+            <i class="bi bi-trash"></i>
+          </button>
         </div>
         ` : '<span class="text-muted small">—</span>'}
       </td>

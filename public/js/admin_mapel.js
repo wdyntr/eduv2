@@ -168,7 +168,10 @@ async function submitMapel() {
       loadMapelAdmin();
     } else {
       const data = await res.json();
-      showMapelAlert('danger', data.detail || 'Gagal menyimpan.');
+      const pesan = data.errors
+        ? Object.values(data.errors).flat()[0]
+        : (data.detail || data.message || 'Gagal menyimpan.');
+      showMapelAlert('danger', pesan);
     }
   } catch {
     showMapelAlert('danger', 'Gagal terhubung ke server.');

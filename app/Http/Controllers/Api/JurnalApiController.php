@@ -387,11 +387,24 @@ class JurnalApiController extends Controller
 
     public function kategoriAdminList(Request $request)
     {
-        $this->assertAdmin($request);
-        $items = JurnalKategori::orderBy('nama_kategori')->get()->map(function ($k) {
-            $k->jumlah_jurnal = Jurnal::where('kategori_id', $k->id)->count();
-            return $k;
-        });
+        abort_if(
+            !$request->user()?->can('sistem.kelola')
+            && !$request->user()?->can('jurnal.review'),
+            403,
+            'Anda tidak memiliki izin untuk melihat kategori.'
+        );
+
+        $items = JurnalKategori::orderBy('nama_kategori')
+            ->get()
+            ->map(function ($k) {
+                return [
+                    'id' => $k->id,
+                    'nama' => $k->nama_kategori,
+                    'jumlah_jurnal' => Jurnal::where('kategori_id', $k->id)->count(),
+                ];
+            })
+            ->values();
+
         return response()->json(['items' => $items]);
     }
 

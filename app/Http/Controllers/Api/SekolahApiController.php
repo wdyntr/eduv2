@@ -55,10 +55,19 @@ class SekolahApiController extends Controller
             empty($data['kota_kabupaten_id']) &&
             !empty($data['kota_kabupaten'])
         ) {
-            $data['kota_kabupaten_id'] = KotaKabupaten::whereRaw(
+            $kotaId = KotaKabupaten::whereRaw(
                 'LOWER(nama) = ?',
                 [strtolower(trim($data['kota_kabupaten']))]
             )->value('id');
+
+            if (!$kotaId) {
+                abort(
+                    422,
+                    'Kota/Kabupaten yang dipilih tidak terdaftar di database.'
+                );
+            }
+
+            $data['kota_kabupaten_id'] = $kotaId;
         }
 
         return [

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MataPelajaran;
 use App\Models\Materi;
+use App\Models\Jenjang;
 
 
 class MapelApiController extends Controller
@@ -18,18 +19,73 @@ class MapelApiController extends Controller
     public function store(Request $request)
     {
         $this->guardKontenAccess($request);
-        try {
-            MataPelajaran::create($request->only(['nama', 'jenjang_id']));
-        } catch (\Exception $e) {
-            return response()->json(['detail' => 'Mata pelajaran sudah ada untuk jenjang ini.'], 400);
+
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'jenjang' => 'required|in:sma,smk,slb',
+        ]);
+
+        $jenjang = Jenjang::where('kode', $request->jenjang)->first();
+
+        if (!$jenjang) {
+            return response()->json([
+                'detail' => 'Jenjang tidak ditemukan.'
+            ], 400);
         }
+
+        $exists = MataPelajaran::where('nama', $request->nama)
+            ->where('jenjang_id', $jenjang->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'detail' => 'Mata pelajaran sudah ada untuk jenjang ini.'
+            ], 400);
+        }
+
+        MataPelajaran::create([
+            'nama' => $request->nama,
+            'jenjang_id' => $jenjang->id,
+        ]);
+
         return response()->json(['ok' => true]);
     }
 
     public function update(Request $request, int $id)
     {
         $this->guardKontenAccess($request);
-        MataPelajaran::findOrFail($id)->update($request->only(['nama', 'jenjang_id']));
+
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'jenjang' => 'required|in:sma,smk,slb',
+        ]);
+
+        $mapel = MataPelajaran::findOrFail($id);
+
+        $jenjang = Jenjang::where('kode', $request->jenjang)->first();
+
+        if (!$jenjang) {
+            return response()->json([
+                'detail' => 'Jenjang tidak ditemukan.'
+            ], 400);
+        }
+
+        $exists = MataPelajaran::where('nama', $request->nama)
+            ->where('jenjang_id', $jenjang->id)
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'detail' => 'Mata pelajaran sudah ada untuk jenjang ini.'
+            ], 400);
+        }
+
+        $mapel->update([
+            'nama' => $request->nama,
+            'jenjang_id' => $jenjang->id,
+        ]);
+
         return response()->json(['ok' => true]);
     }
 

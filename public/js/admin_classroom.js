@@ -173,7 +173,10 @@ async function submitSekolah() {
       loadSekolahAdmin();
     } else {
       const data = await res.json();
-      showSekolahAlert('danger', data.detail || 'Gagal menyimpan.');
+      const pesan = data.errors
+          ? Object.values(data.errors).flat()[0]
+          : (data.detail || data.message || 'Gagal menyimpan.');
+      showSekolahAlert('danger', pesan);
     }
   } catch {
     showSekolahAlert('danger', 'Gagal terhubung ke server.');
