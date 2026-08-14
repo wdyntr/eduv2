@@ -13,13 +13,13 @@
     <!-- HERO -->
     <section class="hero-section" id="hero">
         <!-- <div class="siger-decoration">
-            <svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                <path d="M0,120 L40,40 L80,80 L120,20 L160,60 L200,0 L240,60 L280,20 L320,80 L360,40 L400,120 Z"
-                    fill="rgba(240,165,0,0.15)" />
-                <path d="M0,120 L40,60 L80,90 L120,40 L160,75 L200,20 L240,75 L280,40 L320,90 L360,60 L400,120 Z"
-                    fill="rgba(240,165,0,0.08)" />
-            </svg>
-        </div> -->
+                <svg viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                    <path d="M0,120 L40,40 L80,80 L120,20 L160,60 L200,0 L240,60 L280,20 L320,80 L360,40 L400,120 Z"
+                        fill="rgba(240,165,0,0.15)" />
+                    <path d="M0,120 L40,60 L80,90 L120,40 L160,75 L200,20 L240,75 L280,40 L320,90 L360,60 L400,120 Z"
+                        fill="rgba(240,165,0,0.08)" />
+                </svg>
+            </div> -->
         <div class="tumpal-right d-none d-lg-block">
             <svg viewBox="0 0 120 400" xmlns="http://www.w3.org/2000/svg">
                 <polygon points="0,0 120,40 0,80" fill="rgba(26,58,107,0.2)" />

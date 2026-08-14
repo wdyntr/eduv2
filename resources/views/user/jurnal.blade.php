@@ -1,11 +1,11 @@
-@extends('adusermin.layouts.base')
+@extends('user.layouts.base')
 
 @section('title', 'Jurnal')
-@section('page_title', ($session_role ?? 'admin') === 'admin' ? 'Request Upload Jurnal' : 'Jurnal Saya')
+@section('page_title', ($session_role ?? 'admin_sistem') === 'penulis' ? 'Jurnal Saya' : 'Request Jurnal')
 
 @section('content')
 
-@if (($session_role ?? 'admin') === 'guru')
+@if (($session_role ?? 'admin_sistem') === 'penulis')
 
   {{-- ================= TAMPILAN PENULIS ================= --}}
   <div class="admin-card">
@@ -107,6 +107,7 @@
     </div>
 
     <div id="tabKategori" style="display:none">
+      @if (($session_role ?? 'admin_sistem') === 'admin_sistem')
       <div class="p-3 border-bottom">
         <div class="d-flex gap-2" style="max-width:400px">
           <input type="text" id="fNamaKategoriBaru" class="form-control" placeholder="Nama kategori baru, mis. Kesehatan">
@@ -116,6 +117,7 @@
         </div>
         <div id="kategoriAlert" class="alert d-none mt-2 py-2 small"></div>
       </div>
+      @endif
       <div class="table-responsive">
         <table class="admin-table">
           <thead>
@@ -256,7 +258,7 @@
 
 @section('scripts')
 <script>
-  const JURNAL_ROLE = '{{ $session_role ?? "admin" }}';
+  const JURNAL_ROLE = '{{ $session_role ?? "admin_sistem" }}';
 </script>
 <script src="{{ asset('js/admin_jurnal.js') }}"></script>
 @endsection

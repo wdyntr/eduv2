@@ -114,7 +114,7 @@ class JurnalApiController extends Controller
 
     public function pending(Request $request)
     {
-        $this->assertAdmin($request);
+        $this->assertJurnalViewer($request);
         $items = Jurnal::with(['kategori', 'penulisAkun', 'revisiTerbaru.reviewTerbaru'])
             ->whereHas('revisiTerbaru.reviewTerbaru', fn($q) => $q->where('status', 'pending'))
             ->get()
@@ -130,7 +130,7 @@ class JurnalApiController extends Controller
 
     public function allAdmin(Request $request)
     {
-        $this->assertAdmin($request);
+        $this->assertJurnalViewer($request);
         $items = Jurnal::with(['kategori', 'penulisAkun', 'revisiTerbaru.reviewTerbaru.reviewer'])->get();
 
         if ($request->status) {
@@ -289,7 +289,7 @@ class JurnalApiController extends Controller
 
     public function approve(Request $request, int $id)
     {
-        $this->assertAdmin($request);
+        $this->assertPereview($request);
 
         $request->validate([
             'volume' => 'nullable|string|max:50',
@@ -310,7 +310,7 @@ class JurnalApiController extends Controller
 
     public function updateDetail(Request $request, int $id)
     {
-        $this->assertAdmin($request);
+        $this->assertPereview($request);
 
         $request->validate([
             'volume' => 'nullable|string|max:50',
@@ -327,7 +327,7 @@ class JurnalApiController extends Controller
 
     public function reject(Request $request, int $id)
     {
-        $this->assertAdmin($request);
+        $this->assertPereview($request);
         $request->validate(['catatan' => 'required|string|max:1000']);
 
         $jurnal = Jurnal::with('revisiTerbaru.reviewTerbaru')->findOrFail($id);
@@ -423,13 +423,26 @@ class JurnalApiController extends Controller
         return $filename;
     }
 
+    /** Kelola kategori & hapus jurnal: admin_sistem saja */
     private function assertAdmin(Request $request): void
     {
-        abort_if(!$request->user()?->hasRole('admin'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
+        abort_if(!$request->user()?->hasRole('admin_sistem'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
     }
 
     private function assertPenulis(Request $request): void
     {
-        abort_if(!$request->user()?->hasRole('guru'), 403, 'Hanya akun guru yang bisa mengajukan jurnal.');
+        abort_if(!$request->user()?->hasRole('penulis'), 403, 'Hanya akun penulis yang bisa mengajukan jurnal.');
+    }
+
+    /** Approve/reject/edit detail jurnal: hak pereview saja — admin_sistem hanya bisa melihat */
+    private function assertPereview(Request $request): void
+    {
+        abort_if(!$request->user()?->hasRole('pereview'), 403, 'Hanya pereview yang bisa memutuskan hasil review jurnal.');
+    }
+
+    /** Lihat daftar jurnal (pending/semua): admin_sistem (lihat saja) + pereview */
+    private function assertJurnalViewer(Request $request): void
+    {
+        abort_if(!$request->user()?->hasAnyRole(['admin_sistem', 'pereview']), 403, 'Tidak memiliki akses.');
     }
 }

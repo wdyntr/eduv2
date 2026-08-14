@@ -12,12 +12,36 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'admin.auth' => \App\Http\Middleware\AdminAuth::class,
+
+        /*
+        |--------------------------------------------------------------------------
+        | API Session Middleware
+        |--------------------------------------------------------------------------
+        |
+        | API admin menggunakan session Laravel untuk authentication.
+        | Karena itu kita menyediakan middleware group khusus.
+        |
+        */
+
+        $middleware->group('api-session', [
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
         ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
-            return response()->view('404', ['active_page' => ''], 404);
+
+        $exceptions->render(function (
+            \Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e,
+            $request
+        ) {
+            return response()->view(
+                '404',
+                ['active_page' => ''],
+                404
+            );
         });
-    })->create();
+
+    })
+    ->create();

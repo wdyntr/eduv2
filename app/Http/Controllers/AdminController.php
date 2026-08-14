@@ -13,54 +13,73 @@ class AdminController extends Controller
         return array_merge([
             'session_user' => $user?->username ?? 'User',
             'session_id' => $user?->id ?? 0,
-            'session_role' => $user?->getRoleNames()->first() ?? 'admin',
+            'session_role' => $user?->getRoleNames()->first() ?? '',
             'session_sekolah_id' => $user?->sekolah_id,
         ], $extra);
     }
 
-    private function guardAdminOnly(Request $request)
+    /**
+     * Semua guard di bawah ini pakai cek PERMISSION, bukan nama role.
+     * Ini yang bikin role baru otomatis dapat akses tanpa ubah kode —
+     * cukup kasih permission yang sesuai pas bikin role-nya.
+     */
+    private function guardKontenAccess(Request $request)
     {
-        abort_unless($request->user()?->hasRole('admin_sistem'), 403, 'Halaman ini hanya untuk admin.');
+        abort_unless($request->user()?->can('materi.kelola'), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+    }
+
+    private function guardUserManagementAccess(Request $request)
+    {
+        abort_unless($request->user()?->can('users.kelola'), 403, 'Halaman ini hanya untuk admin sistem.');
     }
 
     private function guardClassroomAccess(Request $request)
     {
-        abort_unless($request->user()?->hasAnyRole(['admin_sistem', 'sekolah']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        abort_unless($request->user()?->can('classroom.kelola'), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
     }
 
     private function guardJurnalAccess(Request $request)
     {
-        abort_unless($request->user()?->hasAnyRole(['admin_sistem', 'guru']), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        $user = $request->user();
+        abort_unless(
+            $user?->can('jurnal.review') || $user?->can('jurnal.ajukan'),
+            403,
+            'Halaman ini tidak tersedia untuk peran Anda.'
+        );
     }
 
     public function dashboard(Request $request)
     {
         $user = $request->user();
 
-        if ($user?->hasRole('guru')) {
+        // Dashboard penulis: akun yang cuma bisa ajukan jurnal (tidak bisa review)
+        if ($user?->can('jurnal.ajukan') && !$user?->can('jurnal.review')) {
             return view('user.dashboard_penulis', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
-        if ($user?->hasRole('sekolah')) {
+
+        // Dashboard sekolah: akun operator konten yang di-scope ke 1 sekolah tertentu
+        if ($user?->sekolah_id) {
             return view('user.dashboard_sekolah', $this->adminCtx($request, ['active_menu' => 'dashboard']));
         }
+
         return view('user.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
     }
 
     public function materi(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         return view('user.materi', $this->adminCtx($request, ['active_menu' => 'materi']));
     }
 
     public function materiTambah(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         return view('user.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => null]));
     }
 
     public function materiEdit(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         $materi = Materi::with('mapel')->findOrFail($id);
         return view('user.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => $materi]));
     }
@@ -76,7 +95,9 @@ class AdminController extends Controller
         $this->guardClassroomAccess($request);
 
         $user = $request->user();
-        if ($user?->hasRole('sekolah') && (int) ($request->user_sekolah_id ?? 0) !== $id) {
+        // Akun yang di-scope ke 1 sekolah cuma boleh buka data sekolahnya sendiri.
+        // Akun tanpa sekolah_id (mis. admin_sistem) dianggap boleh akses semua sekolah.
+        if ($user?->sekolah_id && (int) $user->sekolah_id !== $id) {
             abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
         }
 
@@ -85,13 +106,13 @@ class AdminController extends Controller
 
     public function mapel(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         return view('user.mapel', $this->adminCtx($request, ['active_menu' => 'mapel']));
     }
 
     public function users(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardUserManagementAccess($request);
         return view('user.admin_users', $this->adminCtx($request, ['active_menu' => 'users']));
     }
 
@@ -114,5 +135,11 @@ class AdminController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    public function roles(Request $request)
+    {
+        $this->guardUserManagementAccess($request);
+        return view('user.roles', $this->adminCtx($request, ['active_menu' => 'roles']));
     }
 }

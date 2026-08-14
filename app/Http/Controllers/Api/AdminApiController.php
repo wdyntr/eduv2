@@ -10,18 +10,25 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class AdminApiController extends Controller
 {
-    /** Role yang valid untuk akun admin/guru/sekolah (bukan siswa/publik) */
-
     private function guardAdminOnly(Request $request): void
     {
-        abort_if(
-            !$request->user()?->hasRole('admin_sistem'),
-            403,
-            'Hanya admin yang bisa melakukan aksi ini.'
-        );
+        abort_if(!$request->user()?->can('users.kelola'), 403, 'Hanya admin sistem yang bisa melakukan aksi ini.');
+    }
+
+    /** Materi & Mata Pelajaran: siapa pun dengan permission materi.kelola */
+    private function guardKontenAccess(Request $request): void
+    {
+        abort_if(!$request->user()?->can('materi.kelola'), 403, 'Anda tidak memiliki akses untuk mengelola konten.');
+    }
+
+    /** Kelola data sekolah (bukan link classroom-nya, itu beda permission) */
+    private function guardSistemAccess(Request $request): void
+    {
+        abort_if(!$request->user()?->can('sistem.kelola'), 403, 'Anda tidak memiliki akses untuk mengelola data ini.');
     }
 
     public function login(Request $request)
@@ -32,16 +39,12 @@ class AdminApiController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json([
-                'detail' => 'Username atau password salah.'
-            ], 401);
+            return response()->json(['detail' => 'Username atau password salah.'], 401);
         }
 
         $request->session()->regenerate();
 
-        return response()->json([
-            'ok' => true
-        ]);
+        return response()->json(['ok' => true]);
     }
 
     public function getUsers(Request $request)
@@ -58,22 +61,49 @@ class AdminApiController extends Controller
         return response()->json(['items' => $items, 'total' => $items->count()]);
     }
 
+    /** Daftar role yang tersedia untuk dipilih — dinamis dari tabel roles, bukan hardcode */
+    public function getRoles(Request $request)
+    {
+        $this->guardAdminOnly($request);
+
+        $roles = Role::where('guard_name', 'web')
+            ->orderBy('name')
+            ->get(['name'])
+            ->map(fn ($role) => [
+                'name' => $role->name,
+                'label' => str($role->name)->replace(['_', '-'], ' ')->headline(),
+                'requires_sekolah' => $role->name === 'sekolah',
+            ]);
+
+        return response()->json(['items' => $roles]);
+    }
+
     public function tambahAdmin(Request $request)
     {
         $this->guardAdminOnly($request);
-        $role = in_array($request->role, self::VALID_ROLES) ? $request->role : 'admin';
 
-        if ($role === 'sekolah' && !$request->sekolah_id) {
-            return response()->json(['detail' => 'Akun dengan peran Sekolah wajib dikaitkan ke salah satu sekolah.'], 400);
+        $data = $request->validate([
+            'username' => 'required|string|max:100|unique:users,username',
+            'password' => 'required|string|min:6|max:255',
+            'nama' => 'nullable|string|max:150',
+            'role' => 'required|string|exists:roles,name',
+            'sekolah_id' => 'nullable|integer|exists:sekolah,id',
+        ]);
+
+        // Hanya role "sekolah" yang secara UI/API ini di-scope ke sekolah tertentu.
+        // Role lain tetap boleh dikaitkan ke sekolah jika memang dikirim, tetapi
+        // kita cegah akun sekolah dibuat tanpa sekolah_id.
+        if ($data['role'] === 'sekolah' && empty($data['sekolah_id'])) {
+            return response()->json(['detail' => 'Role sekolah wajib memiliki sekolah.'], 422);
         }
 
         $user = User::create([
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'nama' => $request->nama ?? '',
-            'sekolah_id' => $role === 'sekolah' ? $request->sekolah_id : null,
+            'username' => $data['username'],
+            'password' => Hash::make($data['password']),
+            'nama' => $data['nama'] ?? '',
+            'sekolah_id' => $data['sekolah_id'] ?? null,
         ]);
-        $user->assignRole($role);
+        $user->assignRole($data['role']);
 
         return response()->json(['ok' => true]);
     }
@@ -89,35 +119,29 @@ class AdminApiController extends Controller
     }
 
     // =====================
-    // MONITORING CLASSROOM — admin (semua sekolah) & sekolah (sekolah sendiri)
+    // MONITORING & KELOLA LINK CLASSROOM PER MATA PELAJARAN
     // =====================
 
     private function guardClassroomAccess(Request $request): void
     {
-        abort_if(!$request->user()?->hasAnyRole(['admin', 'sekolah']), 403, 'Tidak memiliki akses.');
+        abort_if(!$request->user()?->can('classroom.kelola'), 403, 'Tidak memiliki akses.');
     }
 
-    // =====================
-    // KELOLA LINK CLASSROOM PER MATA PELAJARAN (halaman detail per sekolah)
-    // =====================
-
-    /** Pastikan admin bisa akses sekolah manapun, sedangkan role sekolah cuma sekolahnya sendiri */
+    /** Akun yang sekolah_id-nya diisi cuma boleh akses sekolahnya sendiri; yang kosong (global) boleh akses semua */
     private function assertSekolahAccess(Request $request, int $sekolahId): void
     {
         $user = $request->user();
-        if ($user?->hasRole('admin_sistem')) return;
-        if ($user?->hasRole('sekolah') && (int) $request->user_sekolah_id === $sekolahId) return;
-        abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
+        if (!$user?->sekolah_id) return;
+        abort_if((int) $user->sekolah_id !== $sekolahId, 403, 'Anda tidak memiliki akses ke data sekolah ini.');
     }
 
-    /** Detail sekolah + daftar mapel (sesuai jenjang) beserta link classroom & statistik bulan ini */
     public function sekolahKelasList(Request $request, int $id)
     {
         $this->guardClassroomAccess($request);
         $this->assertSekolahAccess($request, $id);
 
         $bulan = now()->format('Y-m');
-        $sekolah = Sekolah::findOrFail($id);
+        $sekolah = Sekolah::with(['jenjang:id,kode,nama', 'kotaKabupaten:id,nama'])->findOrFail($id);
         $mapel = MataPelajaran::where('jenjang_id', $sekolah->jenjang_id)->orderBy('nama')->get(['id', 'nama']);
         $kelas = $sekolah->kelas()->get(['id', 'mapel_id', 'classroom_url'])->keyBy('mapel_id');
 
@@ -144,13 +168,10 @@ class AdminApiController extends Controller
         return response()->json(['sekolah' => $sekolah, 'bulan' => $bulan, 'kelas' => $items]);
     }
 
-    /** Simpan/ubah link classroom untuk 1 pasang sekolah+mapel */
     public function sekolahKelasUpdate(Request $request, int $id, int $mapelId)
     {
         $this->guardClassroomAccess($request);
         $this->assertSekolahAccess($request, $id);
-        abort_if(!$request->user()
-        ?->hasRole('sekolah'), 403, 'Hanya operator sekolah yang bisa mengubah link Classroom. Admin/dinas hanya dapat memantau.');
 
         $sekolah = Sekolah::findOrFail($id);
         $mapel = MataPelajaran::where('jenjang_id', $sekolah->jenjang_id)->findOrFail($mapelId);
@@ -167,7 +188,7 @@ class AdminApiController extends Controller
 
     public function tambahMateri(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         $data = $request->only(['judul', 'deskripsi', 'tipe', 'mapel_id', 'url']);
         $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
 
@@ -177,7 +198,7 @@ class AdminApiController extends Controller
 
     public function editMateri(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         $data = $request->only(['judul', 'deskripsi', 'tipe', 'mapel_id', 'url']);
         $data['thumbnail'] = Materi::resolveThumbnail($data['tipe'] ?? '', $data['url'] ?? null);
 
@@ -187,28 +208,58 @@ class AdminApiController extends Controller
 
     public function hapusMateri(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         Materi::destroy($id);
         return response()->json(['ok' => true]);
     }
 
+    private function resolveSekolahData(Request $request): array
+    {
+        $data = $request->validate([
+            'nama' => 'required|string|max:150',
+            'jenjang' => 'nullable|string|exists:jenjang,kode',
+            'jenjang_id' => 'nullable|integer|exists:jenjang,id',
+            'kota_kabupaten' => 'nullable|string|max:150',
+            'kota_kabupaten_id' => 'nullable|integer|exists:kota_kabupaten,id',
+        ]);
+
+        if (empty($data['jenjang_id']) && !empty($data['jenjang'])) {
+            $data['jenjang_id'] = \App\Models\Jenjang::where('kode', $data['jenjang'])->value('id');
+        }
+
+        if (empty($data['jenjang_id'])) {
+            abort(422, 'Jenjang wajib dipilih.');
+        }
+
+        // Frontend lama mengirim nama kota; konversi ke FK bila tersedia.
+        if (empty($data['kota_kabupaten_id']) && !empty($data['kota_kabupaten'])) {
+            $data['kota_kabupaten_id'] = \App\Models\KotaKabupaten::whereRaw('LOWER(nama) = ?', [strtolower(trim($data['kota_kabupaten']))])->value('id');
+        }
+
+        return [
+            'nama' => $data['nama'],
+            'jenjang_id' => $data['jenjang_id'],
+            'kota_kabupaten_id' => $data['kota_kabupaten_id'] ?? null,
+        ];
+    }
+
     public function tambahSekolah(Request $request)
     {
-        $this->guardAdminOnly($request);
-        Sekolah::create($request->only(['nama', 'jenjang_id', 'kota_kabupaten_id']));
+        $this->guardSistemAccess($request);
+        Sekolah::create($this->resolveSekolahData($request));
         return response()->json(['ok' => true]);
     }
 
     public function editSekolah(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
-        Sekolah::findOrFail($id)->update($request->only(['nama', 'jenjang_id', 'kota_kabupaten_id']));
+        $this->guardSistemAccess($request);
+        Sekolah::findOrFail($id)->update($this->resolveSekolahData($request));
         return response()->json(['ok' => true]);
     }
 
     public function hapusSekolah(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
+        $this->guardSistemAccess($request);
 
         $sekolah = Sekolah::findOrFail($id);
         $jumlahKelasTerisi = $sekolah->kelas()
@@ -227,7 +278,7 @@ class AdminApiController extends Controller
 
     public function tambahMapel(Request $request)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         try {
             MataPelajaran::create($request->only(['nama', 'jenjang_id']));
         } catch (\Exception $e) {
@@ -238,14 +289,14 @@ class AdminApiController extends Controller
 
     public function editMapel(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         MataPelajaran::findOrFail($id)->update($request->only(['nama', 'jenjang_id']));
         return response()->json(['ok' => true]);
     }
 
     public function hapusMapel(Request $request, int $id)
     {
-        $this->guardAdminOnly($request);
+        $this->guardKontenAccess($request);
         $cnt = Materi::where('mapel_id', $id)->count();
         if ($cnt > 0) {
             return response()->json(['detail' => "Tidak bisa dihapus, masih ada {$cnt} materi yang menggunakan mata pelajaran ini."], 400);
@@ -260,31 +311,17 @@ class AdminApiController extends Controller
 
         if ($request->password_baru) {
             if (!$request->password_lama) {
-                return response()->json([
-                    'detail' => 'Password lama wajib diisi.'
-                ], 400);
+                return response()->json(['detail' => 'Password lama wajib diisi.'], 400);
             }
-
             if (!password_verify($request->password_lama, $user->password)) {
-                return response()->json([
-                    'detail' => 'Password lama salah.'
-                ], 400);
+                return response()->json(['detail' => 'Password lama salah.'], 400);
             }
-
             if (strlen($request->password_baru) < 6) {
-                return response()->json([
-                    'detail' => 'Password baru minimal 6 karakter.'
-                ], 400);
+                return response()->json(['detail' => 'Password baru minimal 6 karakter.'], 400);
             }
-
-            $user->update([
-                'nama' => $request->nama,
-                'password' => Hash::make($request->password_baru)
-            ]);
+            $user->update(['nama' => $request->nama, 'password' => Hash::make($request->password_baru)]);
         } else {
-            $user->update([
-                'nama' => $request->nama
-            ]);
+            $user->update(['nama' => $request->nama]);
         }
 
         return response()->json(['ok' => true]);

@@ -17,23 +17,23 @@ async function loadSekolahKelas() {
     renderTabelKelas(data.kelas || []);
   } catch (err) {
     if (box)   box.innerHTML = `<p class="text-muted small mb-0">${err.message}</p>`;
-    if (tbody) tbody.innerHTML = `<tr><td colspan="${KELAS_ROLE === 'sekolah' ? 8 : 7}" class="text-center text-muted py-4">${err.message}</td></tr>`;
+    if (tbody) tbody.innerHTML = `<tr><td colspan="${KELAS_IS_SCOPED ? 8 : 7}" class="text-center text-muted py-4">${err.message}</td></tr>`;
   }
 }
 
 function renderProfilSekolah(s) {
   const box = document.getElementById('profilSekolahDetailBox');
   if (!box) return;
-  const j = (s.jenjang || 'sma').toLowerCase();
+  const j = (s.jenjang?.kode || s.jenjang || 'sma').toLowerCase();
 
   box.innerHTML = `
     <div class="d-flex align-items-center gap-3">
       <div class="admin-avatar" style="width:52px;height:52px;font-size:1.6rem">${JENJANG_ICON[j] || '🏫'}</div>
       <div>
-        <div style="font-weight:700;font-size:1.05rem">${s.nama}</div>
+        <div style="font-weight:700;font-size:1.05rem">${escapeHtmlKelas(s.nama)}</div>
         <div class="text-muted small">
           <span class="badge rounded-pill badge-${j} me-1">${j.toUpperCase()}</span>
-          ${s.kota_kabupaten ? `<i class="bi bi-geo-alt me-1"></i>${s.kota_kabupaten}` : ''}
+          ${s.kotaKabupaten?.nama ? `<i class="bi bi-geo-alt me-1"></i>${escapeHtmlKelas(s.kotaKabupaten.nama)}` : ''}
         </div>
       </div>
     </div>`;
@@ -42,14 +42,14 @@ function renderProfilSekolah(s) {
 function renderTabelKelas(items) {
   const tbody = document.getElementById('tabelKelasMapel');
   if (!tbody) return;
-  const colspan = KELAS_ROLE === 'sekolah' ? 8 : 7;
+  const colspan = KELAS_IS_SCOPED ? 8 : 7;
 
   if (!items.length) {
     tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center text-muted py-4">Belum ada mata pelajaran untuk jenjang ini. Tambahkan lewat menu Mata Pelajaran.</td></tr>`;
     return;
   }
 
-  if (KELAS_ROLE === 'sekolah') {
+  if (KELAS_IS_SCOPED) {
     tbody.innerHTML = items.map((k, i) => `
       <tr data-mapel-id="${k.mapel_id}">
         <td class="text-muted small">${i + 1}</td>
@@ -113,4 +113,9 @@ async function simpanKelasMapel(mapelId, btn) {
   } finally {
     btn.disabled = false;
   }
+}
+function escapeHtmlKelas(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[c]));
 }

@@ -68,10 +68,9 @@
         <div class="mb-3">
           <label class="form-label small fw-semibold">Role <span class="text-danger">*</span></label>
           <select id="fRoleUser" class="form-select" onchange="toggleSekolahPicker()">
-            <option value="admin">Admin</option>
-            <option value="guru">Guru (Author Jurnal)</option>
-            <option value="sekolah">Sekolah (Monitoring Classroom)</option>
+            <option value="">Memuat role...</option>
           </select>
+          <div class="form-text">Daftar role diambil langsung dari konfigurasi role aktif.</div>
         </div>
         <div class="mb-3 d-none" id="wrapSekolahPicker">
           <label class="form-label small fw-semibold">Sekolah <span class="text-danger">*</span></label>

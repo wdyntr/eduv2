@@ -9,20 +9,14 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // "pengunjung" publik tidak login,
+        // "Pengunjung" publik tidak login, jadi tidak butuh row akun/role.
 
         $permissions = [
-            // konten materi
             'materi.kelola',
-            // direktori classroom (sekolah, mata pelajaran, link kelas per mapel)
             'classroom.kelola',
-            // review pengajuan jurnal
             'jurnal.review',
-            // mengajukan jurnal sebagai penulis
             'jurnal.ajukan',
-            // kelola akun & hak akses pengguna
             'users.kelola',
-            // kelola pengaturan teknis sistem (kategori jurnal, mapel, jenjang, dst)
             'sistem.kelola',
         ];
 
@@ -34,11 +28,15 @@ class RolePermissionSeeder extends Seeder
         $penulis->syncPermissions(['jurnal.ajukan']);
 
         $operatorKonten = Role::firstOrCreate(['name' => 'operator_konten', 'guard_name' => 'web']);
-        $operatorKonten->syncPermissions(['materi.kelola', 'classroom.kelola', 'jurnal.review']);
+        $operatorKonten->syncPermissions(['materi.kelola', 'classroom.kelola']);
+
+        $sekolah = Role::firstOrCreate(['name' => 'sekolah', 'guard_name' => 'web']);
+        $sekolah->syncPermissions(['classroom.kelola']);
+
+        $pereview = Role::firstOrCreate(['name'=> 'pereview', 'guard_name' => 'web']);
+        $pereview->syncPermissions(['jurnal.review',]);
 
         $adminSistem = Role::firstOrCreate(['name' => 'admin_sistem', 'guard_name' => 'web']);
-        
-        // admin sistem otomatis dapat semua akses
-        $adminSistem->syncPermissions(Permission::pluck('name')->all()); 
+        $adminSistem->syncPermissions(Permission::pluck('name')->all());
     }
 }

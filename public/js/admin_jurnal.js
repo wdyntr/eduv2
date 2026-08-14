@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadKategoriJurnalForm();
   }
 
-  if (JURNAL_ROLE === 'guru') {
+  if (JURNAL_ROLE === 'penulis') {
     if (document.getElementById('tabelJurnalSaya')) loadJurnalSaya();
     if (document.getElementById('statTotalUpload')) loadDashboardPenulis();
   } else {
@@ -345,8 +345,10 @@ function renderTabelPending(items) {
       <td>
         <div class="d-flex gap-1">
           <button class="btn btn-admin-edit btn-sm" onclick='bukaReview(${JSON.stringify(j)})'><i class="bi bi-eye"></i></button>
+          ${JURNAL_ROLE === 'pereview' ? `
           <button class="btn btn-sm" style="background:#e8f7ef;color:#1a7a4a" onclick="approveJurnal(${j.id})"><i class="bi bi-check-lg"></i></button>
           <button class="btn btn-admin-danger btn-sm" onclick="bukaTolak(${j.id})"><i class="bi bi-x-lg"></i></button>
+          ` : ''}
         </div>
       </td>
     </tr>`).join('');
@@ -427,7 +429,9 @@ function bukaReview(j) {
     </div>`;
 
   const footer = document.getElementById('reviewJurnalFooter');
-  if (j.status === 'pending') {
+  if (JURNAL_ROLE !== 'pereview') {
+    footer.innerHTML = `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>`;
+  } else if (j.status === 'pending') {
     footer.innerHTML = `
       <button class="btn btn-admin-danger" onclick="reviewJurnalModal.hide(); bukaTolak(${j.id})"><i class="bi bi-x-lg me-1"></i>Tolak</button>
       <button class="btn btn-admin-primary" onclick="approveJurnal(${j.id}); reviewJurnalModal.hide()"><i class="bi bi-check-lg me-1"></i>Setujui</button>`;
@@ -538,10 +542,12 @@ function renderKategoriAdmin(items) {
       <td style="font-weight:600">${k.nama}</td>
       <td class="text-muted small">${k.jumlah_jurnal} jurnal</td>
       <td>
+        ${JURNAL_ROLE === 'admin_sistem' ? `
         <div class="d-flex gap-1">
           <button class="btn btn-admin-edit btn-sm" onclick="renameKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-pencil"></i></button>
           <button class="btn btn-admin-danger btn-sm" onclick="hapusKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
         </div>
+        ` : '<span class="text-muted small">—</span>'}
       </td>
     </tr>`).join('');
 }
