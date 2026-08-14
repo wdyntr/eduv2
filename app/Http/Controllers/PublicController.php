@@ -58,7 +58,16 @@ class PublicController extends Controller
 
     public function classroomDetail(int $id)
     {
-        $sekolah = \App\Models\Sekolah::where('is_active', 1)->findOrFail($id);
-        return view('sekolah_detail', ['active_page' => 'classroom', 'sekolah' => $sekolah]);
+        $sekolah = \App\Models\Sekolah::with([
+            'jenjang',
+            'kotaKabupaten',
+        ])
+            ->where('is_active', 1)
+            ->findOrFail($id);
+
+        return view('sekolah_detail', [
+            'active_page' => 'classroom',
+            'sekolah' => $sekolah,
+        ]);
     }
 }

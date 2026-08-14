@@ -15,7 +15,7 @@ async function loadRoleOptions() {
 
   select.innerHTML = '<option value="">Memuat role...</option>';
   try {
-    const res = await fetch('/api/admin/roles');
+    const res = await fetch('/api/roles/options');
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Gagal memuat role.');
 
@@ -63,7 +63,7 @@ async function loadUsers() {
     </tr>`;
 
   try {
-    const res  = await fetch('/api/admin/users');
+    const res  = await fetch('/api/users');
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Gagal memuat data.');
     renderTabelUser(data.items || []);
@@ -137,9 +137,9 @@ function showFormTambahUser() {
   document.getElementById('fPasswordUser').value = '';
   const firstRole = roleOptions[0]?.name || '';
   document.getElementById('fRoleUser').value     = firstRole;
-  document.getElementById('wrapSekolahPicker').classList.add('d-none');
   document.getElementById('fSekolahUser').value  = '';
   document.getElementById('userAlert').classList.add('d-none');
+  toggleSekolahPicker();
   userModal.show();
 }
 
@@ -181,6 +181,7 @@ async function submitUser() {
   const password  = document.getElementById('fPasswordUser').value;
   const role      = document.getElementById('fRoleUser').value;
   const sekolahId = document.getElementById('fSekolahUser').value;
+  const selectedRole = getSelectedRole();
 
   if (!username || !password) {
     showUserAlert('danger', 'Username dan password wajib diisi.');
@@ -190,18 +191,18 @@ async function submitUser() {
     showUserAlert('danger', 'Password minimal 6 karakter.');
     return;
   }
-  if (role === 'sekolah' && !sekolahId) {
-    showUserAlert('danger', 'Pilih sekolah untuk akun dengan peran Sekolah.');
+  if (selectedRole?.requires_sekolah && !sekolahId) {
+    showUserAlert('danger', `Pilih sekolah untuk akun dengan peran ${selectedRole.label}.`);
     return;
   }
 
   try {
-    const res = await fetch('/api/admin/users', {
+    const res = await fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username, password, nama, role,
-        sekolah_id: role === 'sekolah' ? sekolahId : null,
+        sekolah_id: selectedRole?.requires_sekolah ? sekolahId : null,
       }),
     });
 
@@ -222,7 +223,7 @@ async function hapusUser(id, username) {
   if (!confirm(`Hapus user "@${username}"? Tindakan ini tidak bisa dibatalkan.`)) return;
 
   try {
-    const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
     if (res.ok) {
       loadUsers();
   loadRoleOptions();

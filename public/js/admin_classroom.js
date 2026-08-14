@@ -2,8 +2,13 @@ let sekolahPage = 1;
 let sekolahModal = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  const modalEl = document.getElementById('modalSekolah');
-  if (modalEl) sekolahModal = new bootstrap.Modal(modalEl);
+    const modalEl = document.getElementById('modalSekolah');
+
+    if (modalEl) {
+        sekolahModal = new bootstrap.Modal(modalEl);
+    }
+
+    loadKotaKabupaten();
 });
 
 async function loadSekolahAdmin() {
@@ -25,13 +30,22 @@ async function fetchSekolahAdmin() {
   if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div></td></tr>`;
 
   try {
-    const res  = await fetch(`/api/classroom?${params}`);
+    const res  = await fetch(`/api/sekolah?${params}`);
     const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.detail || 'Gagal memuat data sekolah.');
     renderTabelSekolah(data.items || []);
     renderPaginasiSekolah(data.total || 0);
-  } catch {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Gagal memuat data.</td></tr>`;
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">${err.message || 'Gagal memuat data.'}</td></tr>`;
   }
+}
+
+function escapeJsString(value) {
+    return String(value ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n');
 }
 
 function renderTabelSekolah(items) {
@@ -46,9 +60,11 @@ function renderTabelSekolah(items) {
   tbody.innerHTML = items.map((s, i) => `
     <tr>
       <td class="text-muted small">${(sekolahPage - 1) * 10 + i + 1}</td>
-      <td style="font-weight:600">${s.nama}</td>
-      <td><span class="badge rounded-pill badge-${s.jenjang?.kode?.toLowerCase()}">${s.jenjang?.kode?.toUpperCase()}</span></td>
-      <td class="text-muted small">${s.kota_kabupaten?.nama || '-'}</td>
+      <td style="font-weight:600">${escapeHtmlKelas(s.nama)}</td>
+      <td><span class="badge rounded-pill badge-${s.jenjang.toLowerCase()}">${s.jenjang.toUpperCase()}</span></td>
+      <td class="text-muted small">
+          ${escapeHtmlKelas(s.kota_kabupaten || '-')}
+      </td>
       <td>
         <span class="badge rounded-pill ${s.kelas_terisi > 0 ? 'bg-success-subtle text-success' : 'bg-light text-muted border'}">
           ${s.kelas_terisi ?? 0} kelas
@@ -61,10 +77,15 @@ function renderTabelSekolah(items) {
           <button class="btn btn-admin-edit btn-sm" title="Kelola Kelas per Mapel" onclick="location.href='/admin/classroom/${s.id}'">
             <i class="bi bi-collection-play"></i>
           </button>
-          <button class="btn btn-admin-edit btn-sm" title="Edit Sekolah" onclick="showFormEdit(${s.id}, '${s.nama.replace(/'/g,"\\'")}', '${s.jenjang?.kode || ''}', '${s.kota_kabupaten?.nama || ''}')">
+          <button class="btn btn-admin-edit btn-sm" title="Edit Sekolah" onclick="showFormEdit(
+                ${s.id},
+                '${escapeJsString(s.nama)}',
+                '${escapeJsString(s.jenjang)}',
+                '${escapeJsString(s.kota_kabupaten)}'
+            )">
             <i class="bi bi-pencil"></i>
           </button>
-          <button class="btn btn-admin-danger btn-sm" title="Hapus" onclick="hapusSekolah(${s.id}, '${s.nama.replace(/'/g,"\\'")}')">
+          <button class="btn btn-admin-danger btn-sm" title="Hapus" onclick="hapusSekolah(${s.id}, '${escapeJsString(s.nama)}')">
             <i class="bi bi-trash"></i>
           </button>
         </div>
@@ -137,7 +158,9 @@ async function submitSekolah() {
 
   const payload  = { nama, jenjang, kota_kabupaten: kota };
   const method   = id ? 'PUT' : 'POST';
-  const endpoint = id ? `/api/admin/classroom/${id}` : '/api/admin/classroom';
+  const endpoint = id
+    ? `/api/sekolah/${id}`
+    : '/api/sekolah';
 
   try {
     const res = await fetch(endpoint, {
@@ -160,7 +183,7 @@ async function submitSekolah() {
 async function hapusSekolah(id, nama) {
   if (!confirm(`Hapus sekolah "${nama}"?`)) return;
   try {
-    const res = await fetch(`/api/admin/classroom/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/sekolah/${id}`, { method: 'DELETE' });
     const data = await res.json();
     if (res.ok) { loadSekolahAdmin(); }
     else { alert(data.detail || 'Gagal menghapus sekolah.'); }
@@ -201,11 +224,37 @@ async function loadProfilSekolah(sekolahId) {
     profilBox.innerHTML = `
       <p class="mb-2"><span class="text-muted small d-block">Nama Sekolah</span><span class="fw-600">${s.nama}</span></p>
       <p class="mb-2"><span class="text-muted small d-block">Jenjang</span>
-        <span class="badge rounded-pill badge-${s.jenjang?.kode}">${s.jenjang?.kode?.toUpperCase()}</span>
+        <span class="badge rounded-pill badge-${s.jenjang}">${s.jenjang.toUpperCase()}</span>
       </p>
-      <p class="mb-2"><span class="text-muted small d-block">Kota/Kabupaten</span><span class="fw-600">${s.kota_kabupaten?.nama || '-'}</span></p>
+      <p class="mb-2"><span class="text-muted small d-block">Kota/Kabupaten</span><span class="fw-600">${s.kota_kabupaten || '-'}</span></p>
       <p class="mb-0"><span class="text-muted small d-block">Kelas Terisi</span><span class="fw-600">${terisi} dari ${data.kelas.length} mata pelajaran</span></p>`;
   } catch {
     profilBox.innerHTML = `<p class="text-danger small mb-0">Gagal terhubung ke server.</p>`;
   }
+}
+
+async function loadKotaKabupaten() {
+    const datalist = document.getElementById('kotaKabupatenList');
+
+    if (!datalist) return;
+
+    try {
+        const res = await fetch('/api/kota-kabupaten');
+
+        if (!res.ok) {
+            throw new Error('Gagal mengambil kota/kabupaten');
+        }
+
+        const data = await res.json();
+
+        datalist.innerHTML = (data.items || [])
+            .map(item => `
+                <option value="${escapeHtmlKelas(item.nama)}">
+            `)
+            .join('');
+
+    } catch (error) {
+        console.error('loadKotaKabupaten:', error);
+        datalist.innerHTML = '';
+    }
 }

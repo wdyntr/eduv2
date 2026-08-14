@@ -15,7 +15,7 @@
     @yield('styles')
     <script>
         // Login sekarang pakai Auth::attempt() + session Laravel, jadi semua
-        // request POST/PUT/DELETE ke /api/admin/* butuh header CSRF. Daripada
+        // request POST/PUT/DELETE ke /api/* butuh header CSRF. Daripada
         // menambal satu-satu di setiap file admin_*.js, fetch() dibungkus di
         // sini supaya seluruh halaman panel otomatis terkirim CSRF-nya.
         (function() {
@@ -49,7 +49,7 @@
         <nav class="sidebar-nav">
             <div class="nav-section-label">Menu Utama</div>
 
-            <a href="/admin" class="sidebar-link {{ $active_menu == 'dashboard' ? 'active' : '' }}">
+            <a href="/admin" class="sidebar-link {{ ($active_menu ?? '') == 'dashboard' ? 'active' : '' }}">
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
@@ -61,12 +61,22 @@
                 </a>
             @endcan
 
-            @can('classroom.kelola')
-                <a href="/admin/classroom" class="sidebar-link {{ $active_menu == 'classroom' ? 'active' : '' }}">
+            @canany(['sistem.kelola', 'classroom.kelola'])
+                <a href="/admin/classroom"
+                class="sidebar-link {{ $active_menu == 'classroom' ? 'active' : '' }}">
                     <i class="bi bi-building"></i>
-                    <span>{{ auth()->user()->sekolah_id ? 'Classroom Saya' : 'Monitoring Classroom' }}</span>
+
+                    <span>
+                        @can('classroom.kelola')
+                            {{ auth()->user()->sekolah_id
+                                ? 'Classroom Saya'
+                                : 'Monitoring Classroom' }}
+                        @else
+                            Kelola Sekolah
+                        @endcan
+                    </span>
                 </a>
-            @endcan
+            @endcanany
 
             @can('materi.kelola')
                 <a href="/admin/mapel" class="sidebar-link {{ $active_menu == 'mapel' ? 'active' : '' }}">
@@ -90,12 +100,16 @@
             @can('users.kelola')
                 <div class="nav-section-label mt-3">Pengaturan</div>
 
-                <a href="/admin/users" class="sidebar-link {{ $active_menu == 'users' ? 'active' : '' }}">
+                <a href="/admin/users"
+                class="sidebar-link {{ $active_menu == 'users' ? 'active' : '' }}">
                     <i class="bi bi-people"></i>
                     <span>Kelola User</span>
                 </a>
+            @endcan
 
-                <a href="/admin/roles" class="sidebar-link {{ $active_menu == 'roles' ? 'active' : '' }}">
+            @can('sistem.kelola')
+                <a href="/admin/roles"
+                class="sidebar-link {{ $active_menu == 'roles' ? 'active' : '' }}">
                     <i class="bi bi-shield-lock"></i>
                     <span>Kelola Role</span>
                 </a>

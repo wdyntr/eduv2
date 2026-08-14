@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!sekolahId) return;
 
   try {
-    const res  = await fetch(`/api/admin/sekolah/${sekolahId}/kelas`);
+    const res  = await fetch(`/api/sekolah/${sekolahId}/kelas`);
     const data = await res.json();
     if (!res.ok) return;
 

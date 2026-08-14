@@ -6,7 +6,7 @@
 
 @section('content')
 
-    @if (!empty($session_sekolah_id))
+    @if ($session_role === 'sekolah' && !empty($session_sekolah_id))
         <!-- ===================== -->
         <!-- TAMPILAN UNTUK ROLE: SEKOLAH -->
         <!-- ===================== -->
@@ -130,7 +130,15 @@
                             </div>
                             <div class="col-6">
                                 <label class="form-label small fw-600">Kota/Kabupaten</label>
-                                <input type="text" id="fKotaSekolah" class="form-control" placeholder="Bandar Lampung">
+                                <input
+                                    type="text"
+                                    id="fKotaSekolah"
+                                    class="form-control"
+                                    list="kotaKabupatenList"
+                                    placeholder="Pilih atau ketik kota/kabupaten"
+                                    autocomplete="off"
+                                >
+                                <datalist id="kotaKabupatenList"></datalist>
                             </div>
                         </div>
                         <p class="text-muted small mb-0">

@@ -5,8 +5,7 @@
 
 @section('content')
 
-@if (($session_role ?? 'admin_sistem') === 'penulis')
-
+@if (auth()->user()->can('jurnal.ajukan') && !auth()->user()->can('jurnal.review'))
   {{-- ================= TAMPILAN PENULIS ================= --}}
   <div class="admin-card">
     <div class="admin-card-header">
@@ -107,7 +106,7 @@
     </div>
 
     <div id="tabKategori" style="display:none">
-      @if (($session_role ?? 'admin_sistem') === 'admin_sistem')
+      @can('sistem.kelola')
       <div class="p-3 border-bottom">
         <div class="d-flex gap-2" style="max-width:400px">
           <input type="text" id="fNamaKategoriBaru" class="form-control" placeholder="Nama kategori baru, mis. Kesehatan">
@@ -117,7 +116,7 @@
         </div>
         <div id="kategoriAlert" class="alert d-none mt-2 py-2 small"></div>
       </div>
-      @endif
+      @endcan
       <div class="table-responsive">
         <table class="admin-table">
           <thead>
@@ -258,7 +257,10 @@
 
 @section('scripts')
 <script>
-  const JURNAL_ROLE = '{{ $session_role ?? "admin_sistem" }}';
+    const JURNAL_ROLE = @json($session_role ?? '');
+    const JURNAL_CAN_SUBMIT = @json(auth()->user()->can('jurnal.ajukan'));
+    const JURNAL_CAN_REVIEW = @json(auth()->user()->can('jurnal.review'));
+    const JURNAL_CAN_MANAGE_SYSTEM = @json(auth()->user()->can('sistem.kelola'));
 </script>
 <script src="{{ asset('js/admin_jurnal.js') }}"></script>
 @endsection

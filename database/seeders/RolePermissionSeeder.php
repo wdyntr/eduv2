@@ -32,8 +32,10 @@ class RolePermissionSeeder extends Seeder
 
         $sekolah = Role::firstOrCreate(['name' => 'sekolah', 'guard_name' => 'web']);
         $sekolah->syncPermissions(['classroom.kelola']);
+        $sekolah->requires_sekolah = true;
+        $sekolah->save();
 
-        $pereview = Role::firstOrCreate(['name'=> 'pereview', 'guard_name' => 'web']);
+        $pereview = Role::firstOrCreate(['name'=> 'reviewer_jurnal', 'guard_name' => 'web']);
         $pereview->syncPermissions(['jurnal.review',]);
 
         $adminSistem = Role::firstOrCreate(['name' => 'admin_sistem', 'guard_name' => 'web']);

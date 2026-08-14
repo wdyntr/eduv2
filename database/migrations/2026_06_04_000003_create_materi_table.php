@@ -14,7 +14,7 @@ return new class extends Migration
                     `id` int NOT NULL AUTO_INCREMENT,
                     `judul` varchar(255) NOT NULL,
                     `deskripsi` text,
-                    `tipe` enum('video','ppt','pdf') NOT NULL,
+                    `tipe` enum('video','ppt') NOT NULL,
                     `mapel_id` int NOT NULL,
                     `url` varchar(500) NOT NULL,
                     `thumbnail` varchar(500) DEFAULT NULL,

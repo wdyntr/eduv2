@@ -7,7 +7,7 @@ async function loadDashboard() {
       fetch('/api/materi?limit=1'),
       fetch('/api/classroom?limit=1'),
       fetch('/api/mapel'),
-      fetch('/api/admin/users'),
+      fetch('/api/users'),
     ]);
     const mData  = await mRes.json();
     const sData  = await sRes.json();
@@ -140,7 +140,7 @@ async function goPageMateri(page) {
 async function hapusMateri(id, judul) {
   if (!confirm(`Hapus materi "${judul}"?`)) return;
   try {
-    const res = await fetch(`/api/admin/materi/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/materi/${id}`, { method: 'DELETE' });
     if (res.ok) { loadMateriAdmin(); }
     else { alert('Gagal menghapus materi.'); }
   } catch { alert('Gagal terhubung ke server.'); }
@@ -227,7 +227,7 @@ async function submitMateri(id) {
 
   const payload  = { judul, jenjang, tipe, mapel_id: parseInt(mapel_id), url, deskripsi };
   const method   = id ? 'PUT' : 'POST';
-  const endpoint = id ? `/api/admin/materi/${id}` : '/api/admin/materi';
+  const endpoint = id ? `/api/materi/${id}` : '/api/materi';
 
   try {
     const res = await fetch(endpoint, {
@@ -271,3 +271,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('fMapel').value = match ? match.id : '';
   });
 });
+
+function escapeHtmlKelas(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}

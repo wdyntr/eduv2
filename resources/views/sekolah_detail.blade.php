@@ -18,14 +18,21 @@
     </nav>
     <div class="d-flex align-items-center gap-3">
       <div class="hero-stat-icon" style="font-size:2.4rem">
-        {{ ['sma' => '🎓', 'smk' => '🔧', 'slb' => '🌟'][$sekolah->jenjang] ?? '🏫' }}
+        {{ [
+                'sma' => '🎓',
+                'smk' => '🔧',
+                'slb' => '🌟'
+            ][$sekolah->jenjang?->kode] ?? '🏫' }}
       </div>
       <div>
         <h1 class="hero-title mb-1" style="font-size:1.9rem">{{ $sekolah->nama }}</h1>
         <p class="mb-0" style="color:rgba(255,255,255,0.7)">
-          <span class="badge rounded-pill badge-{{ $sekolah->jenjang }} me-1">{{ strtoupper($sekolah->jenjang) }}</span>
-          @if ($sekolah->kota_kabupaten)
-            <i class="bi bi-geo-alt me-1"></i>{{ $sekolah->kota_kabupaten }}
+          <span class="badge rounded-pill badge-{{ $sekolah->jenjang?->kode }} me-1">
+              {{ strtoupper($sekolah->jenjang?->kode ?? '-') }}
+          </span>
+          @if ($sekolah->kotaKabupaten)
+              <i class="bi bi-geo-alt me-1"></i>
+              {{ $sekolah->kotaKabupaten->nama }}
           @endif
         </p>
       </div>

@@ -75,7 +75,7 @@ async function loadJurnalSaya() {
   const tbody = document.getElementById('tabelJurnalSaya');
   if (!tbody) return;
   try {
-    const res = await fetchWithTimeout('/api/admin/jurnal/mine');
+    const res = await fetchWithTimeout('/api/jurnal/mine');
     const data = await res.json();
     renderTabelJurnalSaya(data.items || []);
   } catch {
@@ -115,7 +115,7 @@ function renderTabelJurnalSaya(items) {
 // =====================
 async function loadDashboardPenulis() {
   try {
-    const res = await fetchWithTimeout('/api/admin/jurnal/mine');
+    const res = await fetchWithTimeout('/api/jurnal/mine');
     const data = await res.json();
     const items = data.items || [];
 
@@ -275,7 +275,7 @@ async function submitFormJurnal() {
   if (fileJurnal) fd.append('file_jurnal', fileJurnal);
   if (fileBukti) fd.append('file_bukti_plagiarisme', fileBukti);
 
-  const url = jurnalEditId ? `/api/admin/jurnal/${jurnalEditId}/resubmit` : '/api/admin/jurnal';
+  const url = jurnalEditId ? `/api/jurnal/${jurnalEditId}/resubmit` : '/api/jurnal';
 
   try {
     const res = await fetch(url, { method: 'POST', body: fd });
@@ -317,7 +317,7 @@ function switchJurnalTab(tab, el) {
 async function loadJurnalPending() {
   const tbody = document.getElementById('tabelJurnalPending');
   try {
-    const res = await fetch('/api/admin/jurnal/pending');
+    const res = await fetch('/api/jurnal/pending');
     const data = await res.json();
     renderTabelPending(data.items || []);
     document.getElementById('countPending').textContent = (data.items || []).length;
@@ -345,7 +345,7 @@ function renderTabelPending(items) {
       <td>
         <div class="d-flex gap-1">
           <button class="btn btn-admin-edit btn-sm" onclick='bukaReview(${JSON.stringify(j)})'><i class="bi bi-eye"></i></button>
-          ${JURNAL_ROLE === 'pereview' ? `
+          ${JURNAL_CAN_REVIEW ? `
           <button class="btn btn-sm" style="background:#e8f7ef;color:#1a7a4a" onclick="approveJurnal(${j.id})"><i class="bi bi-check-lg"></i></button>
           <button class="btn btn-admin-danger btn-sm" onclick="bukaTolak(${j.id})"><i class="bi bi-x-lg"></i></button>
           ` : ''}
@@ -358,7 +358,7 @@ async function loadJurnalAll() {
   const tbody = document.getElementById('tabelJurnalAll');
   const status = document.getElementById('filterStatusJurnal')?.value || '';
   try {
-    const res = await fetch(`/api/admin/jurnal/all${status ? '?status=' + status : ''}`);
+    const res = await fetch(`/api/jurnal/all${status ? '?status=' + status : ''}`);
     const data = await res.json();
     renderTabelAll(data.items || []);
   } catch {
@@ -429,7 +429,7 @@ function bukaReview(j) {
     </div>`;
 
   const footer = document.getElementById('reviewJurnalFooter');
-  if (JURNAL_ROLE !== 'pereview') {
+  if (!JURNAL_CAN_REVIEW) {
     footer.innerHTML = `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>`;
   } else if (j.status === 'pending') {
     footer.innerHTML = `
@@ -454,7 +454,7 @@ function ambilDetailPublikasiForm() {
 async function approveJurnal(id) {
   if (!confirm('Setujui dan publikasikan jurnal ini?')) return;
   try {
-    const res = await fetch(`/api/admin/jurnal/${id}/approve`, {
+    const res = await fetch(`/api/jurnal/${id}/approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ambilDetailPublikasiForm()),
@@ -466,7 +466,7 @@ async function approveJurnal(id) {
 
 async function simpanDetailJurnal(id) {
   try {
-    const res = await fetch(`/api/admin/jurnal/${id}/detail`, {
+    const res = await fetch(`/api/jurnal/${id}/detail`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ambilDetailPublikasiForm()),
@@ -491,7 +491,7 @@ async function submitTolakJurnal() {
   if (!catatan) { alert('Catatan wajib diisi agar penulis tahu apa yang perlu diperbaiki.'); return; }
 
   try {
-    const res = await fetch(`/api/admin/jurnal/${jurnalTolakId}/reject`, {
+    const res = await fetch(`/api/jurnal/${jurnalTolakId}/reject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ catatan }),
@@ -507,7 +507,7 @@ async function submitTolakJurnal() {
 async function hapusJurnal(id, judul) {
   if (!confirm(`Hapus jurnal "${judul}"? Tindakan ini tidak bisa dibatalkan.`)) return;
   try {
-    const res = await fetch(`/api/admin/jurnal/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/jurnal/${id}`, { method: 'DELETE' });
     if (res.ok) loadJurnalAll();
     else alert('Gagal menghapus jurnal.');
   } catch { alert('Gagal terhubung ke server.'); }
@@ -519,7 +519,7 @@ async function hapusJurnal(id, judul) {
 async function loadKategoriAdmin() {
   const tbody = document.getElementById('tabelKategoriJurnal');
   try {
-    const res = await fetch('/api/admin/jurnal-kategori');
+    const res = await fetch('/api/jurnal-kategori/manage');
     const data = await res.json();
     renderKategoriAdmin(data.items || []);
   } catch {
@@ -542,7 +542,7 @@ function renderKategoriAdmin(items) {
       <td style="font-weight:600">${k.nama}</td>
       <td class="text-muted small">${k.jumlah_jurnal} jurnal</td>
       <td>
-        ${JURNAL_ROLE === 'admin_sistem' ? `
+        ${JURNAL_CAN_SYSTEM ? `
         <div class="d-flex gap-1">
           <button class="btn btn-admin-edit btn-sm" onclick="renameKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-pencil"></i></button>
           <button class="btn btn-admin-danger btn-sm" onclick="hapusKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
@@ -566,7 +566,7 @@ async function tambahKategoriJurnal() {
   if (!nama) { showKategoriAlert('danger', 'Nama kategori wajib diisi.'); return; }
 
   try {
-    const res = await fetch('/api/admin/jurnal-kategori', {
+    const res = await fetch('/api/jurnal-kategori', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nama }),
@@ -588,7 +588,7 @@ async function renameKategoriJurnal(id, namaLama) {
   if (!namaBaru || namaBaru.trim() === '' || namaBaru.trim() === namaLama) return;
 
   try {
-    const res = await fetch(`/api/admin/jurnal-kategori/${id}`, {
+    const res = await fetch(`/api/jurnal-kategori/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nama: namaBaru.trim() }),
@@ -604,7 +604,7 @@ async function renameKategoriJurnal(id, namaLama) {
 async function hapusKategoriJurnal(id, nama) {
   if (!confirm(`Hapus kategori "${nama}"?`)) return;
   try {
-    const res = await fetch(`/api/admin/jurnal-kategori/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/jurnal-kategori/${id}`, { method: 'DELETE' });
     if (res.ok) { loadKategoriAdmin(); loadKategoriJurnalForm(); }
     else {
       const data = await res.json();

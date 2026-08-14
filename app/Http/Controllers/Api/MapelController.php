@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -9,10 +10,30 @@ class MapelController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MataPelajaran::orderBy('nama');
-        if ($request->jenjang) {
-            $query->where('jenjang', $request->jenjang);
+        $query = MataPelajaran::with('jenjang')
+            ->orderBy('nama');
+
+        if ($request->filled('jenjang')) {
+            $query->whereHas(
+                'jenjang',
+                fn ($q) => $q->where('kode', $request->jenjang)
+            );
         }
-        return response()->json(['items' => $query->get()]);
+
+        $items = $query->get([
+            'id',
+            'nama',
+            'jenjang_id',
+        ])->map(fn ($m) => [
+            'id' => $m->id,
+            'nama' => $m->nama,
+            'jenjang_id' => $m->jenjang_id,
+            'jenjang' => $m->jenjang?->kode,
+        ]);
+
+        return response()->json([
+            'items' => $items,
+            'total' => $items->count(),
+        ]);
     }
 }

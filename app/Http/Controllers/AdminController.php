@@ -18,6 +18,16 @@ class AdminController extends Controller
         ], $extra);
     }
 
+    private function guardClassroomPageAccess(Request $request): void
+    {
+        abort_unless(
+            $request->user()?->can('classroom.kelola')
+            || $request->user()?->can('sistem.kelola'),
+            403,
+            'Halaman ini tidak tersedia untuk peran Anda.'
+        );
+    }
+
     /**
      * Semua guard di bawah ini pakai cek PERMISSION, bukan nama role.
      * Ini yang bikin role baru otomatis dapat akses tanpa ubah kode —
@@ -35,7 +45,12 @@ class AdminController extends Controller
 
     private function guardClassroomAccess(Request $request)
     {
-        abort_unless($request->user()?->can('classroom.kelola'), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+        abort_unless(
+            $request->user()?->can('classroom.kelola')
+            || $request->user()?->can('sistem.kelola'),
+            403,
+            'Halaman ini tidak tersedia untuk peran Anda.'
+        );
     }
 
     private function guardJurnalAccess(Request $request)
@@ -58,8 +73,16 @@ class AdminController extends Controller
         }
 
         // Dashboard sekolah: akun operator konten yang di-scope ke 1 sekolah tertentu
-        if ($user?->sekolah_id) {
-            return view('user.dashboard_sekolah', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+        if (
+            $user?->sekolah_id
+            && $user?->can('classroom.kelola')
+        ) {
+            return view(
+                'user.dashboard_sekolah',
+                $this->adminCtx($request, [
+                    'active_menu' => 'dashboard'
+                ])
+            );
         }
 
         return view('user.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
@@ -86,8 +109,14 @@ class AdminController extends Controller
 
     public function classroom(Request $request)
     {
-        $this->guardClassroomAccess($request);
-        return view('user.classroom', $this->adminCtx($request, ['active_menu' => 'classroom']));
+        $this->guardClassroomPageAccess($request);
+
+        return view(
+            'user.classroom',
+            $this->adminCtx($request, [
+                'active_menu' => 'classroom',
+            ])
+        );
     }
 
     public function classroomDetail(Request $request, int $id)
@@ -95,13 +124,18 @@ class AdminController extends Controller
         $this->guardClassroomAccess($request);
 
         $user = $request->user();
-        // Akun yang di-scope ke 1 sekolah cuma boleh buka data sekolahnya sendiri.
-        // Akun tanpa sekolah_id (mis. admin_sistem) dianggap boleh akses semua sekolah.
+
         if ($user?->sekolah_id && (int) $user->sekolah_id !== $id) {
             abort(403, 'Anda tidak memiliki akses ke data sekolah ini.');
         }
 
-        return view('user.sekolah_kelas', $this->adminCtx($request, ['active_menu' => 'classroom', 'sekolah_id' => $id]));
+        return view(
+            'user.sekolah_kelas',
+            $this->adminCtx($request, [
+                'active_menu' => 'classroom',
+                'sekolah_id' => $id
+            ])
+        );
     }
 
     public function mapel(Request $request)
@@ -139,7 +173,17 @@ class AdminController extends Controller
 
     public function roles(Request $request)
     {
-        $this->guardUserManagementAccess($request);
-        return view('user.roles', $this->adminCtx($request, ['active_menu' => 'roles']));
+        abort_unless(
+            $request->user()?->can('sistem.kelola'),
+            403,
+            'Halaman ini hanya dapat diakses oleh pengguna yang memiliki izin sistem.'
+        );
+
+        return view(
+            'user.roles',
+            $this->adminCtx($request, [
+                'active_menu' => 'roles'
+            ])
+        );
     }
 }

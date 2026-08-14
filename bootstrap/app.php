@@ -13,34 +13,29 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | API Session Middleware
-        |--------------------------------------------------------------------------
-        |
-        | API admin menggunakan session Laravel untuk authentication.
-        | Karena itu kita menyediakan middleware group khusus.
-        |
-        */
-
         $middleware->group('api-session', [
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
         ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
+        // Paksa semua request ke /api/* selalu dibalas JSON, apapun exception-nya
+        $exceptions->shouldRenderJsonWhen(function ($request, $e) {
+            return $request->is('api/*') || $request->expectsJson();
+        });
+
         $exceptions->render(function (
             \Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e,
             $request
         ) {
-            return response()->view(
-                '404',
-                ['active_page' => ''],
-                404
-            );
+            if ($request->is('api/*')) {
+                return response()->json(['detail' => 'Data tidak ditemukan.'], 404);
+            }
+            return response()->view('404', ['active_page' => ''], 404);
         });
 
     })

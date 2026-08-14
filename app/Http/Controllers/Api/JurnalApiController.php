@@ -157,6 +157,12 @@ class JurnalApiController extends Controller
             'id' => $j->id,
             'judul' => $revisi?->judul,
             'kategori' => $j->kategori?->nama_kategori,
+            'penulis' => $revisi?->penulis,
+            'abstrak' => $revisi?->abstrak,
+            'kata_kunci' => $revisi?->kata_kunci,
+            'jumlah_halaman' => $revisi?->jumlah_halaman,
+            'tahun_terbit' => $revisi?->tahun_terbit,
+            'bahasa' => $revisi?->bahasa,
             'versi_ke' => $revisi?->versi_ke,
             'status' => $review?->status ?? 'pending',
             'catatan_admin' => $review?->catatan_admin,
@@ -173,6 +179,17 @@ class JurnalApiController extends Controller
             'id' => $j->id,
             'judul' => $revisi?->judul,
             'kategori' => $j->kategori?->nama_kategori,
+            'penulis' => $revisi?->penulis,
+            'abstrak' => $revisi?->abstrak,
+            'kata_kunci' => $revisi?->kata_kunci,
+            'jumlah_halaman' => $revisi?->jumlah_halaman,
+            'tahun_terbit' => $revisi?->tahun_terbit,
+            'bahasa' => $revisi?->bahasa,
+            'volume' => $revisi?->volume,
+            'nomor_edisi' => $revisi?->nomor_edisi,
+            'issn' => $revisi?->issn,
+            'file_jurnal' => $revisi ? basename($revisi->file_jurnal) : null,
+            'file_bukti_plagiarisme' => $revisi ? basename($revisi->file_bukti_plagiarisme) : null,
             'versi_ke' => $revisi?->versi_ke,
             'status' => $review?->status ?? 'pending',
             'catatan_admin' => $review?->catatan_admin,
@@ -426,23 +443,39 @@ class JurnalApiController extends Controller
     /** Kelola kategori & hapus jurnal: admin_sistem saja */
     private function assertAdmin(Request $request): void
     {
-        abort_if(!$request->user()?->hasRole('admin_sistem'), 403, 'Hanya admin yang bisa melakukan aksi ini.');
+        abort_if(
+            !$request->user()?->can('sistem.kelola'),
+            403,
+            'Anda tidak memiliki izin untuk mengelola data sistem.'
+        );
     }
 
     private function assertPenulis(Request $request): void
     {
-        abort_if(!$request->user()?->hasRole('penulis'), 403, 'Hanya akun penulis yang bisa mengajukan jurnal.');
+        abort_if(
+            !$request->user()?->can('jurnal.ajukan'),
+            403,
+            'Anda tidak memiliki izin untuk mengajukan jurnal.'
+        );
     }
 
     /** Approve/reject/edit detail jurnal: hak pereview saja — admin_sistem hanya bisa melihat */
     private function assertPereview(Request $request): void
     {
-        abort_if(!$request->user()?->hasRole('pereview'), 403, 'Hanya pereview yang bisa memutuskan hasil review jurnal.');
+        abort_if(
+            !$request->user()?->can('jurnal.review'),
+            403,
+            'Anda tidak memiliki izin untuk melakukan review jurnal.'
+        );
     }
 
     /** Lihat daftar jurnal (pending/semua): admin_sistem (lihat saja) + pereview */
     private function assertJurnalViewer(Request $request): void
     {
-        abort_if(!$request->user()?->hasAnyRole(['admin_sistem', 'pereview']), 403, 'Tidak memiliki akses.');
+        abort_if(
+            !$request->user()?->can('jurnal.review'),
+            403,
+            'Anda tidak memiliki izin untuk melihat daftar review jurnal.'
+        );
     }
 }

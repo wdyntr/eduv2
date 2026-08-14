@@ -10,27 +10,60 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadRoles() {
   const tbody = document.getElementById('tabelRole');
+
   try {
-    const res = await fetch('/api/admin/roles/manage');
+    const res = await fetch('/api/roles');
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Gagal memuat role.');
+
+    if (!res.ok) {
+      throw new Error(
+        data.detail ||
+        data.message ||
+        'Gagal memuat role.'
+      );
+    }
+
     roles = data.items || [];
     renderRoles();
+
   } catch (err) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${escapeRoleHtml(err.message)}</td></tr>`;
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5"
+              class="text-center text-danger py-4">
+            ${escapeRoleHtml(err.message)}
+          </td>
+        </tr>`;
+    }
   }
 }
 
 async function loadPermissions() {
   const box = document.getElementById('permissionList');
+
   try {
-    const res = await fetch('/api/admin/permissions');
+    const res = await fetch('/api/permissions');
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Gagal memuat permission.');
+
+    if (!res.ok) {
+      throw new Error(
+        data.detail ||
+        data.message ||
+        'Gagal memuat permission.'
+      );
+    }
+
     permissions = data.items || [];
     renderPermissionList();
+
   } catch (err) {
-    if (box) box.innerHTML = `<div class="text-danger small">${escapeRoleHtml(err.message)}</div>`;
+    if (box) {
+      box.innerHTML = `
+        <div class="text-danger small">
+          ${escapeRoleHtml(err.message)}
+        </div>`;
+    }
   }
 }
 
@@ -95,6 +128,7 @@ function showRoleForm(role = null) {
   document.getElementById('modalRoleTitle').textContent = role ? 'Edit Role' : 'Tambah Role';
   document.getElementById('fRoleId').value = role?.id || '';
   document.getElementById('fRoleName').value = role?.name || '';
+  document.getElementById('fRoleRequiresSekolah').checked = Boolean(role?.requires_sekolah);
   document.getElementById('roleAlert').classList.add('d-none');
   renderPermissionList(role?.permissions || []);
   roleModal?.show();
@@ -108,6 +142,7 @@ function editRole(id) {
 async function submitRole() {
   const id = document.getElementById('fRoleId').value;
   const name = document.getElementById('fRoleName').value.trim();
+  const requiresSekolah = document.getElementById('fRoleRequiresSekolah').checked;
   const selectedPermissions = [...document.querySelectorAll('.role-permission:checked')].map(el => el.value);
 
   if (!/^[A-Za-z0-9_-]+$/.test(name)) {
@@ -116,13 +151,15 @@ async function submitRole() {
   }
 
   const method = id ? 'PUT' : 'POST';
-  const endpoint = id ? `/api/admin/roles/${id}` : '/api/admin/roles';
+  const endpoint = id
+    ? `/api/roles/${id}`
+    : '/api/roles';
 
   try {
     const res = await fetch(endpoint, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, permissions: selectedPermissions }),
+      body: JSON.stringify({ name, permissions: selectedPermissions, requires_sekolah: requiresSekolah }),
     });
     const data = await res.json();
 
@@ -141,12 +178,17 @@ async function submitRole() {
 async function deleteRole(id) {
   const role = roles.find(r => Number(r.id) === Number(id));
   if (!role) return;
-  if (Number(role.jumlah_user) > 0) return;
+  if (Number(role.jumlah_user) > 0) {
+    alert(`Tidak bisa dihapus, masih ada ${role.jumlah_user} user memakai role ini.`);
+    return;
+  }
 
   if (!confirm(`Hapus role "${role.label || role.name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
 
   try {
-    const res = await fetch(`/api/admin/roles/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/roles/${id}`, {
+      method: 'DELETE'
+    });
     const data = await res.json();
     if (!res.ok) {
       alert(data.detail || 'Gagal menghapus role.');
@@ -166,7 +208,9 @@ function showRoleAlert(type, message) {
 }
 
 function formatRoleLabel(value) {
-  return String(value || '').replace(/[_-]+/g, ' ').replace(/\w/g, c => c.toUpperCase());
+  return String(value || '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function escapeRoleHtml(value) {

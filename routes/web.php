@@ -1,31 +1,91 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PublicController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\JurnalController;
 
-// Public
+
+// ======================================================
+// PUBLIC PAGES
+// ======================================================
+
 Route::get('/', [PublicController::class, 'homepage']);
+
+Route::get('/classroom', [PublicController::class, 'classroom']);
+Route::get('/classroom/{id}', [PublicController::class, 'classroomDetail']);
+
 Route::get('/media', [PublicController::class, 'media']);
 Route::get('/media/{jenjang}', [PublicController::class, 'mediaJenjang']);
 Route::get('/media/{jenjang}/{materi_id}', [PublicController::class, 'mediaDetail']);
-Route::get('/classroom', [PublicController::class, 'classroom']);
-Route::get('/classroom/{id}', [PublicController::class, 'classroomDetail']);
+
 Route::get('/jurnal', [JurnalController::class, 'index']);
 Route::get('/jurnal/{id}', [JurnalController::class, 'show']);
 
-// Admin Pages
-Route::prefix('admin')->middleware('auth')->group(function () {
-    Route::get('/', [AdminController::class, 'dashboard'])->name('user.dashboard');
-    Route::get('/materi', [AdminController::class, 'materi']);
-    Route::get('/materi/tambah', [AdminController::class, 'materiTambah']);
-    Route::get('/materi/edit/{id}', [AdminController::class, 'materiEdit']);
-    Route::get('/classroom', [AdminController::class, 'classroom']);
-    Route::get('/classroom/{id}', [AdminController::class, 'classroomDetail']);
-    Route::get('/mapel', [AdminController::class, 'mapel']);
-    Route::get('/jurnal', [AdminController::class, 'jurnal']);
-    Route::get('/users', [AdminController::class, 'users']);
-    Route::get('/profile', [AdminController::class, 'profile']);
-    Route::get('/roles', [AdminController::class, 'roles']);
-    Route::post('/logout', [AdminController::class, 'logout']);
+
+// ======================================================
+// ADMIN PAGES / UI
+// ======================================================
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/admin', [
+        AdminController::class,
+        'dashboard'
+    ])->name('user.dashboard');
+
+    Route::get('/admin/profile', [
+        AdminController::class,
+        'profile'
+    ]);
+
+    Route::get('/admin/users', [
+        AdminController::class,
+        'users'
+    ]);
+
+    Route::get('/admin/roles', [
+        AdminController::class,
+        'roles'
+    ]);
+
+    Route::get('/admin/materi', [
+        AdminController::class,
+        'materi'
+    ]);
+
+    Route::get('/admin/materi/tambah', [
+        AdminController::class,
+        'materiTambah'
+    ]);
+
+    Route::get('/admin/materi/edit/{id}', [
+        AdminController::class,
+        'materiEdit'
+    ]);
+
+    Route::get('/admin/mapel', [
+        AdminController::class,
+        'mapel'
+    ]);
+
+    Route::get('/admin/classroom', [
+        AdminController::class,
+        'classroom'
+    ]);
+
+    Route::get('/admin/classroom/{id}', [
+        AdminController::class,
+        'classroomDetail'
+    ]);
+
+    Route::get('/admin/jurnal', [
+        AdminController::class,
+        'jurnal'
+    ]);
+
+    Route::post('/admin/logout', [
+        AdminController::class,
+        'logout'
+    ]);
 });

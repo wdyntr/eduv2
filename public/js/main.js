@@ -155,7 +155,7 @@ async function doLogin() {
       .querySelector('meta[name="csrf-token"]')
       ?.getAttribute('content');
 
-    const res = await fetch('/api/admin/login', {
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       credentials: 'same-origin',
       headers: {

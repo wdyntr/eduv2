@@ -50,6 +50,13 @@
           <div class="form-text">Gunakan nama teknis tanpa spasi, misalnya <code>operator_laporan</code>.</div>
         </div>
 
+        <div class="mb-3 form-check">
+          <input type="checkbox" id="fRoleRequiresSekolah" class="form-check-input">
+          <label class="form-check-label small" for="fRoleRequiresSekolah">
+            Role ini terikat ke satu sekolah tertentu (wajib pilih sekolah saat tambah user)
+          </label>
+        </div>
+
         <div>
           <label class="form-label small fw-semibold">Permission</label>
           <div id="permissionList" class="row g-2">

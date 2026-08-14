@@ -89,7 +89,7 @@
 
 @section('scripts')
 <script>
-  const JURNAL_ROLE = 'guru';
+    const JURNAL_ROLE = @json($session_role ?? '');
 </script>
 <script src="{{ asset('js/admin_jurnal.js') }}"></script>
 @endsection

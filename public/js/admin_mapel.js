@@ -155,7 +155,7 @@ async function submitMapel() {
 
   const payload  = { nama, jenjang };
   const method   = id ? 'PUT' : 'POST';
-  const endpoint = id ? `/api/admin/mapel/${id}` : '/api/admin/mapel';
+  const endpoint = id ? `/api/mapel/${id}` : '/api/mapel';
 
   try {
     const res = await fetch(endpoint, {
@@ -182,7 +182,7 @@ async function hapusMapel(id, nama, jumlahMateri) {
   }
   if (!confirm(`Hapus mata pelajaran "${nama}"?`)) return;
   try {
-    const res = await fetch(`/api/admin/mapel/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/mapel/${id}`, { method: 'DELETE' });
     if (res.ok) { loadMapelAdmin(); }
     else {
       const data = await res.json();

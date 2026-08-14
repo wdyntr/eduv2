@@ -5,19 +5,44 @@ document.addEventListener('DOMContentLoaded', () => {
 const JENJANG_ICON = { sma: '🎓', smk: '🔧', slb: '🌟' };
 
 async function loadSekolahKelas() {
-  const box   = document.getElementById('profilSekolahDetailBox');
+  const box = document.getElementById('profilSekolahDetailBox');
   const tbody = document.getElementById('tabelKelasMapel');
 
   try {
-    const res = await fetch(`/api/admin/sekolah/${SEKOLAH_ID}/kelas`);
+    const res = await fetch(
+      `/api/sekolah/${SEKOLAH_ID}/kelas`
+    );
+
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Gagal memuat data.');
+
+    if (!res.ok) {
+      throw new Error(
+        data.detail ||
+        data.message ||
+        'Gagal memuat data.'
+      );
+    }
 
     renderProfilSekolah(data.sekolah);
     renderTabelKelas(data.kelas || []);
+
   } catch (err) {
-    if (box)   box.innerHTML = `<p class="text-muted small mb-0">${err.message}</p>`;
-    if (tbody) tbody.innerHTML = `<tr><td colspan="${KELAS_IS_SCOPED ? 8 : 7}" class="text-center text-muted py-4">${err.message}</td></tr>`;
+    if (box) {
+      box.innerHTML = `
+        <p class="text-muted small mb-0">
+          ${escapeHtmlKelas(err.message)}
+        </p>`;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="${KELAS_IS_SCOPED ? 8 : 7}"
+              class="text-center text-muted py-4">
+            ${escapeHtmlKelas(err.message)}
+          </td>
+        </tr>`;
+    }
   }
 }
 
@@ -33,7 +58,7 @@ function renderProfilSekolah(s) {
         <div style="font-weight:700;font-size:1.05rem">${escapeHtmlKelas(s.nama)}</div>
         <div class="text-muted small">
           <span class="badge rounded-pill badge-${j} me-1">${j.toUpperCase()}</span>
-          ${s.kotaKabupaten?.nama ? `<i class="bi bi-geo-alt me-1"></i>${escapeHtmlKelas(s.kotaKabupaten.nama)}` : ''}
+          ${s.kota_kabupaten?.nama ? `<i class="bi bi-geo-alt me-1"></i>${escapeHtmlKelas(s.kota_kabupaten.nama)}` : ''}
         </div>
       </div>
     </div>`;
@@ -95,11 +120,19 @@ async function simpanKelasMapel(mapelId, btn) {
 
   btn.disabled = true;
   try {
-    const res = await fetch(`/api/admin/sekolah/${SEKOLAH_ID}/kelas/${mapelId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ classroom_url: url || null }),
-    });
+    const res = await fetch(
+      `/api/sekolah/${SEKOLAH_ID}/kelas/${mapelId}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          classroom_url: url || null,
+        }),
+      }
+    );
     const data = await res.json();
 
     if (res.ok) {

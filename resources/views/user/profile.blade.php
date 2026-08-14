@@ -54,26 +54,38 @@
 
 @section('scripts')
 <script>
-const SESSION_USER = "{{ $session_user }}";
-
 async function loadProfile() {
   try {
-    const res  = await fetch('/api/admin/users');
+    const res = await fetch('/api/profile');
     const data = await res.json();
-    const me   = data.items?.find(a => a.username === SESSION_USER);
-    if (me) document.getElementById('fNama').value = me.nama || '';
-  } catch {}
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Gagal memuat profil.');
+    }
+
+    document.getElementById('fNama').value = data.nama || '';
+  } catch (err) {
+    showAlert('danger', err.message || 'Gagal memuat profil.');
+  }
 }
 
 async function submitProfile() {
-  const nama         = document.getElementById('fNama').value.trim();
+  const nama = document.getElementById('fNama').value.trim();
   const passwordLama = document.getElementById('fPassLama').value;
   const passwordBaru = document.getElementById('fPassBaru').value;
 
+  if (!nama) {
+    showAlert('danger', 'Nama lengkap wajib diisi.');
+    return;
+  }
+
   try {
-    const res = await fetch('/api/admin/profile', {
+    const res = await fetch('/api/profile', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body: JSON.stringify({
         nama,
         password_lama: passwordLama,
@@ -81,14 +93,23 @@ async function submitProfile() {
       }),
     });
 
-    if (res.ok) {
-      showAlert('success', 'Profil berhasil diperbarui!');
-      document.getElementById('fPassLama').value = '';
-      document.getElementById('fPassBaru').value = '';
-    } else {
-      const data = await res.json();
-      showAlert('danger', data.detail || 'Gagal menyimpan.');
+    const data = await res.json();
+
+    if (!res.ok) {
+      const message =
+        data.message ||
+        data.detail ||
+        Object.values(data.errors || {})?.[0]?.[0] ||
+        'Gagal menyimpan profil.';
+
+      showAlert('danger', message);
+      return;
     }
+
+    showAlert('success', data.message || 'Profil berhasil diperbarui.');
+
+    document.getElementById('fPassLama').value = '';
+    document.getElementById('fPassBaru').value = '';
   } catch {
     showAlert('danger', 'Gagal terhubung ke server.');
   }
@@ -96,8 +117,10 @@ async function submitProfile() {
 
 function showAlert(type, msg) {
   const el = document.getElementById('profileAlert');
-  el.className   = `alert alert-${type} small py-2`;
+
+  el.className = `alert alert-${type} small py-2`;
   el.textContent = msg;
+  el.classList.remove('d-none');
 }
 
 document.addEventListener('DOMContentLoaded', loadProfile);
