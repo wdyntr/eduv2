@@ -47,7 +47,7 @@
         <h6 class="footer-heading">Admin</h6>
         <ul class="footer-links">
           <li><a href="#" data-bs-toggle="modal" data-bs-target="#modalLogin">Login</a></li>
-          <li><a href="/admin">Dashboard</a></li>
+          <!-- <li><a href="/admin">Dashboard</a></li> -->
         </ul>
       </div>
 
