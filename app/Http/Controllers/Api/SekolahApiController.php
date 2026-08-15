@@ -27,8 +27,8 @@ class SekolahApiController extends Controller
             'jenjang' => 'nullable|string|exists:jenjang,kode',
             'jenjang_id' => 'nullable|integer|exists:jenjang,id',
 
-            'kota_kabupaten' => 'nullable|string|max:150',
-            'kota_kabupaten_id' => 'nullable|integer|exists:kota_kabupaten,id',
+            'kota_kabupaten' => 'required_without:kota_kabupaten_id|nullable|string|max:150',
+            'kota_kabupaten_id' => 'required_without:kota_kabupaten|nullable|integer|exists:kota_kabupaten,id',
         ]);
 
         /*

@@ -151,8 +151,8 @@ async function submitSekolah() {
   const jenjang= document.getElementById('fJenjangSekolah').value;
   const kota   = document.getElementById('fKotaSekolah').value.trim();
 
-  if (!nama || !jenjang) {
-    showSekolahAlert('danger', 'Nama sekolah dan jenjang wajib diisi.');
+  if (!nama || !jenjang || !kota) {
+    showSekolahAlert('danger', 'Nama sekolah, jenjang, dan kota/kabupaten wajib diisi.');
     return;
   }
 
