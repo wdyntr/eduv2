@@ -85,10 +85,10 @@
                 </a>
             @endcan
 
-            @if (auth()->user()?->can('jurnal.review') || auth()->user()?->can('jurnal.ajukan'))
+            @if (auth()->user()?->can('jurnal.review') || auth()->user()?->can('jurnal.ajukan') || auth()->user()?->can('jurnal.lihat'))
                 <a href="/admin/jurnal" class="sidebar-link {{ $active_menu == 'jurnal' ? 'active' : '' }}">
                     <i class="bi bi-journal-text"></i>
-                    <span>{{ auth()->user()->can('jurnal.review') ? 'Request Jurnal' : 'Jurnal Saya' }}</span>
+                    <span>{{ auth()->user()->can('jurnal.ajukan') ? 'Jurnal Saya' : 'Request Jurnal' }}</span>
                 </a>
             @endif
 

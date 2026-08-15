@@ -244,22 +244,36 @@ async function submitFormJurnal() {
   const penulis = document.getElementById('fPenulisJurnal').value.trim();
   const abstrak = document.getElementById('fAbstrakJurnal').value.trim();
   const kataKunci = document.getElementById('fKataKunciJurnal').value.trim();
-  const jumlahHalaman = document.getElementById('fJumlahHalamanJurnal').value;
-  const tahunTerbit = document.getElementById('fTahunTerbitJurnal').value;
+  const jumlahHalaman = document.getElementById('fJumlahHalamanJurnal').value.trim();
+  const tahunTerbit = document.getElementById('fTahunTerbitJurnal').value.trim();
   const bahasa = document.getElementById('fBahasaJurnal').value;
   const fileJurnal = document.getElementById('fFileJurnal').files[0];
   const fileBukti = document.getElementById('fFileBukti').files[0];
 
-  if (!judul || !kategori || !penulis) {
-    showJurnalAlert('danger', 'Judul, kategori, dan nama penulis wajib diisi.');
+  const wajibKosong = [];
+  if (!judul) wajibKosong.push('Judul Jurnal');
+  if (!kategori) wajibKosong.push('Kategori');
+  if (!penulis) wajibKosong.push('Nama Penulis');
+  if (!jumlahHalaman) wajibKosong.push('Jumlah Halaman');
+  if (!tahunTerbit) wajibKosong.push('Tahun Terbit');
+  if (!jurnalEditId && !fileJurnal) wajibKosong.push('File Jurnal');
+  if (!jurnalEditId && !fileBukti) wajibKosong.push('Bukti Screenshot Plagiarisme');
+
+  if (wajibKosong.length) {
+    showJurnalAlert('danger', `Field berikut wajib diisi: ${wajibKosong.join(', ')}.`);
     return;
   }
-  if (!jumlahHalaman || !tahunTerbit) {
-    showJurnalAlert('danger', 'Jumlah halaman dan tahun terbit wajib diisi.');
+
+  const halamanNum = Number(jumlahHalaman);
+  if (!Number.isInteger(halamanNum) || halamanNum < 1) {
+    showJurnalAlert('danger', 'Jumlah halaman harus berupa angka bulat minimal 1.');
     return;
   }
-  if (!jurnalEditId && (!fileJurnal || !fileBukti)) {
-    showJurnalAlert('danger', 'File jurnal dan bukti plagiarisme wajib diunggah.');
+
+  const tahunNum = Number(tahunTerbit);
+  const tahunSekarang = new Date().getFullYear();
+  if (!Number.isInteger(tahunNum) || tahunNum < 1990 || tahunNum > tahunSekarang + 1) {
+    showJurnalAlert('danger', `Tahun terbit harus antara 1990 - ${tahunSekarang + 1}.`);
     return;
   }
 
@@ -386,7 +400,7 @@ function renderTabelAll(items) {
       <td>
         <div class="d-flex gap-1">
           <button class="btn btn-admin-edit btn-sm" onclick='bukaReview(${JSON.stringify(j)})'><i class="bi bi-eye"></i></button>
-          <button class="btn btn-admin-danger btn-sm" onclick="hapusJurnal(${j.id}, '${j.judul.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
+          ${JURNAL_CAN_MANAGE_SYSTEM ? `<button class="btn btn-admin-danger btn-sm" onclick="hapusJurnal(${j.id}, '${j.judul.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>` : ''}
         </div>
       </td>
     </tr>`).join('');
@@ -451,7 +465,17 @@ function ambilDetailPublikasiForm() {
   };
 }
 
+function validasiDetailPublikasi() {
+  const { volume, nomor_edisi, issn } = ambilDetailPublikasiForm();
+  if (!volume || !nomor_edisi || !issn) {
+    alert('Volume, Nomor/Edisi, dan ISSN wajib diisi.');
+    return false;
+  }
+  return true;
+}
+
 async function approveJurnal(id) {
+  if (!validasiDetailPublikasi()) return;
   if (!confirm('Setujui dan publikasikan jurnal ini?')) return;
   try {
     const res = await fetch(`/api/jurnal/${id}/approve`, {
@@ -465,6 +489,8 @@ async function approveJurnal(id) {
 }
 
 async function simpanDetailJurnal(id) {
+  if (!validasiDetailPublikasi()) return;
+
   try {
     const res = await fetch(`/api/jurnal/${id}/detail`, {
       method: 'PUT',
@@ -518,29 +544,12 @@ async function hapusJurnal(id, judul) {
 // =====================
 async function loadKategoriAdmin() {
   const tbody = document.getElementById('tabelKategoriJurnal');
-
   try {
     const res = await fetch('/api/jurnal-kategori/manage');
-
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.detail || 'Gagal memuat kategori.');
-    }
-
     renderKategoriAdmin(data.items || []);
-  } catch (error) {
-    console.error('loadKategoriAdmin:', error);
-
-    if (tbody) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="4" class="text-center text-danger py-4">
-            ${error.message || 'Gagal memuat data.'}
-          </td>
-        </tr>
-      `;
-    }
+  } catch {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Gagal memuat data.</td></tr>`;
   }
 }
 
@@ -561,14 +570,8 @@ function renderKategoriAdmin(items) {
       <td>
         ${JURNAL_CAN_MANAGE_SYSTEM ? `
         <div class="d-flex gap-1">
-          <button class="btn btn-admin-edit btn-sm"
-            onclick="renameKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')">
-            <i class="bi bi-pencil"></i>
-          </button>
-          <button class="btn btn-admin-danger btn-sm"
-            onclick="hapusKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')">
-            <i class="bi bi-trash"></i>
-          </button>
+          <button class="btn btn-admin-edit btn-sm" onclick="renameKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-admin-danger btn-sm" onclick="hapusKategoriJurnal(${k.id}, '${k.nama.replace(/'/g, "\\'")}')"><i class="bi bi-trash"></i></button>
         </div>
         ` : '<span class="text-muted small">—</span>'}
       </td>

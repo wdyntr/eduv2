@@ -53,11 +53,12 @@ class AdminController extends Controller
         );
     }
 
+    /** admin_sistem cuma punya jurnal.lihat (view-only), penulis punya jurnal.ajukan, reviewer_jurnal punya jurnal.review */
     private function guardJurnalAccess(Request $request)
     {
         $user = $request->user();
         abort_unless(
-            $user?->can('jurnal.review') || $user?->can('jurnal.ajukan'),
+            $user?->can('jurnal.review') || $user?->can('jurnal.ajukan') || $user?->can('jurnal.lihat'),
             403,
             'Halaman ini tidak tersedia untuk peran Anda.'
         );

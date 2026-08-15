@@ -14,7 +14,8 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'materi.kelola',
             'classroom.kelola',
-            'jurnal.review',
+            'jurnal.lihat',    // lihat daftar jurnal saja (admin_sistem)
+            'jurnal.review',   // approve/reject/edit detail (reviewer_jurnal)
             'jurnal.ajukan',
             'users.kelola',
             'sistem.kelola',
@@ -35,10 +36,14 @@ class RolePermissionSeeder extends Seeder
         $sekolah->requires_sekolah = true;
         $sekolah->save();
 
-        $pereview = Role::firstOrCreate(['name'=> 'reviewer_jurnal', 'guard_name' => 'web']);
-        $pereview->syncPermissions(['jurnal.review',]);
+        $pereview = Role::firstOrCreate(['name' => 'reviewer_jurnal', 'guard_name' => 'web']);
+        $pereview->syncPermissions(['jurnal.lihat', 'jurnal.review']);
 
         $adminSistem = Role::firstOrCreate(['name' => 'admin_sistem', 'guard_name' => 'web']);
-        $adminSistem->syncPermissions(Permission::pluck('name')->all());
+        // admin_sistem dapat semua permission KECUALI jurnal.review —
+        // sengaja dikecualikan supaya cuma bisa lihat jurnal, tidak bisa approve/reject/edit detail.
+        $adminSistem->syncPermissions(
+            Permission::whereNotIn('name', ['jurnal.review', 'jurnal.ajukan'])->pluck('name')->all()
+        );
     }
 }

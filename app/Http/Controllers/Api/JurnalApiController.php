@@ -486,7 +486,7 @@ class JurnalApiController extends Controller
     private function assertJurnalViewer(Request $request): void
     {
         abort_if(
-            !$request->user()?->can('jurnal.review'),
+            !$request->user()?->canAny(['jurnal.lihat', 'jurnal.review']),
             403,
             'Anda tidak memiliki izin untuk melihat daftar review jurnal.'
         );

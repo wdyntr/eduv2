@@ -17,7 +17,7 @@ class Materi extends Model
     /** Jenjang materi sekarang diturunkan dari mapel-nya, bukan kolom sendiri lagi */
     public function getJenjangAttribute()
     {
-        return $this->mapel?->jenjang;
+        return $this->mapel?->jenjang?->kode;
     }
 
     /** Ambil thumbnail otomatis. Video YouTube: pakai thumbnail bawaan YouTube. Selain itu: null. */
