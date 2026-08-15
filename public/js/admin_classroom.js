@@ -223,13 +223,14 @@ async function loadProfilSekolah(sekolahId) {
     }
 
     const s = data.sekolah;
+    const jenjangKode = s.jenjang?.kode || '';
     const terisi = data.kelas.filter(k => k.classroom_url).length;
     profilBox.innerHTML = `
       <p class="mb-2"><span class="text-muted small d-block">Nama Sekolah</span><span class="fw-600">${s.nama}</span></p>
       <p class="mb-2"><span class="text-muted small d-block">Jenjang</span>
-        <span class="badge rounded-pill badge-${s.jenjang}">${s.jenjang.toUpperCase()}</span>
+        <span class="badge rounded-pill badge-${jenjangKode}">${jenjangKode.toUpperCase()}</span>
       </p>
-      <p class="mb-2"><span class="text-muted small d-block">Kota/Kabupaten</span><span class="fw-600">${s.kota_kabupaten || '-'}</span></p>
+      <p class="mb-2"><span class="text-muted small d-block">Kota/Kabupaten</span><span class="fw-600">${s.kota_kabupaten?.nama || '-'}</span></p>
       <p class="mb-0"><span class="text-muted small d-block">Kelas Terisi</span><span class="fw-600">${terisi} dari ${data.kelas.length} mata pelajaran</span></p>`;
   } catch {
     profilBox.innerHTML = `<p class="text-danger small mb-0">Gagal terhubung ke server.</p>`;
