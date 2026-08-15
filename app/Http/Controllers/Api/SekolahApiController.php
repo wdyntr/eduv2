@@ -13,7 +13,7 @@ class SekolahApiController extends Controller
     private function guardSistemAccess(Request $request): void
     {
         abort_unless(
-            $request->user()?->can('sistem.kelola'),
+            $request->user()?->can('sistem.kelola') || $request->user()?->can('classroom.kelola'),
             403,
             'Anda tidak memiliki akses untuk mengelola data sekolah.'
         );
