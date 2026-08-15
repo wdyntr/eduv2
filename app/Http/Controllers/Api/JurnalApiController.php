@@ -275,12 +275,17 @@ class JurnalApiController extends Controller
         $kategori = JurnalKategori::where('nama_kategori', $request->kategori)->firstOrFail();
         $jurnal->update(['kategori_id' => $kategori->id]);
 
-        $fileJurnal = $request->hasFile('file_jurnal')
-            ? $this->simpanFile($request->file('file_jurnal'))
-            : $revisiLama->file_jurnal;
-        $fileBukti = $request->hasFile('file_bukti_plagiarisme')
-            ? $this->simpanFile($request->file('file_bukti_plagiarisme'))
-            : $revisiLama->file_bukti_plagiarisme;
+        $fileJurnal = $revisiLama->file_jurnal;
+        if ($request->hasFile('file_jurnal')) {
+            JurnalRevisi::hapusFileFisik($fileJurnal);
+            $fileJurnal = $this->simpanFile($request->file('file_jurnal'));
+        }
+
+        $fileBukti = $revisiLama->file_bukti_plagiarisme;
+        if ($request->hasFile('file_bukti_plagiarisme')) {
+            JurnalRevisi::hapusFileFisik($fileBukti);
+            $fileBukti = $this->simpanFile($request->file('file_bukti_plagiarisme'));
+        }
 
         $revisiBaru = JurnalRevisi::create([
             'jurnal_id' => $jurnal->id,
@@ -377,7 +382,9 @@ class JurnalApiController extends Controller
     public function destroy(Request $request, int $id)
     {
         $this->assertAdmin($request);
-        Jurnal::destroy($id); // cascade drop ke jurnal_revisi & jurnal_review lewat FK
+        $jurnal = Jurnal::with('revisi')->findOrFail($id);
+        $jurnal->revisi->each->delete();
+        $jurnal->delete();
         return response()->json(['ok' => true]);
     }
 
