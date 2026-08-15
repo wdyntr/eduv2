@@ -1,16 +1,9 @@
-@extends('user.layouts.base')
-
-@section('title', 'Dashboard')
-@section('page_title', 'Dashboard')
-
-@section('content')
-
+<!-- PENULIS -->
 <div class="mb-4">
   <h5 class="fw-bold mb-1" style="font-family:'Sora',sans-serif">Halo 👋</h5>
   <p class="text-muted mb-0">Berikut ringkasan pengajuan jurnal kamu.</p>
 </div>
 
-<!-- STAT CARDS -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-lg-3">
     <div class="stat-card">
@@ -50,7 +43,6 @@
   </div>
 </div>
 
-<!-- PERLU REVISI -->
 <div class="admin-card mb-4" id="boxPerluRevisi" style="display:none">
   <div class="admin-card-header">
     <span class="admin-card-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Perlu Revisi</span>
@@ -59,7 +51,6 @@
   <div id="listPerluRevisi" class="p-3"></div>
 </div>
 
-<!-- AKTIVITAS TERBARU -->
 <div class="admin-card">
   <div class="admin-card-header">
     <span class="admin-card-title"><i class="bi bi-clock-history me-2"></i>Pengajuan Terbaru</span>
@@ -85,11 +76,9 @@
   </div>
 </div>
 
-@endsection
-
-@section('scripts')
+@once
 <script>
     const JURNAL_ROLE = @json($session_role ?? '');
 </script>
 <script src="{{ asset('js/admin_jurnal.js') }}"></script>
-@endsection
+@endonce

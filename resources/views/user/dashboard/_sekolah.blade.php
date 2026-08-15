@@ -1,16 +1,9 @@
-@extends('user.layouts.base')
-
-@section('title', 'Dashboard')
-@section('page_title', 'Dashboard')
-
-@section('content')
-
+<!-- SEKOLAH -->
 <div class="mb-4">
   <h5 class="fw-bold mb-1" style="font-family:'Sora',sans-serif">Halo 👋</h5>
   <p class="text-muted mb-0">Berikut ringkasan aktivitas classroom sekolah kamu bulan ini.</p>
 </div>
 
-<!-- STAT CARDS -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-lg-3">
     <div class="stat-card">
@@ -60,9 +53,7 @@
   </div>
 </div>
 
-@endsection
-
-@section('scripts')
+@once
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const sekolahId = {{ $session_sekolah_id ?? 'null' }};
@@ -86,4 +77,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch {}
 });
 </script>
-@endsection
+@endonce

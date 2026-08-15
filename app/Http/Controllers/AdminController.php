@@ -68,25 +68,31 @@ class AdminController extends Controller
     {
         $user = $request->user();
 
-        // Dashboard penulis: akun yang cuma bisa ajukan jurnal (tidak bisa review)
-        if ($user?->can('jurnal.ajukan') && !$user?->can('jurnal.review')) {
-            return view('user.dashboard_penulis', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+        $bisaAdmin    = (bool) $user?->can('sistem.kelola');
+        $bisaReview   = (bool) $user?->can('jurnal.review');
+        $bisaAjukan   = (bool) $user?->can('jurnal.ajukan');
+        $bisaOperator = (bool) ($user?->can('materi.kelola') || $user?->can('classroom.kelola'));
+        $adaSekolah   = (bool) $user?->sekolah_id;
+
+        // Semua kombinasi (admin_sistem, reviewer_jurnal, penulis, sekolah, operator_konten,
+        // atau gabungan mana pun) dirakit dari section per-permission ke SATU view yang sama:
+        // user.dashboard — supaya kombinasi role otomatis dapat kombinasi section yang sesuai.
+        $sections = [
+            'admin'    => $bisaAdmin,
+            'reviewer' => $bisaReview,
+            'penulis'  => $bisaAjukan && !$bisaReview && !$bisaAdmin,
+            'sekolah'  => $adaSekolah && $bisaOperator && !$bisaAdmin,
+            'operator' => $bisaOperator && !$bisaAdmin && !$adaSekolah,
+        ];
+
+        if (!in_array(true, $sections, true)) {
+            $sections['admin'] = true; // fallback kalau tidak match section manapun
         }
 
-        // Dashboard sekolah: akun operator konten yang di-scope ke 1 sekolah tertentu
-        if (
-            $user?->sekolah_id
-            && $user?->can('classroom.kelola')
-        ) {
-            return view(
-                'user.dashboard_sekolah',
-                $this->adminCtx($request, [
-                    'active_menu' => 'dashboard'
-                ])
-            );
-        }
-
-        return view('user.dashboard', $this->adminCtx($request, ['active_menu' => 'dashboard']));
+        return view('user.dashboard', $this->adminCtx($request, [
+            'active_menu' => 'dashboard',
+            'sections' => $sections,
+        ]));
     }
 
     public function materi(Request $request)
