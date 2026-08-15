@@ -136,7 +136,14 @@ class ClassroomApiController extends Controller
         )->findOrFail($mapelId);
 
         $data = $request->validate([
-            'classroom_url' => 'nullable|url|max:500',
+            'classroom_url' => [
+                'nullable',
+                'url',
+                'max:500',
+                'regex:#^https://classroom\.google\.com/c/#i',
+            ],
+        ], [
+            'classroom_url.regex' => 'Link harus berupa link Google Classroom (https://classroom.google.com/c/...).',
         ]);
 
         \App\Models\SekolahKelas::updateOrCreate(

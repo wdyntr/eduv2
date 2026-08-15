@@ -24,7 +24,7 @@
                 Pelajaran</span>
         </div>
         <p class="text-muted small px-3 pt-3 mb-0">
-            @if ($session_role === 'sekolah' && !empty($session_sekolah_id))
+            @if (!empty($session_sekolah_id))
                 Setiap mata pelajaran punya kelas Google Classroom masing-masing. Isi link classroom untuk mata pelajaran
                 yang sudah punya kelas — kosongkan kalau belum tersedia. Kolom guru/siswa/task/materi terisi otomatis
                 setelah sinkronisasi Google Classroom berjalan.
@@ -46,7 +46,7 @@
                         <th class="text-center">Siswa</th>
                         <th class="text-center">Task Bulan Ini</th>
                         <th class="text-center">Materi Bulan Ini</th>
-                        @if ($session_role === 'sekolah' && !empty($session_sekolah_id))
+                        @if (!empty($session_sekolah_id))
                             <th style="width:110px">Aksi</th>
                         @endif
                     </tr>

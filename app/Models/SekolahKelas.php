@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class SekolahKelas extends Model
 {
     protected $table = 'sekolah_kelas';
+    public $timestamps = false;
     protected $fillable = ['sekolah_id', 'mapel_id', 'classroom_url'];
 
     public function sekolah()

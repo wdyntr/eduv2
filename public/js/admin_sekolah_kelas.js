@@ -118,6 +118,11 @@ async function simpanKelasMapel(mapelId, btn) {
   const input = row.querySelector('.input-url-kelas');
   const url = input.value.trim();
 
+  if (url && !/^https:\/\/classroom\.google\.com\/c\//i.test(url)) {
+    alert('Link harus berupa link Google Classroom (https://classroom.google.com/c/...).');
+    return;
+  }
+
   btn.disabled = true;
   try {
     const res = await fetch(
@@ -138,8 +143,10 @@ async function simpanKelasMapel(mapelId, btn) {
     if (res.ok) {
       btn.innerHTML = '<i class="bi bi-check2"></i>';
       setTimeout(() => { btn.innerHTML = '<i class="bi bi-check-lg"></i>'; }, 1500);
+      alert('Link Classroom berhasil disimpan.');
     } else {
-      alert(data.detail || 'Gagal menyimpan link. Pastikan URL valid.');
+      const pesan = data.errors?.classroom_url?.[0] || data.detail || data.message || 'Gagal menyimpan link.';
+      alert(pesan);
     }
   } catch {
     alert('Gagal terhubung ke server.');
@@ -147,6 +154,7 @@ async function simpanKelasMapel(mapelId, btn) {
     btn.disabled = false;
   }
 }
+
 function escapeHtmlKelas(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
