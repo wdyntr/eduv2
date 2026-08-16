@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Materi;
+use App\Models\Artikel;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -33,6 +34,12 @@ class AdminController extends Controller
      * Ini yang bikin role baru otomatis dapat akses tanpa ubah kode —
      * cukup kasih permission yang sesuai pas bikin role-nya.
      */
+
+    private function guardArtikelAccess(Request $request)
+    {
+        abort_unless($request->user()?->can('artikel.kelola'), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
+    }
+
     private function guardKontenAccess(Request $request)
     {
         abort_unless($request->user()?->can('materi.kelola'), 403, 'Halaman ini tidak tersedia untuk peran Anda.');
@@ -112,6 +119,25 @@ class AdminController extends Controller
         $this->guardKontenAccess($request);
         $materi = Materi::with('mapel')->findOrFail($id);
         return view('user.materi_form', $this->adminCtx($request, ['active_menu' => 'materi', 'materi' => $materi]));
+    }
+
+    public function artikel(Request $request)
+    {
+        $this->guardArtikelAccess($request);
+        return view('user.artikel', $this->adminCtx($request, ['active_menu' => 'artikel']));
+    }
+ 
+    public function artikelTambah(Request $request)
+    {
+        $this->guardArtikelAccess($request);
+        return view('user.artikel_form', $this->adminCtx($request, ['active_menu' => 'artikel', 'artikel' => null]));
+    }
+ 
+    public function artikelEdit(Request $request, int $id)
+    {
+        $this->guardArtikelAccess($request);
+        $artikel = Artikel::findOrFail($id);
+        return view('user.artikel_form', $this->adminCtx($request, ['active_menu' => 'artikel', 'artikel' => $artikel]));
     }
 
     public function classroom(Request $request)

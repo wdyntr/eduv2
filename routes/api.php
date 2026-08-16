@@ -7,12 +7,14 @@ use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\UserApiController;
 use App\Http\Controllers\Api\RoleApiController;
 use App\Http\Controllers\Api\MateriApiController;
+use App\Http\Controllers\Api\ArtikelApiController;
 use App\Http\Controllers\Api\MapelApiController;
 use App\Http\Controllers\Api\ClassroomApiController;
 use App\Http\Controllers\Api\JurnalApiController;
 use App\Http\Controllers\Api\LocationApiController;
 use App\Http\Controllers\Api\MapelController;
 use App\Http\Controllers\Api\MateriController;
+use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\SekolahApiController;
 
@@ -131,6 +133,51 @@ Route::middleware('api-session')->group(function () {
         Route::delete('/materi/{id}', [
             MateriApiController::class,
             'destroy'
+        ]);
+
+
+        // ==================================================
+        // ARTIKEL
+        // ==================================================
+
+        Route::get('/artikel/manage', [
+            ArtikelApiController::class,
+            'index'
+        ]);
+
+        Route::post('/artikel', [
+            ArtikelApiController::class,
+            'store'
+        ]);
+
+        Route::put('/artikel/{id}', [
+            ArtikelApiController::class,
+            'update'
+        ]);
+
+        Route::delete('/artikel/{id}', [
+            ArtikelApiController::class,
+            'destroy'
+        ]);
+
+        Route::get('/artikel-kategori/manage', [
+            ArtikelApiController::class,
+            'kategoriList'
+        ]);
+
+        Route::post('/artikel-kategori', [
+            ArtikelApiController::class,
+            'kategoriStore'
+        ]);
+
+        Route::put('/artikel-kategori/{id}', [
+            ArtikelApiController::class,
+            'kategoriUpdate'
+        ]);
+
+        Route::delete('/artikel-kategori/{id}', [
+            ArtikelApiController::class,
+            'kategoriDestroy'
         ]);
 
 
@@ -304,6 +351,21 @@ Route::get('/mapel', [
 Route::get('/materi', [
     MateriController::class,
     'index'
+]);
+
+Route::get('/artikel-kategori', [
+    ArtikelController::class,
+    'kategori'
+]);
+
+Route::get('/artikel', [
+    ArtikelController::class,
+    'index'
+]);
+
+Route::get('/artikel/{slug}', [
+    ArtikelController::class,
+    'show'
 ]);
 
 Route::get('/jurnal', [

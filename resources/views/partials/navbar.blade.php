@@ -36,6 +36,12 @@
         </li>
 
         <li class="nav-item">
+          <a class="nav-link {{ ($active_page ?? '') == 'artikel' ? 'active' : '' }}" href="/artikel">
+            <i class="bi bi-newspaper me-1"></i>Artikel Budaya
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a class="nav-link {{ ($active_page ?? '') == 'jurnal' ? 'active' : '' }}" href="/jurnal">
             <i class="bi bi-journal-text me-1"></i>Jurnal
           </a>

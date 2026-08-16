@@ -13,6 +13,7 @@ class RolePermissionSeeder extends Seeder
 
         $permissions = [
             'materi.kelola',
+            'artikel.kelola',
             'classroom.kelola',
             'jurnal.lihat',    // lihat daftar jurnal saja (admin_sistem)
             'jurnal.review',   // approve/reject/edit detail (reviewer_jurnal)
@@ -29,7 +30,7 @@ class RolePermissionSeeder extends Seeder
         $penulis->syncPermissions(['jurnal.ajukan']);
 
         $operatorKonten = Role::firstOrCreate(['name' => 'operator_konten', 'guard_name' => 'web']);
-        $operatorKonten->syncPermissions(['materi.kelola', 'classroom.kelola']);
+        $operatorKonten->syncPermissions(['materi.kelola', 'artikel.kelola', 'classroom.kelola']);
 
         $sekolah = Role::firstOrCreate(['name' => 'sekolah', 'guard_name' => 'web']);
         $sekolah->syncPermissions(['classroom.kelola']);

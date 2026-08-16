@@ -61,6 +61,13 @@
                 </a>
             @endcan
 
+            @can('artikel.kelola')
+                <a href="/admin/artikel" class="sidebar-link {{ $active_menu == 'artikel' ? 'active' : '' }}">
+                    <i class="bi bi-newspaper"></i>
+                    <span>Kelola Artikel</span>
+                </a>
+            @endcan
+
             @canany(['sistem.kelola', 'classroom.kelola'])
                 <a href="/admin/classroom"
                 class="sidebar-link {{ $active_menu == 'classroom' ? 'active' : '' }}">

@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\JurnalController;
 
+use App\Http\Controllers\ThumbnailProxyController;
 
 // ======================================================
 // PUBLIC PAGES
@@ -19,9 +20,13 @@ Route::get('/media', [PublicController::class, 'media']);
 Route::get('/media/{jenjang}', [PublicController::class, 'mediaJenjang']);
 Route::get('/media/{jenjang}/{materi_id}', [PublicController::class, 'mediaDetail']);
 
+Route::get('/artikel', [PublicController::class, 'artikel']);
+Route::get('/artikel/kategori/{slug}', [PublicController::class, 'artikelKategori']);
+Route::get('/artikel/{slug}', [PublicController::class, 'artikelDetail']);
+
 Route::get('/jurnal', [JurnalController::class, 'index']);
 Route::get('/jurnal/{id}', [JurnalController::class, 'show']);
-
+Route::get('/thumbnail-proxy/{id}', [ThumbnailProxyController::class, 'show']);
 
 // ======================================================
 // ADMIN PAGES / UI
@@ -62,6 +67,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/materi/edit/{id}', [
         AdminController::class,
         'materiEdit'
+    ]);
+
+    Route::get('/admin/artikel', [
+        AdminController::class,
+        'artikel'
+    ]);
+
+    Route::get('/admin/artikel/tambah', [
+        AdminController::class,
+        'artikelTambah'
+    ]);
+
+    Route::get('/admin/artikel/edit/{id}', [
+        AdminController::class,
+        'artikelEdit'
     ]);
 
     Route::get('/admin/mapel', [

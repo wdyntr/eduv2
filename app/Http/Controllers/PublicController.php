@@ -2,6 +2,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Materi;
+use App\Models\Artikel;
+use App\Models\ArtikelKategori;
 use Illuminate\Http\Request;
 
 class PublicController extends Controller
@@ -68,6 +70,39 @@ class PublicController extends Controller
         return view('sekolah_detail', [
             'active_page' => 'classroom',
             'sekolah' => $sekolah,
+        ]);
+    }
+
+    // ==================================================
+    // ARTIKEL BUDAYA LAMPUNG
+    // ==================================================
+
+    public function artikel()
+    {
+        return view('artikel', ['active_page' => 'artikel']);
+    }
+
+    public function artikelKategori(string $slug)
+    {
+        $kategori = ArtikelKategori::where('slug', $slug)->firstOrFail();
+
+        return view('artikel', [
+            'active_page' => 'artikel',
+            'kategori_slug' => $kategori->slug,
+            'kategori_nama' => $kategori->nama,
+        ]);
+    }
+
+    public function artikelDetail(string $slug)
+    {
+        $artikel = Artikel::with('kategori')
+            ->where('slug', $slug)
+            ->where('is_active', 1)
+            ->firstOrFail();
+
+        return view('artikel_detail', [
+            'active_page' => 'artikel',
+            'artikel' => $artikel,
         ]);
     }
 }
