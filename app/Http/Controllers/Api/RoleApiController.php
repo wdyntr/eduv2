@@ -39,11 +39,17 @@ class RoleApiController extends Controller
             ->getAllPermissions()
             ->pluck('name');
 
+        $isSuperadmin = $request->user()->can('sistem.kelola');
+
         $roles = Role::where('guard_name', 'web')
             ->with('permissions:name')
             ->orderBy('name')
             ->get()
-            ->filter(function (Role $role) use ($currentPermissions) {
+            ->filter(function (Role $role) use ($currentPermissions, $isSuperadmin) {
+                if ($isSuperadmin) {
+                    return true;
+                }
+
                 $rolePermissions = $role->permissions->pluck('name');
 
                 return $rolePermissions

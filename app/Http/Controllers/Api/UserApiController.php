@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -98,20 +97,29 @@ class UserApiController extends Controller
          * Contoh:
          * users.kelola saja
          * tidak boleh memberikan admin_sistem.
+         *
+         * Pengecualian: pemegang sistem.kelola (superadmin) boleh
+         * assign role apapun terlepas dari permission operasionalnya
+         * sendiri — karena admin_sistem sengaja tidak diberi
+         * materi.kelola/artikel.kelola/jurnal.ajukan/jurnal.review,
+         * tapi tetap harus bisa bikin akun operator_konten/penulis/
+         * reviewer_jurnal.
          */
-        $currentPermissions = $request->user()
-            ->getAllPermissions()
-            ->pluck('name');
+        if (!$request->user()->can('sistem.kelola')) {
+            $currentPermissions = $request->user()
+                ->getAllPermissions()
+                ->pluck('name');
 
-        $targetPermissions = $role
-            ->permissions
-            ->pluck('name');
+            $targetPermissions = $role
+                ->permissions
+                ->pluck('name');
 
-        if ($targetPermissions->diff($currentPermissions)->isNotEmpty()) {
-            abort(
-                403,
-                'Anda tidak memiliki izin untuk memberikan role tersebut.'
-            );
+            if ($targetPermissions->diff($currentPermissions)->isNotEmpty()) {
+                abort(
+                    403,
+                    'Anda tidak memiliki izin untuk memberikan role tersebut.'
+                );
+            }
         }
 
         if (

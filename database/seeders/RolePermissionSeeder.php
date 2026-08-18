@@ -30,7 +30,7 @@ class RolePermissionSeeder extends Seeder
         $penulis->syncPermissions(['jurnal.ajukan']);
 
         $operatorKonten = Role::firstOrCreate(['name' => 'operator_konten', 'guard_name' => 'web']);
-        $operatorKonten->syncPermissions(['materi.kelola', 'artikel.kelola', 'classroom.kelola']);
+        $operatorKonten->syncPermissions(['materi.kelola', 'artikel.kelola']);
 
         $sekolah = Role::firstOrCreate(['name' => 'sekolah', 'guard_name' => 'web']);
         $sekolah->syncPermissions(['classroom.kelola']);
@@ -44,7 +44,7 @@ class RolePermissionSeeder extends Seeder
         // admin_sistem dapat semua permission KECUALI jurnal.review —
         // sengaja dikecualikan supaya cuma bisa lihat jurnal, tidak bisa approve/reject/edit detail.
         $adminSistem->syncPermissions(
-            Permission::whereNotIn('name', ['jurnal.review', 'jurnal.ajukan'])->pluck('name')->all()
+            Permission::whereNotIn('name', ['jurnal.review', 'jurnal.ajukan', 'materi.kelola', 'artikel.kelola'])->pluck('name')->all()
         );
     }
 }
