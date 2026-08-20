@@ -11,10 +11,10 @@
   </div>
   <div class="col-6 col-lg-4">
     <div class="stat-card">
-      <div class="stat-icon blue"><i class="bi bi-camera-video" style="color:#2d5090"></i></div>
+      <div class="stat-icon blue"><i class="bi bi-newspaper" style="color:#2d5090"></i></div>
       <div class="stat-info">
-        <div class="stat-num" id="statClassroomTerisi">-</div>
-        <div class="stat-label">Kelas Classroom Terisi</div>
+        <div class="stat-num" id="statArtikelOperator">-</div>
+        <div class="stat-label">Total Artikel</div>
       </div>
     </div>
   </div>
@@ -76,10 +76,9 @@
     }
 
     try {
-      const res = await fetch('/api/classroom');
+      const res = await fetch('/api/artikel/manage?limit=1');
       const data = await res.json();
-      const total = (data.items || []).reduce((sum, s) => sum + (s.kelas_terisi || 0), 0);
-      document.getElementById('statClassroomTerisi').textContent = total;
+      document.getElementById('statArtikelOperator').textContent = data.total ?? 0;
     } catch (e) {}
   }
 </script>
