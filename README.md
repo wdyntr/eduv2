@@ -1,59 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Lampung Belajar
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Platform pembelajaran digital untuk ekosistem pendidikan Provinsi Lampung — menghimpun materi ajar, direktori kelas Google Classroom sekolah, artikel budaya Lampung, dan publikasi jurnal ilmiah guru dalam satu portal, dengan tata kelola akses berbasis role & permission (RBAC).
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend:** Laravel 12 (PHP 8.2)
+- **Autentikasi & sesi:** Laravel session auth (`Auth::attempt()`) — bukan token API
+- **RBAC:** [spatie/laravel-permission](https://spatie.be/docs/laravel-permission) — role & permission dinamis, dikelola lewat UI (bukan hardcode)
+- **Database:** MySQL/MariaDB
+- **Frontend:** Blade + vanilla JS (fetch API) + Bootstrap 5, di-*build* lewat Vite
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Modul | Ringkasan |
+|---|---|
+| **Materi Pembelajaran** | Video (embed YouTube), PPT/PDF (tautan eksternal), dikelompokkan per jenjang (SMA/SMK/SLB) dan mata pelajaran |
+| **Classroom** | Direktori sekolah se-Lampung, dengan link Google Classroom **per sekolah per mata pelajaran**. Kerangka sinkronisasi statistik (jumlah guru/siswa/task/materi) via Google Classroom API sudah siap, menunggu penyediaan Google Workspace |
+| **Artikel Budaya** | Artikel & video seputar sejarah, adat, dan tradisi Lampung, dikelompokkan per kategori |
+| **Jurnal Ilmiah** | Alur pengajuan → review → publikasi jurnal guru, dengan riwayat revisi tersimpan (skema `jurnal` / `jurnal_revisi` / `jurnal_review`) dan pembersihan berkas otomatis saat file diganti/jurnal dihapus |
+| **Kelola User & Role** | CRUD akun serta role+permission sepenuhnya dari UI — role baru otomatis dapat menu & akses sesuai permission yang diberikan, tanpa ubah kode |
 
-## Learning Laravel
+## Role & Permission
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+| Role | Permission utama | Catatan |
+|---|---|---|
+| Pengunjung (publik) | – | Tanpa akun; akses baca ke materi, classroom, artikel, dan jurnal yang sudah disetujui |
+| **penulis** | `jurnal.ajukan` | Mengajukan & merevisi jurnal |
+| **operator_konten** | `materi.kelola`, `artikel.kelola` | Kelola materi & artikel budaya |
+| **sekolah** | `classroom.kelola` (dibatasi ke `sekolah_id` sendiri) | Hanya bisa kelola classroom sekolahnya |
+| **reviewer_jurnal** | `jurnal.lihat`, `jurnal.review` | Approve/reject & isi metadata publikasi jurnal |
+| **admin_sistem** | `users.kelola`, `sistem.kelola`, `classroom.kelola`, `jurnal.lihat` | Kelola user, kelola role, monitoring classroom lintas sekolah; sengaja **tidak** bisa review jurnal maupun kelola konten |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Role & permission baru bisa ditambahkan lewat halaman **Kelola Role** — seluruh guard akses di controller memakai pengecekan permission (`can('nama.permission')`), bukan nama role, sehingga penambahan role tidak memerlukan perubahan kode.
 
-## Laravel Sponsors
+## Instalasi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone <url-repo>
+cd edulampung
+composer install
+npm install && npm run build
 
-### Premium Partners
+cp .env.example .env
+php artisan key:generate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Atur koneksi database di `.env`, lalu:
 
-## Contributing
+```bash
+php artisan migrate
+php artisan db:seed --class=RolePermissionSeeder
+php artisan db:seed --class=AdminUserSeeder   # akun admin_sistem awal
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Jalankan:
 
-## Code of Conduct
+```bash
+php artisan serve
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+<!-- ## Integrasi Google Classroom (opsional, belum aktif)
 
-## Security Vulnerabilities
+Statistik guru/siswa/task/materi per kelas disiapkan untuk sinkron otomatis dari Google Classroom API, tapi baru bisa dipakai setelah:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Google Workspace domain untuk sekolah-sekolah sudah dibuat, dengan super admin yang bisa mengaktifkan **domain-wide delegation**.
+2. `composer require google/apiclient`.
+3. Kredensial *service account* ditaruh di `storage/app/google-service-account.json`.
+4. Isi `.env`: `GOOGLE_CLASSROOM_ADMIN_EMAIL=...`
+5. Jadwalkan/perintah manual: `php artisan classroom:sync-stats` -->
 
-## License
+Cron untuk scheduler Laravel (wajib untuk sinkronisasi otomatis tiap malam):
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
+```
+
+## Struktur Basis Data (ringkas)
+
+- `users`, `roles`, `permissions`, `model_has_roles`, `role_has_permissions` — akun & RBAC (Spatie)
+- `sekolah`, `sekolah_kelas`, `classroom_kelas_stats` — direktori sekolah, link classroom per mapel, cache statistik sinkronisasi
+- `jenjang`, `kota_kabupaten`, `mata_pelajaran` — tabel referensi
+- `materi` — konten pembelajaran
+- `artikel`, `artikel_kategori` — artikel budaya
+- `jurnal`, `jurnal_kategori`, `jurnal_revisi`, `jurnal_review` — pengajuan jurnal beserta riwayat revisi & keputusan review
+<!-- 
+## Catatan Pengembangan
+
+- Semua halaman `/admin/*` dilindungi middleware `auth` (session Laravel) + pengecekan permission per route/controller.
+- Fetch API di sisi admin otomatis menyertakan header CSRF lewat wrapper di `resources/views/user/layouts/base.blade.php` — tidak perlu ditambahkan manual di tiap file JS.
+- Berkas upload (jurnal) tersimpan di `storage/app/...` (path diatur lewat `config('jurnal.upload_path')`), dengan pembersihan otomatis lewat event model saat revisi/jurnal dihapus. -->
