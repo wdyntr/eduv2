@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: lbelajar-laravel
+    container_name: l-laravel
     restart: unless-stopped
     working_dir: /var/www
     volumes:
@@ -24,7 +24,7 @@ services:
 
   db-mysql:
     image: docker.io/library/mysql:8.0
-    container_name: lbelajar-mysql
+    container_name: l-mysql
     restart: unless-stopped
     ports:
       - "3307:3306"
