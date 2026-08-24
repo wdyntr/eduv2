@@ -69,15 +69,12 @@
             @endcan
 
             @canany(['sistem.kelola', 'classroom.kelola'])
-                <a href="/admin/classroom"
-                class="sidebar-link {{ $active_menu == 'classroom' ? 'active' : '' }}">
+                <a href="/admin/classroom" class="sidebar-link {{ $active_menu == 'classroom' ? 'active' : '' }}">
                     <i class="bi bi-building"></i>
 
                     <span>
                         @can('classroom.kelola')
-                            {{ auth()->user()->sekolah_id
-                                ? 'Classroom Saya'
-                                : 'Monitoring Classroom' }}
+                            {{ auth()->user()->sekolah_id ? 'Classroom Saya' : 'Monitoring Classroom' }}
                         @else
                             Kelola Sekolah
                         @endcan
@@ -92,7 +89,9 @@
                 </a>
             @endcan
 
-            @if (auth()->user()?->can('jurnal.review') || auth()->user()?->can('jurnal.ajukan') || auth()->user()?->can('jurnal.lihat'))
+            @if (auth()->user()?->can('jurnal.review') ||
+                    auth()->user()?->can('jurnal.ajukan') ||
+                    auth()->user()?->can('jurnal.lihat'))
                 <a href="/admin/jurnal" class="sidebar-link {{ $active_menu == 'jurnal' ? 'active' : '' }}">
                     <i class="bi bi-journal-text"></i>
                     <span>{{ auth()->user()->can('jurnal.ajukan') ? 'Jurnal Saya' : 'Request Jurnal' }}</span>
@@ -107,16 +106,14 @@
             @can('users.kelola')
                 <div class="nav-section-label mt-3">Pengaturan</div>
 
-                <a href="/admin/users"
-                class="sidebar-link {{ $active_menu == 'users' ? 'active' : '' }}">
+                <a href="/admin/users" class="sidebar-link {{ $active_menu == 'users' ? 'active' : '' }}">
                     <i class="bi bi-people"></i>
                     <span>Kelola User</span>
                 </a>
             @endcan
 
             @can('sistem.kelola')
-                <a href="/admin/roles"
-                class="sidebar-link {{ $active_menu == 'roles' ? 'active' : '' }}">
+                <a href="/admin/roles" class="sidebar-link {{ $active_menu == 'roles' ? 'active' : '' }}">
                     <i class="bi bi-shield-lock"></i>
                     <span>Kelola Role</span>
                 </a>
@@ -136,7 +133,7 @@
                 <div class="admin-detail">
                     <span class="admin-name">{{ $session_user }}</span>
                     <span
-                        class="admin-role">{{ str($session_role ?? '')->replace('_', ' ')->headline() ?: 'User' }}</span>
+                        class="admin-role">{{ str($session_role ?? '')->replace('_', ' ')->headline() ?:'User' }}</span>
                 </div>
             </div>
             <form method="POST" action="/admin/logout">
@@ -155,8 +152,7 @@
         </button>
         <div class="topbar-title">@yield('page_title', 'Dashboard')</div>
         <div class="topbar-right">
-            <span
-                class="sidebar-badge">{{ str($session_role ?? '')->replace('_', ' ')->headline() ?: 'User' }}</span>
+            <span class="sidebar-badge">{{ str($session_role ?? '')->replace('_', ' ')->headline() ?:'User' }}</span>
         </div>
     </div>
 
