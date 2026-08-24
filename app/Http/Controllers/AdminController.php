@@ -126,13 +126,13 @@ class AdminController extends Controller
         $this->guardArtikelAccess($request);
         return view('user.artikel', $this->adminCtx($request, ['active_menu' => 'artikel']));
     }
- 
+
     public function artikelTambah(Request $request)
     {
         $this->guardArtikelAccess($request);
         return view('user.artikel_form', $this->adminCtx($request, ['active_menu' => 'artikel', 'artikel' => null]));
     }
- 
+
     public function artikelEdit(Request $request, int $id)
     {
         $this->guardArtikelAccess($request);
