@@ -201,6 +201,9 @@
 .menu-jurnal {
     background: linear-gradient(135deg, #4a1a7a, #7b2fb5);
 }
+.menu-prediksi-ptn {
+    background: linear-gradient(135deg, #0d3b5c, #1967b4);
+}
 
 .menu-icon {
     font-size: 2.8rem;
