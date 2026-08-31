@@ -323,7 +323,14 @@ class JurnalApiController extends Controller
         $revisi = $jurnal->revisiTerbaru;
         abort_unless($revisi, 404, 'Jurnal ini belum punya revisi.');
 
-        $revisi->update($request->only(['volume', 'nomor_edisi', 'issn']));
+        $payload = $request->only(['volume', 'nomor_edisi', 'issn']);
+        foreach (['volume', 'nomor_edisi', 'issn'] as $field) {
+            if (array_key_exists($field, $payload) && trim((string) $payload[$field]) === '') {
+                $payload[$field] = null;
+            }
+        }
+
+        $revisi->update($payload);
 
         $this->putReviewStatus($revisi, 'approved', $request->user()->id);
 
@@ -342,7 +349,15 @@ class JurnalApiController extends Controller
 
         $jurnal = Jurnal::with('revisiTerbaru')->findOrFail($id);
         abort_unless($jurnal->revisiTerbaru, 404, 'Jurnal ini belum punya revisi.');
-        $jurnal->revisiTerbaru->update($request->only(['volume', 'nomor_edisi', 'issn']));
+
+        $payload = $request->only(['volume', 'nomor_edisi', 'issn']);
+        foreach (['volume', 'nomor_edisi', 'issn'] as $field) {
+            if (array_key_exists($field, $payload) && trim((string) $payload[$field]) === '') {
+                $payload[$field] = null;
+            }
+        }
+
+        $jurnal->revisiTerbaru->update($payload);
 
         return response()->json(['ok' => true]);
     }

@@ -406,7 +406,19 @@ function renderTabelAll(items) {
     </tr>`).join('');
 }
 
+function normalisasiNamaFileJurnal(filename) {
+  return String(filename || '').trim().split(/[\\/]/).pop();
+}
+
+function urlFileJurnal(filename) {
+  const nama = normalisasiNamaFileJurnal(filename);
+  return nama ? `/uploads/jurnal/${encodeURIComponent(nama)}` : '#';
+}
+
 function bukaReview(j) {
+  const fileJurnal = urlFileJurnal(j.file_jurnal);
+  const fileBukti = urlFileJurnal(j.file_bukti_plagiarisme);
+
   document.getElementById('reviewJurnalBody').innerHTML = `
     <p class="mb-1"><strong>Judul:</strong> ${j.judul}</p>
     <p class="mb-1"><strong>Kategori:</strong> ${j.kategori}</p>
@@ -418,15 +430,15 @@ function bukaReview(j) {
       <div class="col-6 col-md-3"><strong class="text-dark d-block">Bahasa</strong>${j.bahasa || '-'}</div>
     </div>
     <p class="mb-3"><strong>Abstrak:</strong><br>${j.abstrak || '-'}</p>
-    <a href="/uploads/jurnal/${j.file_jurnal}" target="_blank" class="btn btn-outline-secondary btn-sm me-2">
+    <a href="${fileJurnal}" target="_blank" class="btn btn-outline-secondary btn-sm me-2" ${fileJurnal === '#' ? 'onclick="return false;" aria-disabled="true" tabindex="-1"' : ''}>
       <i class="bi bi-file-earmark-text me-1"></i>Lihat File Jurnal
     </a>
-    <a href="/uploads/jurnal/${j.file_bukti_plagiarisme}" target="_blank" class="btn btn-outline-secondary btn-sm">
+    <a href="${fileBukti}" target="_blank" class="btn btn-outline-secondary btn-sm" ${fileBukti === '#' ? 'onclick="return false;" aria-disabled="true" tabindex="-1"' : ''}>
       <i class="bi bi-shield-check me-1"></i>Lihat Bukti Plagiarisme
     </a>
 
     <hr class="my-3">
-    <p class="small fw-semibold mb-2"><i class="bi bi-pencil-square me-1"></i>Detail Publikasi (diisi admin)</p>
+    <p class="small fw-semibold mb-2"><i class="bi bi-pencil-square me-1"></i>Detail Publikasi (opsional untuk approval)</p>
     <div class="row g-2">
       <div class="col-md-4">
         <label class="form-label small">Volume</label>
@@ -467,10 +479,20 @@ function ambilDetailPublikasiForm() {
 
 function validasiDetailPublikasi() {
   const { volume, nomor_edisi, issn } = ambilDetailPublikasiForm();
-  if (!volume || !nomor_edisi || !issn) {
-    alert('Volume, Nomor/Edisi, dan ISSN wajib diisi.');
+
+  if (volume && volume.length > 50) {
+    alert('Volume maksimal 50 karakter.');
     return false;
   }
+  if (nomor_edisi && nomor_edisi.length > 50) {
+    alert('Nomor/Edisi maksimal 50 karakter.');
+    return false;
+  }
+  if (issn && issn.length > 50) {
+    alert('ISSN maksimal 50 karakter.');
+    return false;
+  }
+
   return true;
 }
 
