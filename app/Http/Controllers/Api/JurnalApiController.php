@@ -39,9 +39,10 @@ class JurnalApiController extends Controller
             $query->whereHas('kategori', fn($q) => $q->where('nama_kategori', $request->kategori));
         }
         if ($request->q) {
-            $query->whereHas('revisiTerbaru', function ($sub) use ($request) {
-                $sub->where('judul', 'like', "%{$request->q}%")
-                    ->orWhere('penulis', 'like', "%{$request->q}%");
+            $q = str_replace(['%', '_'], ['\%', '\_'], $request->q);
+            $query->whereHas('revisiTerbaru', function ($sub) use ($q) {
+                $sub->where('judul', 'like', '%' . $q . '%')
+                    ->orWhere('penulis', 'like', '%' . $q . '%');
             });
         }
 
@@ -87,7 +88,7 @@ class JurnalApiController extends Controller
             'created_at' => $review?->reviewed_at ?? $j->created_at,
         ];
         if ($detail && $revisi) {
-            $data['file_jurnal'] = asset('uploads/jurnal/' . basename($revisi->file_jurnal));
+            $data['file_jurnal_url'] = route('jurnal.download', $j->id);
             $data['jumlah_halaman'] = $revisi->jumlah_halaman;
             $data['tahun_terbit'] = $revisi->tahun_terbit;
             $data['volume'] = $revisi->volume;
@@ -188,8 +189,8 @@ class JurnalApiController extends Controller
             'volume' => $revisi?->volume,
             'nomor_edisi' => $revisi?->nomor_edisi,
             'issn' => $revisi?->issn,
-            'file_jurnal' => $revisi ? basename($revisi->file_jurnal) : null,
-            'file_bukti_plagiarisme' => $revisi ? basename($revisi->file_bukti_plagiarisme) : null,
+            'file_jurnal' => $revisi ? route('jurnal.download', ['id' => $j->id, 'type' => 'jurnal']) : null,
+            'file_bukti_plagiarisme' => $revisi ? route('jurnal.download', ['id' => $j->id, 'type' => 'bukti']) : null,
             'versi_ke' => $revisi?->versi_ke,
             'status' => $review?->status ?? 'pending',
             'catatan_admin' => $review?->catatan_admin,
@@ -466,11 +467,8 @@ class JurnalApiController extends Controller
 
     private function simpanFile($file): string
     {
-        $dir = config('jurnal.upload_path');
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-
         $filename = Str::random(20) . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $file->move($dir, $filename);
+        $file->storeAs('/', $filename, 'jurnal');
 
         return $filename;
     }

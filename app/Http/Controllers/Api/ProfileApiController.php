@@ -27,7 +27,7 @@ class ProfileApiController extends Controller
         $data = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'password_lama' => ['nullable', 'string'],
-            'password_baru' => ['nullable', 'string', 'min:6'],
+            'password_baru' => ['nullable', 'string', 'min:8'],
         ]);
 
         $update = [

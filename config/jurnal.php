@@ -1,6 +1,6 @@
 <?php
 
 return [
-    // path fisik server tempat file jurnal disimpan
-    'upload_path' => env('JURNAL_UPLOAD_PATH', public_path('uploads/jurnal')),
+    // path fisik server tempat file jurnal disimpan (private, di luar web root)
+    'upload_path' => storage_path('app/private/jurnal'),
 ];

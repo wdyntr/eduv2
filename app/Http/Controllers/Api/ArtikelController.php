@@ -23,7 +23,7 @@ class ArtikelController extends Controller
             $query->where('tipe', $request->tipe); // 'artikel' atau 'video'
         }
         if ($request->q) {
-            $query->where('judul', 'like', "%{$request->q}%");
+            $query->where('judul', 'like', '%' . escapeLike($request->q) . '%');
         }
 
         $orderMap = [

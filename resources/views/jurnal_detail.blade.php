@@ -42,7 +42,7 @@
         <p class="text-muted mb-4">{{ $revisi->kata_kunci }}</p>
         @endif
 
-        <a href="{{ asset('uploads/jurnal/' . basename($revisi->file_jurnal)) }}" target="_blank"
+        <a href="{{ route('jurnal.download', $jurnal->id) }}" target="_blank"
            class="btn btn-lg mt-3 px-5" style="background:linear-gradient(135deg,var(--green),var(--green-light));color:#fff;border-radius:12px">
           <i class="bi bi-download me-2"></i>Unduh Jurnal
         </a>

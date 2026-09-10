@@ -6,6 +6,7 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\JurnalController;
 
 use App\Http\Controllers\ThumbnailProxyController;
+use App\Http\Controllers\Api\JurnalFileController;
 
 // ======================================================
 // PUBLIC PAGES
@@ -31,7 +32,14 @@ Route::post('/prediksi-ptn', [PublicController::class, 'prediksiPtn'])->name('pr
 Route::get('/thumbnail-proxy/{id}', [ThumbnailProxyController::class, 'show']);
 
 // ======================================================
-// ADMIN PAGES / UI
+// JURNAL FILE DOWNLOAD (publik untuk approved, auth untuk belum approved)
+// ======================================================
+
+Route::get('/jurnal/{id}/file/{type?}', [JurnalFileController::class, 'download'])
+    ->name('jurnal.download');
+
+// ======================================================
+// ADMIN PAGES / UI + PROTECTED ROUTES
 // ======================================================
 
 Route::middleware('auth')->group(function () {

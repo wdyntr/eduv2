@@ -25,7 +25,7 @@ class MateriController extends Controller
         }
         if ($request->tipe)  $query->where('tipe', $request->tipe);
         if ($request->mapel) $query->whereHas('mapel', fn($q) => $q->whereRaw('LOWER(nama) = ?', [$request->mapel]));
-        if ($request->q)     $query->where('judul', 'like', "%{$request->q}%");
+        if ($request->q)     $query->where('judul', 'like', '%' . escapeLike($request->q) . '%');
 
         $orderMap = ['terbaru' => ['created_at', 'desc'], 'terlama' => ['created_at', 'asc'], 'az' => ['judul', 'asc'], 'za' => ['judul', 'desc']];
         [$col, $dir] = $orderMap[$sort] ?? ['created_at', 'desc'];

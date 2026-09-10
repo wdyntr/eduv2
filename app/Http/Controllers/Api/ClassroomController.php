@@ -18,7 +18,7 @@ class ClassroomController extends Controller
             $query->where(
                 'nama',
                 'like',
-                '%' . $request->search . '%'
+                '%' . escapeLike($request->search) . '%'
             );
         }
 

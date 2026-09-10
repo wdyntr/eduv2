@@ -65,7 +65,7 @@ class UserApiController extends Controller
             'password' => [
                 'required',
                 'string',
-                'min:6',
+                'min:8',
                 'max:255',
             ],
             'nama' => [

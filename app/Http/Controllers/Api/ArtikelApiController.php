@@ -23,7 +23,7 @@ class ArtikelApiController extends Controller
 
         $query = Artikel::with('kategori');
         if ($request->q) {
-            $query->where('judul', 'like', "%{$request->q}%");
+            $query->where('judul', 'like', '%' . escapeLike($request->q) . '%');
         }
         $query->orderByDesc('created_at');
 

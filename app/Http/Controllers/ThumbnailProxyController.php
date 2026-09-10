@@ -9,6 +9,10 @@ class ThumbnailProxyController extends Controller
 {
     public function show(string $id)
     {
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $id) || strlen($id) > 100) {
+            abort(400, 'ID gambar tidak valid.');
+        }
+
         $path = "thumbnail-cache/{$id}.jpg";
 
         if (!Storage::disk('public')->exists($path)) {

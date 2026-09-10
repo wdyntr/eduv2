@@ -95,7 +95,7 @@ class SekolahApiController extends Controller
             $query->where(
                 'nama',
                 'like',
-                "%{$search}%"
+                '%' . escapeLike($search) . '%'
             );
         }
 

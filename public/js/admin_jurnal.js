@@ -410,14 +410,9 @@ function normalisasiNamaFileJurnal(filename) {
   return String(filename || '').trim().split(/[\\/]/).pop();
 }
 
-function urlFileJurnal(filename) {
-  const nama = normalisasiNamaFileJurnal(filename);
-  return nama ? `/uploads/jurnal/${encodeURIComponent(nama)}` : '#';
-}
-
 function bukaReview(j) {
-  const fileJurnal = urlFileJurnal(j.file_jurnal);
-  const fileBukti = urlFileJurnal(j.file_bukti_plagiarisme);
+  const fileJurnal = j.file_jurnal || '#';
+  const fileBukti = j.file_bukti_plagiarisme || '#';
 
   document.getElementById('reviewJurnalBody').innerHTML = `
     <p class="mb-1"><strong>Judul:</strong> ${j.judul}</p>

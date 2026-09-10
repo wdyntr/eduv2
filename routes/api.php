@@ -31,7 +31,7 @@ Route::middleware('api-session')->group(function () {
     Route::post('/auth/login', [
         AuthApiController::class,
         'login'
-    ]);
+    ])->middleware('throttle:5,1');
 
     Route::middleware('auth')->group(function () {
 
