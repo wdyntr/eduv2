@@ -166,7 +166,6 @@
                 {{--   </a> --}}
                 {{-- </div> --}}
 
-                {{-- === DINONAKTIFKAN SEMENTARA — menunggu data asli & validasi algoritma === --}}
                 {{-- <div class="col-6 col-lg-3">
                     <a href="/prediksi-ptn" class="menu-card menu-prediksi-ptn">
                         <div class="menu-icon">🎯</div>
@@ -175,7 +174,6 @@
                         <span class="menu-arrow"><i class="bi bi-arrow-right"></i></span>
                     </a>
                 </div> --}}
-                {{-- === AKTIFKAN KEMBALI SETELAH DATA SIAP === --}}
 
                 {{-- Jurnal --}}
                 <div class="col-6 col-lg-3">
