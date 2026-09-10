@@ -27,8 +27,10 @@ Route::get('/artikel/{slug}', [PublicController::class, 'artikelDetail']);
 
 Route::get('/jurnal', [JurnalController::class, 'index']);
 Route::get('/jurnal/{id}', [JurnalController::class, 'show']);
-Route::get('/prediksi-ptn', [PublicController::class, 'prediksiPtn'])->name('prediksi.ptn');
-Route::post('/prediksi-ptn', [PublicController::class, 'prediksiPtn'])->name('prediksi.ptn.submit');
+// === DINONAKTIFKAN SEMENTARA — menunggu data asli & validasi algoritma ===
+// Route::get('/prediksi-ptn', [PublicController::class, 'prediksiPtn'])->name('prediksi.ptn');
+// Route::post('/prediksi-ptn', [PublicController::class, 'prediksiPtn'])->name('prediksi.ptn.submit');
+// === AKTIFKAN KEMBALI SETELAH DATA SIAP ===
 Route::get('/thumbnail-proxy/{id}', [ThumbnailProxyController::class, 'show']);
 
 // ======================================================

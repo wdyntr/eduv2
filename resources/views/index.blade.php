@@ -166,15 +166,16 @@
                 {{--   </a> --}}
                 {{-- </div> --}}
 
-                {{-- Prediksi PTN --}}
-                <div class="col-6 col-lg-3">
+                {{-- === DINONAKTIFKAN SEMENTARA — menunggu data asli & validasi algoritma === --}}
+                {{-- <div class="col-6 col-lg-3">
                     <a href="/prediksi-ptn" class="menu-card menu-prediksi-ptn">
                         <div class="menu-icon">🎯</div>
                         <h5>Prediksi PTN</h5>
                         <p>Hitung potensi lolos PTN berdasarkan grade rapor</p>
                         <span class="menu-arrow"><i class="bi bi-arrow-right"></i></span>
                     </a>
-                </div>
+                </div> --}}
+                {{-- === AKTIFKAN KEMBALI SETELAH DATA SIAP === --}}
 
                 {{-- Jurnal --}}
                 <div class="col-6 col-lg-3">
