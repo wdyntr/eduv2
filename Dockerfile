@@ -1,6 +1,6 @@
 FROM docker.io/library/composer:latest as composer
 
-FROM docker.io/library/php:8.4-fpm
+FROM docker.io/library/php:8.4-fpm-alpine
 
 RUN apt-get update && apt-get install -y \
     build-essential \
